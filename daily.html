@@ -1498,8 +1498,24 @@
     color: var(--text);
     text-align: center;
   }
+  .daily-table td.daily-name-cell,
+  .daily-table td.daily-note-cell { text-align: left; }
   .daily-table tr:last-child td { border-bottom: none; }
   .daily-table tbody tr:hover td { background: var(--bg-2); }
+  .daily-date-input {
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    box-sizing: border-box;
+  }
+  .daily-date-input::placeholder { color: var(--text-subtle); font-style: italic; }
 
   .daily-chip {
     display: inline-block;
@@ -2776,7 +2792,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
         <td class="daily-editable daily-proj-cell" onclick="openDailyProjectPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="프로젝트 선택 / 추가 / 삭제">${t.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(t.project)}</span>` : '<span class="daily-placeholder">-</span>'}</td>
         <td class="daily-editable daily-quad-cell" onclick="openDailyQuadrantPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="분면 선택"><span class="daily-quad" data-q="${qKey}">${qKey.toUpperCase()}</span></td>
         <td class="daily-editable daily-name-cell" data-field="name" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'name')">${nameHtml}</td>
-        <td class="daily-editable daily-target-cell" data-field="targetDate" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'targetDate')" title="목표 날짜 (4/13)">${targetHtml}</td>
+        <td class="daily-target-cell" data-qkey="${qKey}" data-ti="${ti}" title="목표 날짜 (클릭 시 달력)"><input type="text" class="daily-date-input date-picker-input" value="${escapeHtml(targetDisplay)}" placeholder="${DASH}" readonly onchange="onDailyTargetChange(${dailyIdx}, '${qKey}', ${ti}, this.value)"></td>
         <td class="daily-time daily-editable" data-field="startTime" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'startTime')">${t.startTime ? escapeHtml(t.startTime) : '<span class="daily-placeholder">' + DASH + '</span>'}</td>
         <td class="daily-time daily-editable" data-field="endTime" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'endTime')">${t.endTime ? escapeHtml(t.endTime) : '<span class="daily-placeholder">' + DASH + '</span>'}</td>
         <td class="daily-num daily-prog-cell" onclick="openDailyProgPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="${escapeHtml(progTitle)}"><span class="${progValCls}">${progTxt}</span></td>
@@ -3222,7 +3238,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     showModal('업무 삭제', `"${name}" 업무를 삭제할까요?`, doDelete);
   };
   // ── 인라인 편집 엔진 ────────────────────────────────────────
-  const DAILY_EDIT_FIELDS = ['name', 'targetDate', 'startTime', 'endTime', 'estimatedHours', 'note']; // project/quadrant는 팝오버로 별도 처리
+  const DAILY_EDIT_FIELDS = ['name', 'startTime', 'endTime', 'estimatedHours', 'note']; // project/quadrant/targetDate는 팝오버로 별도 처리
   const DAILY_QUAD_LABELS = { q1: 'Q1 중요·긴급', q2: 'Q2 중요·비긴급', q3: 'Q3 비중요·긴급', q4: 'Q4 비중요·비긴급' };
   let dailyEdit = null; // { dayIdx, qKey, ti, field, el, input, origVal, navigating }
 
@@ -4142,6 +4158,16 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     renderWeekGrid();
   };
 
+  window.onDailyTargetChange = function(dayIdx, qKey, ti, text) {
+    const task = _getTask(dayIdx, qKey, ti);
+    if (!task) return;
+    const day = state.days[dayIdx];
+    const y = day && day.date ? parseInt(day.date.split('-')[0], 10) : new Date().getFullYear();
+    task.targetDate = parseDateInput(text, y);
+    saveState();
+    render();
+  };
+
   window.onSideDateChange = function(kind, idx, text) {
     const list = kind === 'important' ? state.importantTasks : state.routines;
     if (!list[idx]) return;
@@ -4639,6 +4665,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     initDevice();
     initModalBase();
     initHeaderCollapse();
+    initDatePicker();
     loadColWidths();
     loadDcolWidths();
     loadSidebarWidth();
