@@ -1465,7 +1465,6 @@
     padding: 8px 10px;
     min-height: 18px;
   }
-  .daily-table th.daily-th-left .daily-th-inner { justify-content: flex-start; }
   .daily-col-resize {
     position: relative;
     display: block;
@@ -1499,8 +1498,6 @@
     color: var(--text);
     text-align: center;
   }
-  .daily-table td.daily-name-cell,
-  .daily-table td.daily-note-cell { text-align: left; }
   .daily-table tr:last-child td { border-bottom: none; }
   .daily-table tbody tr:hover td { background: var(--bg-2); }
 
@@ -2721,7 +2718,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
               <tr>
                 <th><div class="daily-th-inner"><span>구분</span><div class="daily-col-resize" data-dcol="project"></div></div></th>
                 <th><div class="daily-th-inner"><span>분면</span><div class="daily-col-resize" data-dcol="quad"></div></div></th>
-                <th class="daily-th-left"><div class="daily-th-inner"><span>업무명</span><div class="daily-col-resize" data-dcol="name"></div></div></th>
+                <th><div class="daily-th-inner"><span>업무명</span><div class="daily-col-resize" data-dcol="name"></div></div></th>
                 <th><div class="daily-th-inner"><span>목표</span><div class="daily-col-resize" data-dcol="target"></div></div></th>
                 <th><div class="daily-th-inner"><span>시작</span><div class="daily-col-resize" data-dcol="start"></div></div></th>
                 <th><div class="daily-th-inner"><span>종료</span><div class="daily-col-resize" data-dcol="end"></div></div></th>
@@ -2729,7 +2726,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
                 <th><div class="daily-th-inner"><span>예상</span><div class="daily-col-resize" data-dcol="est"></div></div></th>
                 <th><div class="daily-th-inner"><span>상태</span><div class="daily-col-resize" data-dcol="status"></div></div></th>
                 <th><div class="daily-th-inner"><span>완료</span><div class="daily-col-resize" data-dcol="done"></div></div></th>
-                <th class="daily-th-left"><div class="daily-th-inner"><span>메모</span><div class="daily-col-resize" data-dcol="note"></div></div></th>
+                <th><div class="daily-th-inner"><span>메모</span><div class="daily-col-resize" data-dcol="note"></div></div></th>
                 <th aria-label="삭제"><div class="daily-th-inner"></div></th>
               </tr>
             </thead>
