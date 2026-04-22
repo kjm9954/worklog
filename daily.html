@@ -1424,10 +1424,9 @@
     --dcol-progress-w: 90px; --dcol-est-w: 56px; --dcol-status-w: 64px;
     --dcol-done-w: 40px; --dcol-note-w: 140px; --dcol-delete-w: 28px;
   }
-  .daily-table-wrap { max-height: 520px; overflow-y: auto; width: fit-content; }
+  .daily-table-wrap { width: fit-content; }
   .daily-table {
     width: max-content;
-    min-width: 100%;
     border-collapse: collapse;
     font-size: 13px;
     table-layout: fixed;
@@ -1445,8 +1444,6 @@
   .daily-table col.dcol-note    { width: var(--dcol-note-w); }
   .daily-table col.dcol-delete  { width: var(--dcol-delete-w); }
   .daily-table th {
-    position: sticky;
-    top: 0;
     background: var(--bg-2);
     color: var(--text-muted);
     font-weight: 500;
@@ -1455,38 +1452,41 @@
     padding: 0;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
-    z-index: 1;
   }
   .daily-th-inner {
     position: relative;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     padding: 8px 10px;
     min-height: 18px;
   }
-  .daily-table th[data-align="right"] .daily-th-inner { text-align: right; }
   .daily-col-resize {
-    position: absolute;
-    right: -3px;
-    top: 0;
-    width: 8px;
-    height: 100%;
+    position: relative;
+    display: block;
+    width: 10px;
+    height: 18px;
     cursor: col-resize;
-    z-index: 3;
+    flex-shrink: 0;
     user-select: none;
   }
-  .daily-col-resize.daily-col-resize-left { right: auto; left: -3px; }
-  .daily-col-resize::after {
+  .daily-col-resize::before {
     content: '';
     position: absolute;
-    right: 3px;
-    top: 25%;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
     width: 2px;
-    height: 50%;
-    background: transparent;
-    transition: background 0.15s;
+    height: 100%;
+    background: var(--border);
+    border-radius: 1px;
+    transition: background 0.15s, width 0.15s;
   }
-  .daily-col-resize:hover::after,
-  .daily-col-resize.dragging::after { background: var(--q2); }
+  .daily-col-resize:hover::before,
+  .daily-col-resize.dragging::before {
+    background: var(--q2);
+    width: 3px;
+  }
   .daily-table td {
     padding: 8px 10px;
     border-bottom: 1px solid var(--border);
@@ -2711,18 +2711,18 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
             </colgroup>
             <thead>
               <tr>
-                <th><div class="daily-th-inner">구분<div class="daily-col-resize" data-dcol="project"></div></div></th>
-                <th><div class="daily-th-inner">분면<div class="daily-col-resize" data-dcol="quad"></div></div></th>
-                <th><div class="daily-th-inner">업무명<div class="daily-col-resize" data-dcol="name"></div></div></th>
-                <th><div class="daily-th-inner">목표<div class="daily-col-resize" data-dcol="target"></div></div></th>
-                <th><div class="daily-th-inner">시작<div class="daily-col-resize" data-dcol="start"></div></div></th>
-                <th><div class="daily-th-inner">종료<div class="daily-col-resize" data-dcol="end"></div></div></th>
-                <th data-align="right"><div class="daily-th-inner">진행<div class="daily-col-resize" data-dcol="progress"></div></div></th>
-                <th data-align="right"><div class="daily-th-inner">예상<div class="daily-col-resize" data-dcol="est"></div></div></th>
-                <th><div class="daily-th-inner">상태<div class="daily-col-resize" data-dcol="status"></div></div></th>
-                <th><div class="daily-th-inner">완료<div class="daily-col-resize" data-dcol="done"></div></div></th>
-                <th><div class="daily-th-inner">메모<div class="daily-col-resize" data-dcol="note"></div></div></th>
-                <th aria-label="삭제"><div class="daily-th-inner"><div class="daily-col-resize daily-col-resize-left" data-dcol="delete"></div></div></th>
+                <th><div class="daily-th-inner"><span>구분</span><div class="daily-col-resize" data-dcol="project"></div></div></th>
+                <th><div class="daily-th-inner"><span>분면</span><div class="daily-col-resize" data-dcol="quad"></div></div></th>
+                <th><div class="daily-th-inner"><span>업무명</span><div class="daily-col-resize" data-dcol="name"></div></div></th>
+                <th><div class="daily-th-inner"><span>목표</span><div class="daily-col-resize" data-dcol="target"></div></div></th>
+                <th><div class="daily-th-inner"><span>시작</span><div class="daily-col-resize" data-dcol="start"></div></div></th>
+                <th><div class="daily-th-inner"><span>종료</span><div class="daily-col-resize" data-dcol="end"></div></div></th>
+                <th><div class="daily-th-inner"><span>진행</span><div class="daily-col-resize" data-dcol="progress"></div></div></th>
+                <th><div class="daily-th-inner"><span>예상</span><div class="daily-col-resize" data-dcol="est"></div></div></th>
+                <th><div class="daily-th-inner"><span>상태</span><div class="daily-col-resize" data-dcol="status"></div></div></th>
+                <th><div class="daily-th-inner"><span>완료</span><div class="daily-col-resize" data-dcol="done"></div></div></th>
+                <th><div class="daily-th-inner"><span>메모</span><div class="daily-col-resize" data-dcol="note"></div></div></th>
+                <th aria-label="삭제"><div class="daily-th-inner"></div></th>
               </tr>
             </thead>
             <tbody>${rowsHtml}</tbody>
