@@ -1451,7 +1451,7 @@
     color: var(--text-muted);
     font-weight: 500;
     font-size: 12px;
-    text-align: left;
+    text-align: center;
     padding: 0;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
@@ -1460,10 +1460,12 @@
     position: relative;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     padding: 8px 10px;
     min-height: 18px;
   }
+  .daily-table th.daily-th-left .daily-th-inner { justify-content: flex-start; }
   .daily-col-resize {
     position: relative;
     display: block;
@@ -1495,7 +1497,10 @@
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
     color: var(--text);
+    text-align: center;
   }
+  .daily-table td.daily-name-cell,
+  .daily-table td.daily-note-cell { text-align: left; }
   .daily-table tr:last-child td { border-bottom: none; }
   .daily-table tbody tr:hover td { background: var(--bg-2); }
 
@@ -1777,7 +1782,7 @@
   .daily-del:hover { color: var(--q1); background: var(--q1-bg); }
 
   .daily-time { font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: 12px; }
-  .daily-num { font-variant-numeric: tabular-nums; text-align: right; }
+  .daily-num { font-variant-numeric: tabular-nums; text-align: center; }
   .daily-check {
     width: 16px; height: 16px;
     border: 1.5px solid var(--border-strong);
@@ -2716,7 +2721,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
               <tr>
                 <th><div class="daily-th-inner"><span>구분</span><div class="daily-col-resize" data-dcol="project"></div></div></th>
                 <th><div class="daily-th-inner"><span>분면</span><div class="daily-col-resize" data-dcol="quad"></div></div></th>
-                <th><div class="daily-th-inner"><span>업무명</span><div class="daily-col-resize" data-dcol="name"></div></div></th>
+                <th class="daily-th-left"><div class="daily-th-inner"><span>업무명</span><div class="daily-col-resize" data-dcol="name"></div></div></th>
                 <th><div class="daily-th-inner"><span>목표</span><div class="daily-col-resize" data-dcol="target"></div></div></th>
                 <th><div class="daily-th-inner"><span>시작</span><div class="daily-col-resize" data-dcol="start"></div></div></th>
                 <th><div class="daily-th-inner"><span>종료</span><div class="daily-col-resize" data-dcol="end"></div></div></th>
@@ -2724,7 +2729,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
                 <th><div class="daily-th-inner"><span>예상</span><div class="daily-col-resize" data-dcol="est"></div></div></th>
                 <th><div class="daily-th-inner"><span>상태</span><div class="daily-col-resize" data-dcol="status"></div></div></th>
                 <th><div class="daily-th-inner"><span>완료</span><div class="daily-col-resize" data-dcol="done"></div></div></th>
-                <th><div class="daily-th-inner"><span>메모</span><div class="daily-col-resize" data-dcol="note"></div></div></th>
+                <th class="daily-th-left"><div class="daily-th-inner"><span>메모</span><div class="daily-col-resize" data-dcol="note"></div></div></th>
                 <th aria-label="삭제"><div class="daily-th-inner"></div></th>
               </tr>
             </thead>
@@ -2773,7 +2778,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
       <tr>
         <td class="daily-editable daily-proj-cell" onclick="openDailyProjectPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="프로젝트 선택 / 추가 / 삭제">${t.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(t.project)}</span>` : '<span class="daily-placeholder">-</span>'}</td>
         <td class="daily-editable daily-quad-cell" onclick="openDailyQuadrantPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="분면 선택"><span class="daily-quad" data-q="${qKey}">${qKey.toUpperCase()}</span></td>
-        <td class="daily-editable" data-field="name" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'name')">${nameHtml}</td>
+        <td class="daily-editable daily-name-cell" data-field="name" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'name')">${nameHtml}</td>
         <td class="daily-editable daily-target-cell" data-field="targetDate" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'targetDate')" title="목표 날짜 (4/13)">${targetHtml}</td>
         <td class="daily-time daily-editable" data-field="startTime" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'startTime')">${t.startTime ? escapeHtml(t.startTime) : '<span class="daily-placeholder">' + DASH + '</span>'}</td>
         <td class="daily-time daily-editable" data-field="endTime" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'endTime')">${t.endTime ? escapeHtml(t.endTime) : '<span class="daily-placeholder">' + DASH + '</span>'}</td>
