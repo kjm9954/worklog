@@ -52,7 +52,11 @@
     display: flex; flex-direction: column;
     width: fit-content;
   }
-  main#mode-daily > .daily-content > .daily-wrap { flex: 1; width: fit-content; }
+  main#mode-daily > .daily-content > .daily-wrap {
+    flex: 1; width: fit-content;
+    max-width: none; margin: 0; padding: 0;
+    overflow: visible;
+  }
 
   /* 사이드바 카드 */
   .daily-metric {
