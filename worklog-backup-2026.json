@@ -1,0 +1,682 @@
+{
+  "version": 3.5,
+  "goals": { "week": "", "month": "" },
+  "projectLabels": ["팝콘", "타운", "기타"],
+  "weekStart": "2026-04-13",
+  "days": [
+    {
+      "date": "2026-04-13", "dayName": "월", "schedule": "", "memo": "",
+      "quadrants": {
+        "q1": [
+          { "project": "팝콘", "name": "맵 밸런싱", "targetDate": "2026-04-13", "startTime": "18:50", "endTime": "19:00", "estimatedHours": "3.0", "done": true, "note": "~진행중", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "기타", "name": "위 베어 업데이트 타임라인 정리", "targetDate": "2026-04-14", "startTime": "", "endTime": "", "estimatedHours": "1.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "v870 텍스트 작업", "targetDate": "2026-04-13", "startTime": "15:10", "endTime": "18:50", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q2": [
+          { "project": "팝콘", "name": "자동화 JSON 대희님 문의", "targetDate": "2026-04-13", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "대희님 답변 확인", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "유니티 접속 불가 이슈 대응", "targetDate": "2026-04-13", "startTime": "16:20", "endTime": "17:40", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q3": [
+          { "project": "타운", "name": "맵수정 에셋 대응", "targetDate": "2026-04-13", "startTime": "10:30", "endTime": "11:20", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q4": [
+          { "project": "팝콘", "name": "맵 난이도 조정", "targetDate": "2026-04-13", "startTime": "11:20", "endTime": "15:00", "estimatedHours": "1.0", "done": true, "note": "VBA 수정 중", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "기획 주간 회의", "targetDate": "2026-04-13", "startTime": "15:00", "endTime": "15:10", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "주말 특이동향 체크", "targetDate": "2026-04-13", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "맵 수정 히스토리 최신화", "targetDate": "2026-04-13", "startTime": "", "endTime": "", "estimatedHours": "0.5", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ]
+      }
+    },
+    {
+      "date": "2026-04-14", "dayName": "화", "schedule": "", "memo": "",
+      "quadrants": {
+        "q1": [
+          { "project": "팝콘", "name": "맵 밸런싱", "targetDate": "2026-04-14", "startTime": "", "endTime": "", "estimatedHours": "3.0", "done": false, "note": "~진행중", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "v870 내부 테스트", "targetDate": "2026-04-14", "startTime": "14:00", "endTime": "15:40", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "기타", "name": "위 베어 업데이트 타임라인 정리", "targetDate": "2026-04-14", "startTime": "15:40", "endTime": "19:00", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q2": [
+          { "project": "팝콘", "name": "v870 컬러키 최신화", "targetDate": "2026-04-14", "startTime": "10:00", "endTime": "12:30", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q3": [],
+        "q4": [
+          { "project": "팝콘", "name": "기획 주간 회의", "targetDate": "2026-04-13", "startTime": "17:00", "endTime": "18:00", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "기타", "name": "팝콘&타운 리소스 공유", "targetDate": "2026-04-13", "startTime": "11:00", "endTime": "18:40", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ]
+      }
+    },
+    {
+      "date": "2026-04-15", "dayName": "수", "schedule": "", "memo": "",
+      "quadrants": {
+        "q1": [
+          { "project": "팝콘", "name": "맵 밸런싱", "targetDate": "2026-04-16", "startTime": "", "endTime": "", "estimatedHours": "3.0", "done": false, "note": "~진행중", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "기타", "name": "위 베어 인게임 변경점 체크", "targetDate": "2026-04-15", "startTime": "", "endTime": "", "estimatedHours": "1.5", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "신규 맵 추가 선정", "targetDate": "2026-04-15", "startTime": "16:00", "endTime": "18:00", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q2": [
+          { "project": "팝콘", "name": "v870 개발 대응", "targetDate": "2026-04-15", "startTime": "14:40", "endTime": "19:00", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q3": [
+          { "project": "팝콘", "name": "유저 레벨 미갱신 이슈 체크", "targetDate": "2026-04-15", "startTime": "10:00", "endTime": "10:10", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "타운", "name": "버섯 프렌즈 확률표 전달", "targetDate": "2026-04-15", "startTime": "10:40", "endTime": "11:30", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q4": [
+          { "project": "팝콘", "name": "맵 난이도 조정", "targetDate": "2026-04-15", "startTime": "11:50", "endTime": "12:30", "estimatedHours": "1.2", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "업무 내역 정리 후 창기님 공유", "targetDate": "2026-04-15", "startTime": "10:10", "endTime": "10:40", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "성쟁탈전 이미지 공유", "targetDate": "2026-04-15", "startTime": "11:30", "endTime": "11:50", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "기타", "name": "커피 타임", "targetDate": "2026-04-15", "startTime": "14:00", "endTime": "14:30", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ]
+      }
+    },
+    {
+      "date": "2026-04-16", "dayName": "목", "schedule": "", "memo": "",
+      "quadrants": {
+        "q1": [
+          { "project": "팝콘", "name": "맵 밸런싱", "targetDate": "2026-04-17", "startTime": "", "endTime": "", "estimatedHours": "3.0", "done": false, "note": "~진행중", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "v870 내부 테스트", "targetDate": "2026-04-16", "startTime": "14:00", "endTime": "16:20", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q2": [
+          { "project": "팝콘", "name": "난이도 조정 VBA 수정", "targetDate": "2026-04-16", "startTime": "17:40", "endTime": "18:30", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q3": [],
+        "q4": [
+          { "project": "팝콘", "name": "맵 난이도 조정", "targetDate": "2026-04-16", "startTime": "16:20", "endTime": "17:40", "estimatedHours": "1.2", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "기타", "name": "주간 게임 트래킹", "targetDate": "2026-04-16", "startTime": "10:00", "endTime": "12:30", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ]
+      }
+    },
+    {
+      "date": "2026-04-17", "dayName": "금", "schedule": "", "memo": "",
+      "quadrants": {
+        "q1": [
+          { "project": "팝콘", "name": "맵 밸런싱", "targetDate": "2026-04-17", "startTime": "18:30", "endTime": "19:10", "estimatedHours": "3.0", "done": true, "note": "~진행중", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "팝콘", "name": "맵 밸런싱", "targetDate": "2026-04-17", "startTime": "16:40", "endTime": "17:30", "estimatedHours": "4.0", "done": true, "note": "~진행중", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q2": [
+          { "project": "팝콘", "name": "맵 난이도 VBA 수정", "targetDate": "2026-04-17", "startTime": "11:30", "endTime": "12:30", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q3": [
+          { "project": "팝콘", "name": "운영 확률 이슈 대응", "targetDate": "2026-04-17", "startTime": "14:00", "endTime": "16:00", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ],
+        "q4": [
+          { "project": "팝콘", "name": "맵 난이도 조정", "targetDate": "2026-04-17", "startTime": "10:00", "endTime": "11:30", "estimatedHours": "1", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+          { "project": "타운", "name": "7주년 생일파티", "targetDate": "2026-04-17", "startTime": "16:00", "endTime": "16:40", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+        ]
+      }
+    }
+  ],
+  "importantTasks": [
+    { "project": "타운", "category": "에셋", "name": "타운 에셋 배포", "status": "진행중", "targetDate": "2026-05-11", "note": "" },
+    { "project": "팝콘", "category": "에셋", "name": "팝콘 에셋 배포", "status": "진행중", "targetDate": "2026-04-23", "note": "" },
+    { "project": "팝콘", "category": "빌드", "name": "870 1차 QA 대응", "status": "진행중", "targetDate": "2026-04-17", "note": "" },
+    { "project": "팝콘", "category": "스터디", "name": "난이도 자동화 문서 수정", "status": "진행중", "targetDate": "2026-04-07", "note": "" },
+    { "project": "팝콘", "category": "스터디", "name": "신규 컨텐츠 기획서 작성", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "스터디", "name": "기존 기능 설계 정리", "status": "대기", "targetDate": "", "note": "" }
+  ],
+  "routines": [
+    { "project": "팝콘", "category": "버전", "subCategory": "기믹", "name": "기믹 기획서 작성", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "버전", "subCategory": "기믹", "name": "도움말 텍스트 작성", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "버전", "subCategory": "기믹", "name": "사운드 서치 후 커밋", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "버전", "subCategory": "테이블", "name": "맵 데이터 (최소 버전 작성 필요)", "status": "완료", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "버전", "subCategory": "테이블", "name": "캐릭터 데이터", "status": "완료", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "버전", "subCategory": "테이블", "name": "텍스트 파일", "status": "진행중", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "버전", "subCategory": "테이블", "name": "패키지 테이블, 원스토어 발급 → 대희님 공유", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "버전", "subCategory": "QA", "name": "이벤트 json 작성 후 공유", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "버전", "subCategory": "QA", "name": "문의사항 작성 상황 체크", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "버전", "subCategory": "QA", "name": "기믹 테스트맵 제작 후 공유", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "월별", "subCategory": "아트", "name": "맵 이미지 작성 후 공유 (의도가 있는 부분 코멘트 필요)", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "월별", "subCategory": "아트", "name": "프렌즈 세트 컨셉 기획서 작성", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "월별", "subCategory": "운영", "name": "이벤트 설정 체크", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "월별", "subCategory": "운영", "name": "확률표 작성", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "상시", "subCategory": "기타", "name": "이슈 히스토리 관리", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "팝콘", "category": "상시", "subCategory": "기타", "name": "맵 버전 관리 (업데이트 시에 맵파일 적용 체크)", "status": "대기", "targetDate": "", "note": "" },
+    { "project": "타운", "category": "상시", "subCategory": "테이블", "name": "프렌즈 테이블", "status": "진행중", "targetDate": "2026-04-02", "note": "" },
+    { "project": "타운", "category": "상시", "subCategory": "테이블", "name": "텍스트 테이블", "status": "완료", "targetDate": "2026-04-02", "note": "" },
+    { "project": "타운", "category": "상시", "subCategory": "테이블", "name": "공용구역 테이블", "status": "완료", "targetDate": "2026-04-02", "note": "" }
+  ],
+  "history": [
+    {
+      "archivedAt": "2026. 4. 10. 오후 7:00:00",
+      "weekStart": "2026-04-06",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        {
+          "date": "2026-04-06", "dayName": "월", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "에셋 BTS 대응", "targetDate": "2026-04-06", "startTime": "10:30", "endTime": "14:40", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 자동화 피드백 → 수정", "targetDate": "2026-04-06", "startTime": "18:20", "endTime": "19:00", "estimatedHours": "4.0", "done": true, "note": "피드백/일정 정리 완료", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "맵 밸런싱 시작", "targetDate": "2026-04-06", "startTime": "", "endTime": "", "estimatedHours": "1.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "자동화 JSON 대희님 문의", "targetDate": "2026-04-06", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "이번주 내로 대희님 답변 예정", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "맵 난이도 조정", "targetDate": "2026-04-06", "startTime": "14:40", "endTime": "18:20", "estimatedHours": "1.0", "done": true, "note": "VBA 수정, 기획 방향성 체크", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "기획 주간 회의", "targetDate": "2026-04-06", "startTime": "15:00", "endTime": "15:40", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "주말 특이동향 체크", "targetDate": "2026-04-06", "startTime": "11:00", "endTime": "11:30", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-04-07", "dayName": "화", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "맵 밸런싱", "targetDate": "2026-04-08", "startTime": "", "endTime": "", "estimatedHours": "2.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "일부 테이블 자동화", "targetDate": "2026-04-07", "startTime": "18:30", "endTime": "19:30", "estimatedHours": "3.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정 자동화 문서 수정", "targetDate": "2026-04-07", "startTime": "14:00", "endTime": "18:30", "estimatedHours": "3.0", "done": true, "note": "04/08(수) 지연님 공유 필요", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "자동화 JSON 대희님 문의", "targetDate": "2026-04-08", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "이번주 내로 대희님 답변 예정", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "맵 난이도 조정(VBA 수정)", "targetDate": "2026-04-07", "startTime": "10:00", "endTime": "12:30", "estimatedHours": "3.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "기획 주간 회의", "targetDate": "2026-04-07", "startTime": "17:00", "endTime": "17:30", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "이슈 대응", "targetDate": "2026-04-08", "startTime": "15:30", "endTime": "18:00", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-04-08", "dayName": "수", "schedule": "오전 반차", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "맵 밸런싱", "targetDate": "2026-04-08", "startTime": "17:00", "endTime": "19:00", "estimatedHours": "1.5", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "일부 테이블 자동화 (난이도 마무리)", "targetDate": "2026-04-08", "startTime": "", "endTime": "", "estimatedHours": "1.5", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "자동화 JSON 대희님 문의", "targetDate": "2026-04-08", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "이번주 내로 대희님 답변 예정", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "이슈 대응", "targetDate": "2026-04-08", "startTime": "15:00", "endTime": "18:20", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "콜라보 프렌즈 네이밍 대응", "targetDate": "2026-04-08", "startTime": "16:00", "endTime": "16:30", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 자동화 피드백 받기", "targetDate": "2026-04-08", "startTime": "15:40", "endTime": "16:00", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "프렌즈 확률표 공유", "targetDate": "2026-04-08", "startTime": "16:30", "endTime": "16:50", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "이벤트 이미지 갱신", "targetDate": "2026-04-08", "startTime": "16:50", "endTime": "17:00", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-04-09", "dayName": "목", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "맵 밸런싱", "targetDate": "2026-04-17", "startTime": "", "endTime": "", "estimatedHours": "2.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "자동화 사이트 아이데이션", "targetDate": "2026-04-09", "startTime": "", "endTime": "", "estimatedHours": "2.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "맵 이슈 수정", "targetDate": "2026-04-09", "startTime": "18:40", "endTime": "19:20", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "자동화 JSON 대희님 문의", "targetDate": "2026-04-13", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "차주 월요일 대희님 답변 예정!", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "콜라보 텍스트 최신화", "targetDate": "2026-04-09", "startTime": "", "endTime": "", "estimatedHours": "0.5", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "에셋 대응", "targetDate": "2026-04-09", "startTime": "10:00", "endTime": "", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "지연님께 업무 피드백 받기", "targetDate": "2026-04-09", "startTime": "16:00", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-04-09", "startTime": "14:50", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 게임 트래킹", "targetDate": "2026-04-09", "startTime": "10:00", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "스플래시 찾기", "targetDate": "2026-04-09", "startTime": "17:30", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-04-10", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] }
+        }
+      ]
+    },
+    {
+      "archivedAt": "2026. 4. 3. 오후 7:00:00",
+      "weekStart": "2026-03-30",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        {
+          "date": "2026-03-30", "dayName": "월", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "맵 밸런싱", "targetDate": "2026-03-30", "startTime": "18:20", "endTime": "19:00", "estimatedHours": "4.0", "done": true, "note": "~ 진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정 자동화 개선", "targetDate": "2026-04-02", "startTime": "", "endTime": "", "estimatedHours": "3.0", "done": false, "note": "~4월 20일까지 대희님 미니 리뷰", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "데이터 테이블 사전 입력", "targetDate": "2026-03-30", "startTime": "14:00", "endTime": "17:00", "estimatedHours": "1.0", "done": true, "note": "마을/프렌즈 모두 O, 일부 함수 추가", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "콜라보 프렌즈 데이터 입력", "targetDate": "2026-03-30", "startTime": "17:00", "endTime": "18:20", "estimatedHours": "1.0", "done": true, "note": "기획서/테이블 모두 O", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정 (이탈 포함)", "targetDate": "2026-03-30", "startTime": "10:30", "endTime": "12:30", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "본부장님 면담", "targetDate": "2026-03-30", "startTime": "11:20", "endTime": "12:10", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "규현님 면담", "targetDate": "2026-03-30", "startTime": "14:55", "endTime": "16:00", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-31", "dayName": "화", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "맵 밸런싱", "targetDate": "2026-04-01", "startTime": "17:10", "endTime": "19:10", "estimatedHours": "4.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정 자동화 개선", "targetDate": "2026-04-02", "startTime": "14:10", "endTime": "16:50", "estimatedHours": "3.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "신규 맵 이슈 대응", "targetDate": "2026-03-31", "startTime": "17:30", "endTime": "18:40", "estimatedHours": "1.0", "done": true, "note": "커밋까지 O", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "주간회의 내용 작성", "targetDate": "2026-03-31", "startTime": "15:00", "endTime": "15:20", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "테이블 자동화 아이데이션", "targetDate": "2026-03-31", "startTime": "10:00", "endTime": "11:00", "estimatedHours": "0.5", "done": true, "note": "목적은 이슈 방지, 효율성 ▲", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-03-31", "startTime": "11:40", "endTime": "15:40", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "메모 자동화 기능 공유", "targetDate": "2026-03-31", "startTime": "11:00", "endTime": "11:40", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 회의", "targetDate": "2026-03-31", "startTime": "16:50", "endTime": "17:10", "estimatedHours": "0.5", "done": true, "note": "이번주 주간회의 미진행", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-04-01", "dayName": "수", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "맵툴 세팅 후 배포 준비", "targetDate": "2026-04-01", "startTime": "10:00", "endTime": "17:00", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "기믹/미션 이슈 대응", "targetDate": "2026-04-01", "startTime": "10:50", "endTime": "12:10", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "870 버전 개발 리뷰", "targetDate": "2026-04-01", "startTime": "17:50", "endTime": "19:00", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "일부 테이블 자동화", "targetDate": "2026-04-01", "startTime": "", "endTime": "", "estimatedHours": "2.0", "done": false, "note": "목적은 이슈 방지, 효율성 ▲", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "프렌즈 데이터 체크 후 수정", "targetDate": "2026-04-01", "startTime": "10:20", "endTime": "11:30", "estimatedHours": "1.0", "done": true, "note": "한정판 여부 체크 필요", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "라이브 맵 2건 수정", "targetDate": "2026-04-01", "startTime": "17:00", "endTime": "17:40", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "신규 맵 난이도 체크", "targetDate": "2026-04-01", "startTime": "17:00", "endTime": "17:10", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "기획 커피타임", "targetDate": "2026-04-01", "startTime": "15:50", "endTime": "16:30", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-04-02", "dayName": "목", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "난이도 조정 자동화 개선", "targetDate": "2026-04-06", "startTime": "", "endTime": "", "estimatedHours": "4.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "신규 맵 밸런싱 사전 준비", "targetDate": "2026-04-02", "startTime": "17:30", "endTime": "", "estimatedHours": "2.0", "done": true, "note": "세팅 완료", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "에셋 내부 테스트", "targetDate": "2026-04-02", "startTime": "15:40", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "누락 내용들 메모 추가 O", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "일부 테이블 자동화", "targetDate": "2026-04-03", "startTime": "", "endTime": "", "estimatedHours": "2.0", "done": false, "note": "목적은 이슈 방지, 효율성 ▲", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "성쟁탈전 이슈 파악", "targetDate": "2026-04-03", "startTime": "12:00", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "~ 진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "870 신규 챕터 준비(이미지/데이터)", "targetDate": "2026-04-02", "startTime": "10:00", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "일부 테이블 사전 작성&공유", "targetDate": "2026-04-02", "startTime": "11:00", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정(신규 맵/VBA 수정)", "targetDate": "2026-04-02", "startTime": "14:30", "endTime": "", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 게임 트래킹", "targetDate": "2026-04-02", "startTime": "10:40", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "맵 데이터/이벤트 json 준비", "targetDate": "2026-04-02", "startTime": "18:00", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-04-03", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "난이도 조정 자동화 개선", "targetDate": "2026-04-06", "startTime": "17:00", "endTime": "17:30", "estimatedHours": "4.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "왕중왕전 이슈 대응", "targetDate": "2026-04-03", "startTime": "11:00", "endTime": "15:50", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "일부 테이블 자동화", "targetDate": "2026-04-03", "startTime": "", "endTime": "", "estimatedHours": "2.0", "done": false, "note": "목적은 이슈 방지, 효율성 ▲", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "신규 텍스트 사전 작성(870)", "targetDate": "2026-04-03", "startTime": "14:40", "endTime": "15:00", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "대희님 업무 피드백 받기", "targetDate": "2026-04-03", "startTime": "15:50", "endTime": "17:00", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정 (VBA 수정)", "targetDate": "2026-04-03", "startTime": "10:00", "endTime": "14:30", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "맵 이미지 전달", "targetDate": "2026-04-03", "startTime": "10:30", "endTime": "10:40", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        }
+      ]
+    },
+    {
+      "archivedAt": "2026. 3. 27. 오후 7:00:00",
+      "weekStart": "2026-03-23",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        {
+          "date": "2026-03-23", "dayName": "월", "schedule": "연차", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] }
+        },
+        {
+          "date": "2026-03-24", "dayName": "화", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "신규 맵 밸런싱", "targetDate": "2026-03-24", "startTime": "14:30", "endTime": "19:00", "estimatedHours": "4.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "860 QA 체크", "targetDate": "2026-03-24", "startTime": "14:00", "endTime": "14:30", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "라이브 맵 이슈 대응", "targetDate": "2026-03-24", "startTime": "10:20", "endTime": "11:30", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "캐릭터 데이터 사전 입력", "targetDate": "2026-03-25", "startTime": "", "endTime": "", "estimatedHours": "1.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-03-24", "startTime": "11:30", "endTime": "12:30", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "운영 문의사항 체크", "targetDate": "2026-03-24", "startTime": "17:35", "endTime": "18:10", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간회의", "targetDate": "2026-03-24", "startTime": "17:00", "endTime": "17:35", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-25", "dayName": "수", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "신규 맵 밸런싱", "targetDate": "2026-03-25", "startTime": "10:10", "endTime": "19:00", "estimatedHours": "4.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정 자동화 개선", "targetDate": "2026-03-30", "startTime": "", "endTime": "", "estimatedHours": "3.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "미션 슬레이트 이슈 대응", "targetDate": "2026-03-25", "startTime": "17:00", "endTime": "17:40", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "캐릭터 데이터 사전 입력", "targetDate": "2026-03-25", "startTime": "17:40", "endTime": "18:40", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "이벤트 이미지 최신화", "targetDate": "2026-03-25", "startTime": "10:00", "endTime": "10:10", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-26", "dayName": "목", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "신규 맵 밸런싱", "targetDate": "2026-03-26", "startTime": "14:40", "endTime": "", "estimatedHours": "4.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정 자동화 개선", "targetDate": "2026-04-02", "startTime": "", "endTime": "", "estimatedHours": "3.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "데이터 테이블 사전 입력", "targetDate": "2026-03-30", "startTime": "", "endTime": "", "estimatedHours": "1.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "신규 맵 이미지 재전달", "targetDate": "2026-03-26", "startTime": "11:40", "endTime": "", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-03-26", "startTime": "10:00", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 게임 트래킹", "targetDate": "2026-03-26", "startTime": "10:20", "endTime": "", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "창기님 미니 면담", "targetDate": "2026-03-26", "startTime": "10:40", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-27", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] }
+        }
+      ]
+    },
+    {
+      "archivedAt": "2026. 3. 20. 오후 7:00:00",
+      "weekStart": "2026-03-16",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        {
+          "date": "2026-03-16", "dayName": "월", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "신규 맵 밸런싱", "targetDate": "2026-03-16", "startTime": "14:50", "endTime": "19:00", "estimatedHours": "4.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "860 대응", "targetDate": "2026-03-16", "startTime": "10:50", "endTime": "11:20", "estimatedHours": "1.5", "done": true, "note": "진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "추가 캐릭터 데이터 대응", "targetDate": "2026-03-16", "startTime": "14:00", "endTime": "14:35", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "유니티 접속 불가 체크", "targetDate": "2026-03-16", "startTime": "10:30", "endTime": "10:50", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정 (신규 포함)", "targetDate": "2026-03-16", "startTime": "11:20", "endTime": "12:30", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "캐릭터 확률표 (122번)", "targetDate": "2026-03-16", "startTime": "14:35", "endTime": "14:50", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-17", "dayName": "화", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "신규 맵 클&다맵", "targetDate": "2026-03-17", "startTime": "15:00", "endTime": "19:00", "estimatedHours": "4.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "860 대응", "targetDate": "2026-03-17", "startTime": "10:00", "endTime": "15:00", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-03-17", "startTime": "10:20", "endTime": "12:30", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "캐릭터 확률표 크로스체크", "targetDate": "2026-03-17", "startTime": "10:40", "endTime": "10:50", "estimatedHours": "0.3", "done": true, "note": "아지트 업로드 O", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 회의", "targetDate": "2026-03-17", "startTime": "17:00", "endTime": "17:20", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-18", "dayName": "수", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "난이도 조정 VBA 수정", "targetDate": "2026-03-18", "startTime": "10:00", "endTime": "11:30", "estimatedHours": "3.0", "done": true, "note": "★ 변경된 방향성 재정리 필요", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "맵 에셋 준비(이미지 포함)", "targetDate": "2026-03-18", "startTime": "17:30", "endTime": "19:00", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "리밸런싱 (4챕터)", "targetDate": "2026-03-18", "startTime": "14:00", "endTime": "17:30", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-03-18", "startTime": "11:30", "endTime": "12:30", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-19", "dayName": "목", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "맵툴 이슈 대응", "targetDate": "2026-03-19", "startTime": "16:50", "endTime": "", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "신규 맵 은영님 전달", "targetDate": "2026-03-19", "startTime": "16:00", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "원화 프로세스 변경", "targetDate": "2026-03-19", "startTime": "", "endTime": "", "estimatedHours": "0.3", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "원화 다음 컨셉 리스트업", "targetDate": "2026-03-19", "startTime": "", "endTime": "", "estimatedHours": "0.8", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "신규 챕터 클리어율 체크", "targetDate": "2026-03-19", "startTime": "16:30", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 게임 트래킹 (2주차)", "targetDate": "2026-03-19", "startTime": "15:00", "endTime": "", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-20", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "맵툴 이슈 체크 후 재전달", "targetDate": "2026-03-20", "startTime": "10:00", "endTime": "11:30", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "맵 밸런싱 시작", "targetDate": "2026-03-20", "startTime": "15:40", "endTime": "17:30", "estimatedHours": "1.5", "done": true, "note": "~ 진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "맵 이미지 파일 재준비", "targetDate": "2026-03-20", "startTime": "11:30", "endTime": "12:00", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "콜라보 캐릭터 ID 재정리", "targetDate": "2026-03-20", "startTime": "14:40", "endTime": "14:55", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-03-20", "startTime": "12:30", "endTime": "14:40", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "세트 컨셉 리스트업", "targetDate": "2026-03-20", "startTime": "14:55", "endTime": "15:40", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        }
+      ]
+    },
+    {
+      "archivedAt": "2026. 3. 13. 오후 7:00:00",
+      "weekStart": "2026-03-09",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        {
+          "date": "2026-03-09", "dayName": "월", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "팝콘 맵 밸런싱", "targetDate": "2026-03-09", "startTime": "18:20", "endTime": "19:00", "estimatedHours": "2.0", "done": true, "note": "진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "기믹 테스트맵 공유 준비", "targetDate": "2026-03-09", "startTime": "12:10", "endTime": "14:50", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "타운 맵툴 세팅 ▶ 에셋 뽑기", "targetDate": "2026-03-09", "startTime": "10:30", "endTime": "17:30", "estimatedHours": "1.5", "done": true, "note": "맵 이미지까지 완료", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "텍스트 테이블 대응", "targetDate": "2026-03-09", "startTime": "16:00", "endTime": "17:00", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-03-09", "startTime": "17:30", "endTime": "18:20", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "사업 미팅 회의록 업로드", "targetDate": "2026-03-09", "startTime": "11:40", "endTime": "12:10", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "팝콘 주간회의", "targetDate": "2026-03-09", "startTime": "15:00", "endTime": "15:20", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "라이브 커피타임", "targetDate": "2026-03-09", "startTime": "15:20", "endTime": "16:00", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-10", "dayName": "화", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "팝콘 맵 밸런싱", "targetDate": "2026-03-10", "startTime": "14:20", "endTime": "18:30", "estimatedHours": "4.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "에셋빌드 + 인수인계", "targetDate": "2026-03-10", "startTime": "10:10", "endTime": "11:00", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-03-10", "startTime": "11:40", "endTime": "14:20", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "맵 이미지 준비 후 공유", "targetDate": "2026-03-10", "startTime": "11:00", "endTime": "11:40", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "프렌즈 확률표 작성", "targetDate": "2026-03-11", "startTime": "18:30", "endTime": "19:00", "estimatedHours": "0.5", "done": true, "note": "내일 1건 문의 필요", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "기획 주간 회의", "targetDate": "2026-03-10", "startTime": "15:00", "endTime": "15:20", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-11", "dayName": "수", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "신규 맵 밸런싱", "targetDate": "2026-03-11", "startTime": "11:00", "endTime": "17:30", "estimatedHours": "5.0", "done": true, "note": "진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "내부 테스트", "targetDate": "2026-03-11", "startTime": "17:30", "endTime": "18:30", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "에셋 테이블 확인", "targetDate": "2026-03-11", "startTime": "10:00", "endTime": "11:00", "estimatedHours": "0.8", "done": true, "note": "시현님 공유 완료", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "캐릭터 테이블 공유", "targetDate": "2026-03-11", "startTime": "14:50", "endTime": "15:10", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "테스트맵 추가 요청 대응", "targetDate": "2026-03-11", "startTime": "18:30", "endTime": "19:00", "estimatedHours": "0.5", "done": true, "note": "커밋까지 완료", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "프렌즈 확률표 수정", "targetDate": "2026-03-12", "startTime": "", "endTime": "", "estimatedHours": "0.8", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "유니티 프로젝트 세팅", "targetDate": "2026-03-11", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-12", "dayName": "목", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "신규 맵 밸런싱", "targetDate": "2026-03-12", "startTime": "16:00", "endTime": "", "estimatedHours": "4.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "QA 2차 대응", "targetDate": "2026-03-12", "startTime": "10:00", "endTime": "", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "테스트맵 이슈 대응", "targetDate": "2026-03-12", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정(신규 포함)", "targetDate": "2026-03-12", "startTime": "12:20", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "vba 수정 완", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "프렌즈 확률표 공유", "targetDate": "2026-03-12", "startTime": "15:00", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 게임 트래킹 작성", "targetDate": "2026-03-12", "startTime": "10:40", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-13", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] }
+        }
+      ]
+    },
+    {
+      "archivedAt": "2026. 3. 6. 오후 7:00:00",
+      "weekStart": "2026-03-02",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        {
+          "date": "2026-03-02", "dayName": "월", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] }
+        },
+        {
+          "date": "2026-03-03", "dayName": "화", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] }
+        },
+        {
+          "date": "2026-03-04", "dayName": "수", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "맵 밸런싱 20개", "targetDate": "2026-03-04", "startTime": "18:00", "endTime": "19:00", "estimatedHours": "4.0", "done": true, "note": "진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "테이블 작성 후 커밋", "targetDate": "2026-03-04", "startTime": "15:40", "endTime": "18:00", "estimatedHours": "1.0", "done": true, "note": "공용구역 텍스트 대기중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "팝콘 주간 회의", "targetDate": "2026-03-04", "startTime": "15:30", "endTime": "15:40", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 회의 내용 채우기", "targetDate": "2026-03-04", "startTime": "15:00", "endTime": "15:30", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-05", "dayName": "목", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "타운 맵 밸런싱 15개", "targetDate": "2026-03-05", "startTime": "17:30", "endTime": "", "estimatedHours": "2.5", "done": true, "note": "진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "에셋 내부 테스트", "targetDate": "2026-03-05", "startTime": "15:30", "endTime": "", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "빌드 내부 테스트", "targetDate": "2026-03-05", "startTime": "14:00", "endTime": "", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "테이블 대응", "targetDate": "2026-03-05", "startTime": "10:25", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정(신규 포함)", "targetDate": "2026-03-05", "startTime": "11:20", "endTime": "", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 게임 트래킹", "targetDate": "2026-03-05", "startTime": "10:40", "endTime": "", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "라이브 커피타임", "targetDate": "2026-03-05", "startTime": "10:00", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-03-06", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "타운 밸런싱", "targetDate": "2026-03-06", "startTime": "11:10", "endTime": "12:30", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "신규 기믹 사운드 서치", "targetDate": "2026-03-06", "startTime": "10:20", "endTime": "10:50", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정(신규 포함)", "targetDate": "2026-03-06", "startTime": "", "endTime": "", "estimatedHours": "1.0", "done": false, "note": "bis 접속 불가", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "플라즈마 맵툴 공유", "targetDate": "2026-03-06", "startTime": "10:50", "endTime": "11:10", "estimatedHours": "0.5", "done": true, "note": "신규 맵 일정도 계산", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "커피타임", "targetDate": "2026-03-06", "startTime": "10:00", "endTime": "10:20", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        }
+      ]
+    },
+    {
+      "archivedAt": "2026. 2. 27. 오후 7:00:00",
+      "weekStart": "2026-02-23",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        {
+          "date": "2026-02-23", "dayName": "월", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "개발 테이블 작성", "targetDate": "2026-02-23", "startTime": "17:40", "endTime": "19:00", "estimatedHours": "2.5", "done": true, "note": "진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "팝콘 맵 세팅 마무리", "targetDate": "2026-02-23", "startTime": "14:40", "endTime": "16:50", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "맵 밸런싱 세팅", "targetDate": "2026-02-23", "startTime": "16:50", "endTime": "17:40", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-02-23", "startTime": "12:00", "endTime": "14:40", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주말 특이 동향 체크", "targetDate": "2026-02-23", "startTime": "10:50", "endTime": "12:00", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "팝콘 주간 회의", "targetDate": "2026-02-23", "startTime": "15:00", "endTime": "15:35", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "사업 미팅 회의록 작성", "targetDate": "2026-02-23", "startTime": "10:30", "endTime": "10:50", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-24", "dayName": "화", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "타운", "name": "(타운) 맵 밸런싱 시작", "targetDate": "2026-02-24", "startTime": "16:00", "endTime": "19:00", "estimatedHours": "5.0", "done": true, "note": "밸런싱 감 잡는중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정 VBA 수정", "targetDate": "2026-02-24", "startTime": "11:30", "endTime": "16:00", "estimatedHours": "2.0", "done": true, "note": "소모 시간 30분으로 단축 목표!", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "개발 리뷰", "targetDate": "2026-02-24", "startTime": "17:45", "endTime": "18:35", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "게임 조사 포맷 제작", "targetDate": "2026-02-24", "startTime": "", "endTime": "", "estimatedHours": "1.5", "done": false, "note": "내일 1차 창기님 공유 필요", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "기획서 수정 후 커밋", "targetDate": "2026-02-24", "startTime": "10:10", "endTime": "10:40", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "데이터 테이블 대응", "targetDate": "2026-02-24", "startTime": "10:40", "endTime": "11:30", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-25", "dayName": "수", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "트렌드 조사 포맷 1차 공유", "targetDate": "2026-02-25", "startTime": "10:00", "endTime": "12:30", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "맵 밸런싱 25개", "targetDate": "2026-02-25", "startTime": "14:30", "endTime": "19:00", "estimatedHours": "4.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "팝콘 콜라보 회의", "targetDate": "2026-02-25", "startTime": "18:00", "endTime": "18:50", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "테이블 작업", "targetDate": "2026-02-25", "startTime": "10:50", "endTime": "12:10", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "맵 이슈 에셋 대응", "targetDate": "2026-02-25", "startTime": "16:40", "endTime": "17:30", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "테이블 자동화 체크", "targetDate": "2026-02-26", "startTime": "15:20", "endTime": "15:40", "estimatedHours": "0.8", "done": true, "note": "작업용만 따로 추가", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "본부장님께 계정 요청", "targetDate": "2026-02-25", "startTime": "14:00", "endTime": "14:30", "estimatedHours": "0.3", "done": true, "note": "센서타워 로그인 O", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-26", "dayName": "목", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "콜라보 스터디", "targetDate": "2026-02-26", "startTime": "", "endTime": "", "estimatedHours": "5.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "트렌드 조사 1차 내용 피드백", "targetDate": "2026-02-26", "startTime": "11:10", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "매주 목요일 공유", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "타운 맵 밸런싱 25개", "targetDate": "2026-02-26", "startTime": "", "endTime": "", "estimatedHours": "4.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정(신규 포함)", "targetDate": "2026-02-26", "startTime": "10:00", "endTime": "", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "콜라보 레퍼런스 서치", "targetDate": "2026-02-26", "startTime": "18:00", "endTime": "", "estimatedHours": "0.8", "done": true, "note": "리스트 약 9개", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-27", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] }
+        }
+      ]
+    },
+    {
+      "archivedAt": "2026. 2. 20. 오후 7:00:00",
+      "weekStart": "2026-02-16",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        { "date": "2026-02-16", "dayName": "월", "schedule": "", "memo": "", "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] } },
+        { "date": "2026-02-17", "dayName": "화", "schedule": "", "memo": "", "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] } },
+        { "date": "2026-02-18", "dayName": "수", "schedule": "", "memo": "", "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] } },
+        { "date": "2026-02-19", "dayName": "목", "schedule": "", "memo": "", "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] } },
+        {
+          "date": "2026-02-20", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "팝콘", "name": "신규 맵 선정", "targetDate": "2026-02-20", "startTime": "12:00", "endTime": "17:30", "estimatedHours": "2.0", "done": true, "note": "월요일에 마무리", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "SVN 업데이트 마무리", "targetDate": "-", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "신규 기믹 의견 정리 후 공유", "targetDate": "2026-02-20", "startTime": "10:00", "endTime": "10:20", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "사업 미팅", "targetDate": "2026-02-20", "startTime": "14:00", "endTime": "16:00", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-02-20", "startTime": "10:00", "endTime": "12:00", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "기타 일정 정리", "targetDate": "2026-02-20", "startTime": "16:00", "endTime": "16:50", "estimatedHours": "0.8", "done": true, "note": "26년 8월까지 완료", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "사업 미팅 회의록", "targetDate": "2026-02-20", "startTime": "", "endTime": "", "estimatedHours": "0.5", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        }
+      ]
+    },
+    {
+      "archivedAt": "2026. 2. 13. 오후 7:00:00",
+      "weekStart": "2026-02-09",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        {
+          "date": "2026-02-09", "dayName": "월", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "난이도 자동화 VBA 마무리", "targetDate": "2026-02-09", "startTime": "", "endTime": "", "estimatedHours": "2.0", "done": false, "note": "예외처리 마무리", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "639~646 클&다맵", "targetDate": "2026-02-09", "startTime": "11:50", "endTime": "15:40", "estimatedHours": "3.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "에셋 대응", "targetDate": "2026-02-09", "startTime": "15:40", "endTime": "18:00", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "맵 이미지 준비", "targetDate": "2026-02-09", "startTime": "18:00", "endTime": "19:00", "estimatedHours": "1.5", "done": true, "note": "이슈 조합 포함", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "맵툴 개선안 상세 작성", "targetDate": "2026-02-10", "startTime": "", "endTime": "", "estimatedHours": "1.3", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-02-09", "startTime": "10:30", "endTime": "11:20", "estimatedHours": "1.0", "done": true, "note": "VBA 테스트", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "팝콘 주간 회의", "targetDate": "2026-02-09", "startTime": "15:00", "endTime": "15:10", "estimatedHours": "0.8", "done": true, "note": "업무 최신화 필요", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "문의사항 체크", "targetDate": "2026-02-09", "startTime": "11:20", "endTime": "11:50", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-10", "dayName": "화", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "난이도 자동화 VBA 마무리", "targetDate": "2026-02-10", "startTime": "15:50", "endTime": "19:00", "estimatedHours": "2.0", "done": true, "note": "예외처리 마무리", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "에셋 대응", "targetDate": "2026-02-10", "startTime": "10:00", "endTime": "11:40", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "창고 정리 → 신규 맵 선정", "targetDate": "2026-02-12", "startTime": "", "endTime": "", "estimatedHours": "2.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "맵툴 개선안 상세 작성", "targetDate": "2026-02-10", "startTime": "14:50", "endTime": "15:50", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-02-10", "startTime": "11:40", "endTime": "14:20", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "기획 주간 회의", "targetDate": "2026-02-10", "startTime": "17:00", "endTime": "17:20", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "커뮤니케이션 감소 방안 고민", "targetDate": "2026-02-10", "startTime": "14:20", "endTime": "14:50", "estimatedHours": "0.5", "done": true, "note": "시트 1차 제작 필요", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-11", "dayName": "수", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "설 이벤트 크로스체크", "targetDate": "2026-02-11", "startTime": "17:15", "endTime": "17:50", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "테이블 인수인계", "targetDate": "2026-02-11", "startTime": "16:00", "endTime": "17:00", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "기획서 내용 최신화", "targetDate": "2026-02-11", "startTime": "17:50", "endTime": "18:10", "estimatedHours": "0.5", "done": true, "note": "혜린님 피드백까지 O", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "창고 정리", "targetDate": "2026-02-11", "startTime": "18:10", "endTime": "19:05", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "팝콘 콜라보 지표 발표", "targetDate": "2026-02-11", "startTime": "15:00", "endTime": "16:00", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "창기님 요청 내용 공유", "targetDate": "2026-02-11", "startTime": "17:00", "endTime": "17:15", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "설 노트북 대여 신청", "targetDate": "2026-02-11", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-12", "dayName": "목", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "난이도 자동화 VBA 수정", "targetDate": "2026-02-12", "startTime": "", "endTime": "", "estimatedHours": "3.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "신규 맵 선정", "targetDate": "2026-02-12", "startTime": "", "endTime": "", "estimatedHours": "2.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "맵 인수인계", "targetDate": "2026-02-12", "startTime": "10:35", "endTime": "", "estimatedHours": "1.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "타운", "name": "인수인계 내용 정리", "targetDate": "2026-02-12", "startTime": "15:10", "endTime": "", "estimatedHours": "2.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "맵툴 업데이트 체크", "targetDate": "2026-02-12", "startTime": "14:40", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "ZIP 파일 시간 체크", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "누락된 파일 업데이트", "targetDate": "2026-02-12", "startTime": "18:30", "endTime": "", "estimatedHours": "0.5", "done": true, "note": "일부 백업 미진행 폴더", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 정리", "targetDate": "2026-02-12", "startTime": "10:00", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "맵툴 개선 개발 대응", "targetDate": "2026-02-12", "startTime": "12:20", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "리소스 감축 방안", "targetDate": "2026-02-12", "startTime": "17:00", "endTime": "", "estimatedHours": "1.0", "done": true, "note": "각 내용별로 상세 활용한 정리 필요", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-13", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] }
+        }
+      ]
+    },
+    {
+      "archivedAt": "2026. 2. 6. 오후 7:00:00",
+      "weekStart": "2026-02-02",
+      "goals": { "week": "", "month": "" },
+      "days": [
+        {
+          "date": "2026-02-02", "dayName": "월", "schedule": "연차", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [] }
+        },
+        {
+          "date": "2026-02-03", "dayName": "화", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "난이도 자동화 VBA 확정", "targetDate": "2026-02-08", "startTime": "14:00", "endTime": "15:00", "estimatedHours": "3.0", "done": true, "note": "파일 최적화중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "644 → 645", "targetDate": "2026-02-04", "startTime": "15:00", "endTime": "18:00", "estimatedHours": "1.5", "done": true, "note": "진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "QA 3차 대응", "targetDate": "2026-02-08", "startTime": "18:30", "endTime": "19:00", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "2월 프렌즈 확률표", "targetDate": "2026-02-05", "startTime": "", "endTime": "", "estimatedHours": "1.0", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "은영님 미니 리뷰", "targetDate": "2026-02-08", "startTime": "18:00", "endTime": "18:30", "estimatedHours": "0.5", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-02-08", "startTime": "10:00", "endTime": "12:30", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 회의 (기획)", "targetDate": "2026-02-08", "startTime": "11:00", "endTime": "11:40", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "주간 회의 (팝콘)", "targetDate": "2026-02-08", "startTime": "17:00", "endTime": "17:30", "estimatedHours": "0.8", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-04", "dayName": "수", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "난이도 자동화 VBA 확정", "targetDate": "2026-02-08", "startTime": "10:00", "endTime": "16:00", "estimatedHours": "3.0", "done": true, "note": "vba 마무리중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "644 → 645", "targetDate": "2026-02-04", "startTime": "16:30", "endTime": "19:00", "estimatedHours": "1.5", "done": true, "note": "645 진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "2월 프렌즈 확률표", "targetDate": "2026-02-05", "startTime": "16:00", "endTime": "16:30", "estimatedHours": "1.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "유니티 파일 받기", "targetDate": "2026-02-08", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "SVN 받는 중", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-05", "dayName": "목", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "난이도 자동화 VBA 확정", "targetDate": "2026-02-08", "startTime": "15:00", "endTime": "", "estimatedHours": "3.0", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "645 → 646", "targetDate": "2026-02-04", "startTime": "11:30", "endTime": "", "estimatedHours": "1.5", "done": true, "note": "646 진행중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "유니티 파일 받기", "targetDate": "2026-02-08", "startTime": "", "endTime": "", "estimatedHours": "-", "done": true, "note": "유니티 세팅 완료", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "맵툴 개선안 리스트업", "targetDate": "2026-02-06", "startTime": "", "endTime": "", "estimatedHours": "0.5", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정(신규 포함)", "targetDate": "2026-02-08", "startTime": "10:10", "endTime": "", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "2월 프렌즈 확률표 공유", "targetDate": "2026-02-08", "startTime": "10:00", "endTime": "", "estimatedHours": "0.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        },
+        {
+          "date": "2026-02-06", "dayName": "금", "schedule": "", "memo": "",
+          "quadrants": { "q1": [], "q2": [], "q3": [], "q4": [
+            { "project": "기타", "name": "난이도 자동화 VBA 확정", "targetDate": "2026-02-08", "startTime": "14:00", "endTime": "17:30", "estimatedHours": "3.0", "done": true, "note": "일부 예외처리 중", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "639~646 클&다맵", "targetDate": "2026-02-04", "startTime": "", "endTime": "", "estimatedHours": "2.5", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "기획서 최신화", "targetDate": "2026-02-08", "startTime": "", "endTime": "", "estimatedHours": "0.8", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "기타", "name": "맵툴 개선안 리스트업", "targetDate": "2026-02-06", "startTime": "11:40", "endTime": "12:30", "estimatedHours": "0.8", "done": true, "note": "창기님 공유 O", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-02-06", "startTime": "", "endTime": "", "estimatedHours": "1.2", "done": false, "note": "", "breakMinutes": 0, "breakMode": "exclude" },
+            { "project": "팝콘", "name": "난이도 조정", "targetDate": "2026-02-08", "startTime": "10:00", "endTime": "11:40", "estimatedHours": "1.3", "done": true, "note": "", "breakMinutes": 0, "breakMode": "exclude" }
+          ] }
+        }
+      ]
+    }
+  ]
+}
