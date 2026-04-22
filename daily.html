@@ -2878,6 +2878,7 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
           task.quadrant = newQ;
           day.quadrants[newQ] = day.quadrants[newQ] || [];
           day.quadrants[newQ].push(task);
+          setLastQuadrant(newQ);
           saveState();
         }
       }
@@ -3332,27 +3333,40 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
     if (typeof renderWeekGrid === 'function') renderWeekGrid();
   };
 
+  const LAST_QUADRANT_KEY = 'worklog.lastQuadrant';
+  function getLastQuadrant() {
+    try {
+      const v = localStorage.getItem(LAST_QUADRANT_KEY);
+      return ['q1','q2','q3','q4'].includes(v) ? v : 'q4';
+    } catch (e) { return 'q4'; }
+  }
+  function setLastQuadrant(q) {
+    if (!['q1','q2','q3','q4'].includes(q)) return;
+    try { localStorage.setItem(LAST_QUADRANT_KEY, q); } catch (e) {}
+  }
+  window.__setLastQuadrant = setLastQuadrant;
+
   window.addDailyTask = function(dayIdx, focusField) {
-    // 기본 q4(중요X·긴급X)에 추가. 분면 변경은 Phase 2 드래그 기능에서 처리 예정.
     const day = state.days[dayIdx];
     if (!day || !day.quadrants) return;
-    day.quadrants.q4.push({
+    const qKey = getLastQuadrant();
+    day.quadrants[qKey] = day.quadrants[qKey] || [];
+    day.quadrants[qKey].push({
       id: uid(),
       project: (state.projectLabels && state.projectLabels[0]) || '',
       name: '', targetDate: day.date,
       startTime: '', endTime: '', breakMinutes: 0, breakMode: 'exclude',
-      estimatedHours: '', done: false, note: '',
-      quadrant: 'q4', carriedOver: false, originalDate: '',
+      estimatedHours: '', progressHours: '', done: false, note: '',
+      quadrant: qKey, carriedOver: false, originalDate: '',
       userStatus: '', adjustHours: 0
     });
-    const newTi = day.quadrants.q4.length - 1;
+    const newTi = day.quadrants[qKey].length - 1;
     saveState();
     renderDaily();
     if (typeof renderWeekGrid === 'function') renderWeekGrid();
-    // 새 행 자동 편집 모드 진입
     const field = focusField || 'name';
     requestAnimationFrame(function() {
-      startDailyEditInternal(dayIdx, 'q4', newTi, field);
+      startDailyEditInternal(dayIdx, qKey, newTi, field);
     });
   };
 
@@ -3633,7 +3647,7 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
         <div class="col col-target"><input type="text" class="date-md date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(t.targetDate || dayDate))}" onchange="onTargetDateChange(${dayIdx}, '${qKey}', ${ti}, this.value)"></div>
         <div class="col col-start bulk-selectable" data-bulk-group="weekly-start" data-bulk-kind="task-start" data-bulk-key="${dayIdx}|${qKey}|${ti}">${timeInputHtml(dayIdx, qKey, ti, 'startTime', t.startTime)}</div>
         <div class="col col-end bulk-selectable" data-bulk-group="weekly-end" data-bulk-kind="task-end" data-bulk-key="${dayIdx}|${qKey}|${ti}">${timeInputHtml(dayIdx, qKey, ti, 'endTime', t.endTime)}</div>
-        <div class="col col-progress">${progress > 0 ? progress.toFixed(1) : '<span class="progress-empty">-</span>'}</div>
+        <div class="col col-progress"><input type="text" inputmode="decimal" placeholder="0" value="${escapeHtml(t.progressHours || '')}" onchange="onProgressChange(${dayIdx}, '${qKey}', ${ti}, this.value)"></div>
         <div class="col col-est"><input type="text" inputmode="decimal" placeholder="0" value="${escapeHtml(t.estimatedHours)}" onchange="onEstimatedChange(${dayIdx}, '${qKey}', ${ti}, this.value)"></div>
         <div class="col col-done"><input type="checkbox" ${t.done ? 'checked' : ''} onchange="updateTask(${dayIdx}, '${qKey}', ${ti}, 'done', this.checked)"></div>
         <div class="col col-note"><input type="text" value="${escapeHtml(t.note)}" onchange="updateTask(${dayIdx}, '${qKey}', ${ti}, 'note', this.value)"></div>
@@ -3956,10 +3970,11 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
     day.quadrants[qKey].push({
       id: uid(), project: (state.projectLabels && state.projectLabels[0]) || '메인', name: '', targetDate: day.date,
       startTime: '', endTime: '', breakMinutes: 0, breakMode: 'exclude',
-      estimatedHours: '', done: false, note: '',
+      estimatedHours: '', progressHours: '', done: false, note: '',
       quadrant: qKey, carriedOver: false, originalDate: '',
       userStatus: '', adjustHours: 0
     });
+    setLastQuadrant(qKey);
     saveState();
     renderWeekGrid();
   };
@@ -4008,6 +4023,14 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
     const task = _getTask(dayIdx, qKey, ti);
     if (!task) return;
     task.estimatedHours = parseEstimated(text);
+    saveState();
+    renderWeekGrid();
+  };
+
+  window.onProgressChange = function(dayIdx, qKey, ti, text) {
+    const task = _getTask(dayIdx, qKey, ti);
+    if (!task) return;
+    task.progressHours = parseEstimated(text);
     saveState();
     renderWeekGrid();
   };

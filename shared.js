@@ -208,13 +208,10 @@ function calcHours(start, end) {
 }
 
 function calcTaskHours(t) {
-  const base = calcHours(t.startTime, t.endTime);
-  const breakMin = parseInt(t.breakMinutes, 10) || 0;
-  let v;
-  if (breakMin <= 0 || t.breakMode === 'include') v = base;
-  else v = Math.max(0, base - breakMin / 60);
-  const adj = Number(t.adjustHours) || 0;
-  return Math.max(0, v + adj);
+  if (!t) return 0;
+  const manual = parseFloat(t.progressHours);
+  if (!isNaN(manual)) return Math.max(0, manual);
+  return 0;
 }
 
 // adjustHours 없는 자동 계산값 (팝오버 내부 base 표시용)
@@ -354,6 +351,7 @@ function migrateState(s) {
         t.breakMinutes = Number(t.breakMinutes) || 0;
         t.breakMode = t.breakMode === 'include' ? 'include' : 'exclude';
         t.estimatedHours = t.estimatedHours == null ? '' : String(t.estimatedHours);
+        t.progressHours = t.progressHours == null ? '' : String(t.progressHours);
         t.done = !!t.done;
         t.note = t.note || '';
         t.quadrant = (t.quadrant === 'q1' || t.quadrant === 'q2' || t.quadrant === 'q3' || t.quadrant === 'q4') ? t.quadrant : k;
