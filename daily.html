@@ -1415,12 +1415,31 @@
   .daily-progress > span.p-high { background: var(--prog-high); }
 
   /* 오늘 카드 테이블 */
-  .daily-table-wrap { max-height: 520px; overflow-y: auto; }
+  :root {
+    --dcol-project-w: 60px; --dcol-quad-w: 44px; --dcol-name-w: 220px;
+    --dcol-target-w: 72px; --dcol-start-w: 64px; --dcol-end-w: 64px;
+    --dcol-progress-w: 90px; --dcol-est-w: 56px; --dcol-status-w: 64px;
+    --dcol-done-w: 40px; --dcol-note-w: 140px; --dcol-delete-w: 28px;
+  }
+  .daily-table-wrap { max-height: 520px; overflow-y: auto; overflow-x: auto; }
   .daily-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
+    table-layout: fixed;
   }
+  .daily-table col.dcol-project { width: var(--dcol-project-w); }
+  .daily-table col.dcol-quad    { width: var(--dcol-quad-w); }
+  .daily-table col.dcol-name    { width: var(--dcol-name-w); }
+  .daily-table col.dcol-target  { width: var(--dcol-target-w); }
+  .daily-table col.dcol-start   { width: var(--dcol-start-w); }
+  .daily-table col.dcol-end     { width: var(--dcol-end-w); }
+  .daily-table col.dcol-progress{ width: var(--dcol-progress-w); }
+  .daily-table col.dcol-est     { width: var(--dcol-est-w); }
+  .daily-table col.dcol-status  { width: var(--dcol-status-w); }
+  .daily-table col.dcol-done    { width: var(--dcol-done-w); }
+  .daily-table col.dcol-note    { width: var(--dcol-note-w); }
+  .daily-table col.dcol-delete  { width: var(--dcol-delete-w); }
   .daily-table th {
     position: sticky;
     top: 0;
@@ -1434,6 +1453,28 @@
     white-space: nowrap;
     z-index: 1;
   }
+  .daily-col-resize {
+    position: absolute;
+    right: -3px;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 2;
+  }
+  .daily-col-resize.daily-col-resize-left { right: auto; left: -3px; }
+  .daily-col-resize::after {
+    content: '';
+    position: absolute;
+    right: 2px;
+    top: 25%;
+    width: 2px;
+    height: 50%;
+    background: transparent;
+    transition: background 0.15s;
+  }
+  .daily-col-resize:hover::after,
+  .daily-col-resize.dragging::after { background: var(--q2); }
   .daily-table td {
     padding: 8px 10px;
     border-bottom: 1px solid var(--border);
@@ -1840,13 +1881,13 @@
       <h1 class="app-title">업무일지 <span class="app-title-sub" id="appTitleSub"></span></h1>
       <span style="flex:1"></span>
       <div class="header-actions">
+        <button type="button" class="header-toggle-btn" id="headerToggleBtn" aria-expanded="true" title="헤더 접기" onclick="toggleHeader()"></button>
         <span id="cloudStatus" class="cloud-status" data-tone="" title="클라우드 동기화 상태">⌂</span>
         <button class="btn sm" onclick="exportJson()" title="JSON 백업"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg> 백업</button>
         <button class="btn sm" onclick="document.getElementById('importInput').click()" title="JSON 복원"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> 복원</button>
         <input type="file" id="importInput" accept="application/json,.json" style="display:none" onchange="importJson(event, render)">
         <button id="deviceToggle" class="theme-toggle" onclick="toggleDevice()" title="모바일 모드로">📱</button>
         <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="테마"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
-        <button type="button" class="header-toggle-btn" id="headerToggleBtn" aria-expanded="true" title="헤더 접기" onclick="toggleHeader()"></button>
       </div>
     </header>
 
@@ -1947,6 +1988,9 @@ const SIDEBAR_WIDTH_KEY = 'worklog-sidebar-width';
 const CUSTOM_DEFAULTS_KEY = 'worklog-col-custom-defaults';
 const COL_MIN = { project: 40, name: 90, target: 58, start: 70, end: 70, progress: 40, est: 44, done: 28, note: 70, delete: 20 };
 const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, progress: 56, est: 64, done: 40, note: 160, delete: 24 };
+const DCOL_WIDTHS_KEY = 'worklog-dailycol-widths';
+const DCOL_MIN     = { project: 40, quad: 36, name: 110, target: 58, start: 50, end: 50, progress: 60, est: 44, status: 54, done: 28, note: 70, delete: 20 };
+const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, end: 64, progress: 90, est: 56, status: 64, done: 40, note: 140, delete: 28 };
 
   // ---------- 드래그 범위 선택 (마감일·시작/종료 시간 일괄 미설정) ----------
   const bulkSel = {
@@ -2619,7 +2663,7 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
     else if (dailyPrev >= 0 && dailyIdx < dailyPrev) cardCls += ' anim-l';
 
     const rowsHtml = flat.length === 0
-      ? `<tr><td colspan="10" class="daily-empty">아직 기록된 업무가 없어요</td></tr>`
+      ? `<tr><td colspan="12" class="daily-empty">아직 기록된 업무가 없어요</td></tr>`
       : flat.map(x => dailyRowHtml(x.task, x.qKey, x.ti)).join('');
 
     const dateDisplay = formatDateDisplay(d.date);
@@ -2639,18 +2683,34 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
         </div>
         <div class="daily-table-wrap">
           <table class="daily-table">
+            <colgroup>
+              <col class="dcol-project">
+              <col class="dcol-quad">
+              <col class="dcol-name">
+              <col class="dcol-target">
+              <col class="dcol-start">
+              <col class="dcol-end">
+              <col class="dcol-progress">
+              <col class="dcol-est">
+              <col class="dcol-status">
+              <col class="dcol-done">
+              <col class="dcol-note">
+              <col class="dcol-delete">
+            </colgroup>
             <thead>
               <tr>
-                <th style="width:60px">구분</th>
-                <th style="width:44px">분면</th>
-                <th>업무명</th>
-                <th style="width:64px">시작</th>
-                <th style="width:64px">종료</th>
-                <th style="width:110px; text-align:right">진행</th>
-                <th style="width:56px; text-align:right">예상</th>
-                <th style="width:64px">상태</th>
-                <th style="width:40px">완료</th>
-                <th style="width:28px" aria-label="삭제"></th>
+                <th>구분<div class="daily-col-resize" data-dcol="project"></div></th>
+                <th>분면<div class="daily-col-resize" data-dcol="quad"></div></th>
+                <th>업무명<div class="daily-col-resize" data-dcol="name"></div></th>
+                <th>목표<div class="daily-col-resize" data-dcol="target"></div></th>
+                <th>시작<div class="daily-col-resize" data-dcol="start"></div></th>
+                <th>종료<div class="daily-col-resize" data-dcol="end"></div></th>
+                <th style="text-align:right">진행<div class="daily-col-resize" data-dcol="progress"></div></th>
+                <th style="text-align:right">예상<div class="daily-col-resize" data-dcol="est"></div></th>
+                <th>상태<div class="daily-col-resize" data-dcol="status"></div></th>
+                <th>완료<div class="daily-col-resize" data-dcol="done"></div></th>
+                <th>메모<div class="daily-col-resize" data-dcol="note"></div></th>
+                <th aria-label="삭제"><div class="daily-col-resize daily-col-resize-left" data-dcol="delete"></div></th>
               </tr>
             </thead>
             <tbody>${rowsHtml}</tbody>
@@ -2690,17 +2750,23 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
       : '클릭하면 30분 단위 ± 또는 직접 입력';
     const nameHtml = t.name ? escapeHtml(t.name) : '<span class="daily-placeholder">업무 이름</span>';
     const estHtml = (t.estimatedHours === '' || t.estimatedHours === DASH) ? '<span class="daily-placeholder">-</span>' : parseFloat(t.estimatedHours).toFixed(1);
+    const targetRaw = t.targetDate || '';
+    const targetDisplay = targetRaw ? formatDateDisplay(targetRaw) : '';
+    const targetHtml = targetDisplay ? escapeHtml(targetDisplay) : '<span class="daily-placeholder">' + DASH + '</span>';
+    const noteHtml = t.note ? escapeHtml(t.note) : '<span class="daily-placeholder">-</span>';
     return `
       <tr>
         <td class="daily-editable daily-proj-cell" onclick="openDailyProjectPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="프로젝트 선택 / 추가 / 삭제">${t.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(t.project)}</span>` : '<span class="daily-placeholder">-</span>'}</td>
         <td class="daily-editable daily-quad-cell" onclick="openDailyQuadrantPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="분면 선택"><span class="daily-quad" data-q="${qKey}">${qKey.toUpperCase()}</span></td>
         <td class="daily-editable" data-field="name" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'name')">${nameHtml}</td>
+        <td class="daily-editable daily-target-cell" data-field="targetDate" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'targetDate')" title="목표 날짜 (4/13)">${targetHtml}</td>
         <td class="daily-time daily-editable" data-field="startTime" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'startTime')">${t.startTime ? escapeHtml(t.startTime) : '<span class="daily-placeholder">' + DASH + '</span>'}</td>
         <td class="daily-time daily-editable" data-field="endTime" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'endTime')">${t.endTime ? escapeHtml(t.endTime) : '<span class="daily-placeholder">' + DASH + '</span>'}</td>
         <td class="daily-num daily-prog-cell" onclick="openDailyProgPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="${escapeHtml(progTitle)}"><span class="${progValCls}">${progTxt}</span></td>
         <td class="daily-num daily-editable" data-field="estimatedHours" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'estimatedHours')">${estHtml}</td>
         <td><span class="daily-status ${st}" onclick="openDailyStatusPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="클릭하여 상태 선택">${stLabel}</span></td>
         <td><span class="daily-check ${t.done ? 'on' : ''}" onclick="toggleDailyDone(${dailyIdx}, '${qKey}', ${ti})"></span></td>
+        <td class="daily-editable daily-note-cell" data-field="note" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'note')" title="${escapeHtml(t.note || '')}">${noteHtml}</td>
         <td><button class="daily-del" onclick="askDeleteDailyTask(${dailyIdx}, '${qKey}', ${ti})" title="삭제" aria-label="업무 삭제">×</button></td>
       </tr>
     `;
@@ -3139,7 +3205,7 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
     showModal('업무 삭제', `"${name}" 업무를 삭제할까요?`, doDelete);
   };
   // ── 인라인 편집 엔진 ────────────────────────────────────────
-  const DAILY_EDIT_FIELDS = ['name', 'startTime', 'endTime', 'estimatedHours']; // project/quadrant는 팝오버로 별도 처리
+  const DAILY_EDIT_FIELDS = ['name', 'targetDate', 'startTime', 'endTime', 'estimatedHours', 'note']; // project/quadrant는 팝오버로 별도 처리
   const DAILY_QUAD_LABELS = { q1: 'Q1 중요·긴급', q2: 'Q2 중요·비긴급', q3: 'Q3 비중요·긴급', q4: 'Q4 비중요·비긴급' };
   let dailyEdit = null; // { dayIdx, qKey, ti, field, el, input, origVal, navigating }
 
@@ -3184,6 +3250,10 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
       origVal = (task.estimatedHours === '' || task.estimatedHours === DASH) ? '' : String(task.estimatedHours);
     } else if (field === 'startTime' || field === 'endTime') {
       origVal = (task[field] && task[field] !== DASH) ? task[field] : '';
+    } else if (field === 'targetDate') {
+      origVal = task.targetDate ? formatDateDisplay(task.targetDate) : '';
+    } else if (field === 'note') {
+      origVal = task.note || '';
     }
     cellEl.classList.add('is-editing');
     // 시작 셀이 빈 상태로 열리면 현재 시각을 초깃값으로 제안
@@ -3223,6 +3293,12 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
           const parsed = parseTimeInput(raw);
           // null = 잘못된 입력 → 원래 값 유지
           if (parsed !== null) task[info.field] = parsed;
+        } else if (info.field === 'targetDate') {
+          const day = state.days[info.dayIdx];
+          const y = day && day.date ? parseInt(day.date.split('-')[0], 10) : new Date().getFullYear();
+          task.targetDate = raw === '' ? '' : (parseDateInput(raw, y) || task.targetDate);
+        } else if (info.field === 'note') {
+          task.note = raw;
         }
         saveState();
       }
@@ -4192,6 +4268,9 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
   function applyColWidth(key, w) {
     document.documentElement.style.setProperty(`--col-${key}-w`, w + 'px');
   }
+  function applyDcolWidth(key, w) {
+    document.documentElement.style.setProperty(`--dcol-${key}-w`, w + 'px');
+  }
   function loadColWidths() {
     try {
       const raw = localStorage.getItem(COL_WIDTHS_KEY);
@@ -4210,6 +4289,17 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
       });
     } catch (e) {}
   }
+  function loadDcolWidths() {
+    try {
+      const raw = localStorage.getItem(DCOL_WIDTHS_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      Object.keys(DCOL_DEFAULT).forEach(k => {
+        const w = Number(saved[k]);
+        if (w && w >= (DCOL_MIN[k] || 20)) applyDcolWidth(k, w);
+      });
+    } catch (e) {}
+  }
   function saveColWidths() {
     try {
       const cs = getComputedStyle(document.documentElement);
@@ -4224,6 +4314,17 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
         out['side_' + k] = parseInt(raw, 10) || SIDE_DEFAULT[k];
       });
       localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(out));
+    } catch (e) {}
+  }
+  function saveDcolWidths() {
+    try {
+      const cs = getComputedStyle(document.documentElement);
+      const out = {};
+      Object.keys(DCOL_DEFAULT).forEach(k => {
+        const raw = cs.getPropertyValue(`--dcol-${k}-w`).trim();
+        out[k] = parseInt(raw, 10) || DCOL_DEFAULT[k];
+      });
+      localStorage.setItem(DCOL_WIDTHS_KEY, JSON.stringify(out));
     } catch (e) {}
   }
   function initSidebarResize() {
@@ -4422,25 +4523,34 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
   function initColResize() {
     let resizing = null;
     document.addEventListener('mousedown', function(e) {
-      const h = e.target.closest && e.target.closest('.col-resize, .side-col-resize');
+      const h = e.target.closest && e.target.closest('.col-resize, .side-col-resize, .daily-col-resize');
       if (!h) return;
-      let varName, minSize, startW;
+      let varName, minSize, startW, kind;
       const cs = getComputedStyle(document.documentElement);
-      const isLeft = h.classList.contains('side-col-resize-left');
-      if (h.classList.contains('col-resize')) {
+      const isLeft = h.classList.contains('side-col-resize-left') || h.classList.contains('daily-col-resize-left');
+      if (h.classList.contains('daily-col-resize')) {
+        const key = h.dataset.dcol;
+        if (!key || !DCOL_DEFAULT.hasOwnProperty(key)) return;
+        varName = `--dcol-${key}-w`;
+        minSize = DCOL_MIN[key] || 20;
+        startW = parseInt(cs.getPropertyValue(varName), 10) || DCOL_DEFAULT[key];
+        kind = 'dcol';
+      } else if (h.classList.contains('col-resize')) {
         const key = h.dataset.colkey;
         if (!key || !COL_DEFAULT.hasOwnProperty(key)) return;
         varName = `--col-${key}-w`;
         minSize = COL_MIN[key] || 24;
         startW = parseInt(cs.getPropertyValue(varName), 10) || COL_DEFAULT[key];
+        kind = 'col';
       } else {
         const key = h.dataset.sidecol;
         if (!key || !SIDE_VAR[key]) return;
         varName = SIDE_VAR[key];
         minSize = SIDE_MIN[key] || 20;
         startW = parseInt(cs.getPropertyValue(varName), 10) || SIDE_DEFAULT[key];
+        kind = 'side';
       }
-      resizing = { varName, minSize, startX: e.clientX, startW, handle: h, isLeft };
+      resizing = { varName, minSize, startX: e.clientX, startW, handle: h, isLeft, kind };
       h.classList.add('dragging');
       document.body.classList.add('resizing-col');
       e.preventDefault();
@@ -4456,12 +4566,20 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
       if (!resizing) return;
       resizing.handle.classList.remove('dragging');
       document.body.classList.remove('resizing-col');
-      saveColWidths();
+      if (resizing.kind === 'dcol') saveDcolWidths();
+      else saveColWidths();
       resizing = null;
     });
     document.addEventListener('dblclick', function(e) {
-      const h = e.target.closest && e.target.closest('.col-resize, .side-col-resize');
+      const h = e.target.closest && e.target.closest('.col-resize, .side-col-resize, .daily-col-resize');
       if (!h) return;
+      if (h.classList.contains('daily-col-resize')) {
+        const key = h.dataset.dcol;
+        if (!key || !DCOL_DEFAULT.hasOwnProperty(key)) return;
+        applyDcolWidth(key, DCOL_DEFAULT[key]);
+        saveDcolWidths();
+        return;
+      }
       if (h.classList.contains('col-resize')) {
         const key = h.dataset.colkey;
         if (!key || !COL_DEFAULT.hasOwnProperty(key)) return;
@@ -4500,9 +4618,15 @@ const COL_DEFAULT = { project: 62, name: 200, target: 72, start: 92, end: 92, pr
     initDevice();
     initModalBase();
     initHeaderCollapse();
+    loadColWidths();
+    loadDcolWidths();
+    loadSidebarWidth();
     subscribeStateChanges(render);
 
     render();
+    autoPinOnFirstLoad();
+    initColResize();
+    initSidebarResize();
 
     // 클라우드(Notion) 동기화: 원격이 있으면 로컬 덮어쓰고 재렌더. 없으면 현재 state 업로드.
     if (typeof initCloudSync === 'function') {
