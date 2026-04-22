@@ -36,7 +36,7 @@
 
   /* #daily 모드 레이아웃 — 2컬럼 (사이드바 + 본문), 중앙 정렬 */
   main#mode-daily.daily-layout {
-    flex: 1; overflow: auto;
+    flex: 1; overflow-x: hidden; overflow-y: auto;
     display: flex; flex-direction: row;
     gap: 16px; padding: 16px;
     box-sizing: border-box;
@@ -1344,7 +1344,6 @@
     overflow: hidden;
     transition: transform 0.2s ease, opacity 0.2s ease;
     width: fit-content;
-    min-width: 720px;
   }
   .daily-card.is-today {
     border-color: var(--today-border);
