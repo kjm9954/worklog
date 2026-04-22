@@ -599,10 +599,62 @@ function showModal(title, message, onConfirm) {
   bd.classList.remove('hidden');
 }
 
+let modalCloseCallback = null;
 function hideModal() {
   const bd = document.getElementById('modalBackdrop');
   if (bd) bd.classList.add('hidden');
   modalCallback = null;
+  const confirmBtn = document.getElementById('modalConfirmBtn');
+  const cancelBtn = document.getElementById('modalCancelBtn');
+  if (confirmBtn) confirmBtn.style.display = '';
+  if (cancelBtn) { cancelBtn.style.display = ''; cancelBtn.textContent = '취소'; }
+  const msgEl = document.getElementById('modalMessage');
+  if (msgEl) msgEl.innerHTML = '';
+  const cb = modalCloseCallback; modalCloseCallback = null;
+  if (typeof cb === 'function') cb();
+}
+
+function showChoiceModal(title, message, choices) {
+  return new Promise(function(resolve) {
+    const titleEl = document.getElementById('modalTitle');
+    const msgEl = document.getElementById('modalMessage');
+    const bd = document.getElementById('modalBackdrop');
+    const confirmBtn = document.getElementById('modalConfirmBtn');
+    const cancelBtn = document.getElementById('modalCancelBtn');
+    if (!titleEl || !msgEl || !bd || !confirmBtn || !cancelBtn) { resolve(null); return; }
+    titleEl.textContent = title;
+    msgEl.innerHTML = '';
+    if (message) {
+      const p = document.createElement('div');
+      p.textContent = message;
+      p.style.cssText = 'margin-bottom:10px; white-space:pre-line; color:var(--text-muted); font-size:0.85rem;';
+      msgEl.appendChild(p);
+    }
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex; flex-direction:column; gap:6px;';
+    let picked = false;
+    choices.forEach(function(c) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn';
+      b.textContent = c.label;
+      b.style.cssText = 'justify-content:center; padding:10px;';
+      b.addEventListener('click', function() {
+        picked = true;
+        modalCloseCallback = null;
+        hideModal();
+        resolve(c.value);
+      });
+      wrap.appendChild(b);
+    });
+    msgEl.appendChild(wrap);
+    modalCallback = null;
+    confirmBtn.style.display = 'none';
+    cancelBtn.style.display = '';
+    cancelBtn.textContent = '취소';
+    modalCloseCallback = function() { if (!picked) resolve(null); };
+    bd.classList.remove('hidden');
+  });
 }
 
 function confirmModal() {
@@ -612,22 +664,57 @@ function confirmModal() {
 }
 
 /* ── JSON 백업 / 복원 ── */
-function exportJson() {
-  try {
-    const dataStr = JSON.stringify(state, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const stamp = formatDate(new Date());
-    a.href = url;
-    a.download = `worklog-backup-${stamp}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    showModal('백업 실패', '백업 중 오류가 발생했습니다.\n' + (err.message || ''), null);
+function buildBackupPayload(scope) {
+  const payload = { version: state.version || 4.0, scope: scope };
+  if (scope === 'daily') {
+    payload.weekStart = state.weekStart;
+    payload.days = state.days;
+    payload.history = state.history;
+  } else if (scope === 'board') {
+    payload.goals = state.goals;
+    payload.projectLabels = state.projectLabels;
+    payload.importantTasks = state.importantTasks;
+    payload.routines = state.routines;
+  } else {
+    payload.scope = 'all';
+    return Object.assign({}, state, { scope: 'all' });
   }
+  return payload;
+}
+
+function downloadJsonFile(data, filenamePrefix) {
+  const dataStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = formatDate(new Date());
+  a.href = url;
+  a.download = `${filenamePrefix}-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportJson() {
+  showChoiceModal(
+    'JSON 백업 범위 선택',
+    '다운로드할 범위를 선택해주세요.',
+    [
+      { label: '📅 업무일지 (주간 날짜별 · 히스토리)', value: 'daily' },
+      { label: '📋 중요·상시 업무 (목표 · 프로젝트 라벨)', value: 'board' },
+      { label: '💾 전체 (모든 데이터)', value: 'all' }
+    ]
+  ).then(function(scope) {
+    if (!scope) return;
+    try {
+      const payload = buildBackupPayload(scope);
+      const prefix = scope === 'daily' ? 'worklog-daily' : scope === 'board' ? 'worklog-board' : 'worklog-all';
+      downloadJsonFile(payload, prefix);
+    } catch (err) {
+      showModal('백업 실패', '백업 중 오류가 발생했습니다.\n' + (err.message || ''), null);
+    }
+  });
 }
 
 // 복원 완료 후 재렌더가 필요하므로 page-side renderAll 콜백을 인자로 받음
@@ -638,78 +725,21 @@ function importJson(event, renderAll) {
   reader.onload = function(e) {
     try {
       const imported = JSON.parse(e.target.result);
-      showModal('JSON 복원',
-        `"${file.name}" 불러오기:\n\n· 현재 주(${state.weekStart} 시작) 범위에 포함되는 날짜는 덮어씁니다\n· 그 외 날짜는 히스토리에 보관됩니다 (추후 주간/월간 히스토리에서 사용)\n· 목표 / 중요·상시 업무 / 프로젝트 라벨은 업로드 값으로 덮어씁니다\n\n계속하시겠어요?`,
+      const sections = detectBackupSections(imported);
+      if (sections.length === 0) {
+        showModal('복원 실패', '이 파일에서 복원 가능한 데이터를 찾지 못했습니다.', null);
+        event.target.value = '';
+        return;
+      }
+      const sectionLabels = sections.map(s => '· ' + s.label).join('\n');
+      showModal('JSON 부분 복원',
+        `"${file.name}" 에서 감지된 데이터:\n\n${sectionLabels}\n\n위 항목만 덮어씁니다. 파일에 없는 항목은 그대로 유지돼요.\n계속할까요?`,
         () => {
-          const migrated = migrateState(JSON.parse(JSON.stringify(imported)));
-          const currentWeekStart = state.weekStart;
-          const currentDates = state.days.map(d => d.date);
-
-          state.goals = migrated.goals || state.goals;
-          state.projectLabels = Array.isArray(migrated.projectLabels) ? migrated.projectLabels : state.projectLabels;
-          state.importantTasks = Array.isArray(migrated.importantTasks) ? migrated.importantTasks : state.importantTasks;
-          state.routines = Array.isArray(migrated.routines) ? migrated.routines : state.routines;
-
-          const outsideDays = [];
-          (migrated.days || []).forEach(d => {
-            if (!d || !d.date) return;
-            const hitIdx = currentDates.indexOf(d.date);
-            if (hitIdx >= 0) {
-              const keepDayName = state.days[hitIdx].dayName;
-              state.days[hitIdx] = Object.assign({}, d, { dayName: keepDayName });
-            } else {
-              outsideDays.push(d);
-            }
-          });
-
-          if (outsideDays.length > 0) {
-            if (!Array.isArray(state.history)) state.history = [];
-            const byWeek = {};
-            outsideDays.forEach(d => {
-              const dt = new Date(d.date + 'T00:00:00');
-              if (isNaN(dt)) return;
-              const wkMonday = formatDate(getThisMonday(dt));
-              if (!byWeek[wkMonday]) byWeek[wkMonday] = [];
-              byWeek[wkMonday].push(d);
-            });
-            const archivedAt = new Date().toLocaleString('ko-KR') + ' (복원)';
-            Object.keys(byWeek).sort().forEach(ws => {
-              const existing = state.history.find(h => h && h.weekStart === ws);
-              if (existing) {
-                if (!Array.isArray(existing.days)) existing.days = [];
-                byWeek[ws].forEach(d => {
-                  const hit = existing.days.findIndex(e => e && e.date === d.date);
-                  if (hit >= 0) existing.days[hit] = d;
-                  else existing.days.push(d);
-                });
-                existing.days.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-              } else {
-                state.history.push({
-                  archivedAt,
-                  weekStart: ws,
-                  goals: migrated.goals || { week: '', month: '' },
-                  days: byWeek[ws].slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''))
-                });
-              }
-            });
-            state.history.sort((a, b) => (a.weekStart || '').localeCompare(b.weekStart || ''));
-          }
-
-          if (Array.isArray(migrated.history)) {
-            if (!Array.isArray(state.history)) state.history = [];
-            migrated.history.forEach(h => {
-              if (!h || !h.weekStart) return;
-              const hit = state.history.findIndex(e => e && e.weekStart === h.weekStart);
-              if (hit >= 0) state.history[hit] = h;
-              else state.history.push(h);
-            });
-            state.history.sort((a, b) => (a.weekStart || '').localeCompare(b.weekStart || ''));
-          }
-
-          state.weekStart = currentWeekStart;
+          applyImportedSections(imported, sections);
           saveState();
           if (typeof renderAll === 'function') renderAll();
-          showModal('복원 완료', `현재 주 데이터 반영 + ${outsideDays.length}개 외부 날짜를 히스토리에 보관했습니다.`, null);
+          const summary = sections.map(s => s.label).join(', ');
+          showModal('복원 완료', `복원된 항목: ${summary}`, null);
         });
     } catch (err) {
       showModal('복원 실패', '유효한 JSON 파일이 아닙니다.\n' + (err.message || ''), null);
@@ -717,6 +747,109 @@ function importJson(event, renderAll) {
     event.target.value = '';
   };
   reader.readAsText(file, 'utf-8');
+}
+
+function detectBackupSections(imported) {
+  if (!imported || typeof imported !== 'object') return [];
+  const out = [];
+  if (imported.goals && typeof imported.goals === 'object') out.push({ key: 'goals', label: '목표 (주간·월간)' });
+  if (Array.isArray(imported.projectLabels)) out.push({ key: 'projectLabels', label: '프로젝트 라벨' });
+  if (Array.isArray(imported.importantTasks)) out.push({ key: 'importantTasks', label: '중요 업무' });
+  if (Array.isArray(imported.routines)) out.push({ key: 'routines', label: '상시 업무' });
+  if (Array.isArray(imported.days) && imported.days.length > 0) out.push({ key: 'days', label: '업무일지 (주간 날짜별)' });
+  if (Array.isArray(imported.history) && imported.history.length > 0) out.push({ key: 'history', label: '히스토리' });
+  return out;
+}
+
+function applyImportedSections(imported, sections) {
+  const picked = Object.create(null);
+  sections.forEach(s => { picked[s.key] = true; });
+  const scopedRaw = {};
+  ['goals','projectLabels','importantTasks','routines','days','history','weekStart','version'].forEach(k => {
+    if (imported[k] !== undefined) scopedRaw[k] = JSON.parse(JSON.stringify(imported[k]));
+  });
+  const normalized = migrateBackupFragment(scopedRaw, picked);
+
+  if (picked.goals) state.goals = normalized.goals;
+  if (picked.projectLabels) state.projectLabels = normalized.projectLabels;
+  if (picked.importantTasks) state.importantTasks = normalized.importantTasks;
+  if (picked.routines) state.routines = normalized.routines;
+
+  if (picked.days) mergeImportedDays(normalized.days);
+  if (picked.history) mergeImportedHistory(normalized.history);
+}
+
+function migrateBackupFragment(raw, picked) {
+  const stub = createInitialState();
+  if (picked.goals) stub.goals = raw.goals || stub.goals;
+  if (picked.projectLabels) stub.projectLabels = raw.projectLabels || [];
+  if (picked.importantTasks) stub.importantTasks = raw.importantTasks || [];
+  if (picked.routines) stub.routines = raw.routines || [];
+  if (picked.days && raw.weekStart) stub.weekStart = raw.weekStart;
+  if (picked.days) stub.days = raw.days || [];
+  if (picked.history) stub.history = raw.history || [];
+  const migrated = migrateState(stub);
+  if (!picked.days) { migrated.days = state.days; migrated.weekStart = state.weekStart; }
+  return migrated;
+}
+
+function mergeImportedDays(importedDays) {
+  if (!Array.isArray(importedDays) || importedDays.length === 0) return;
+  const currentDates = state.days.map(d => d.date);
+  const outsideDays = [];
+  importedDays.forEach(d => {
+    if (!d || !d.date) return;
+    const hitIdx = currentDates.indexOf(d.date);
+    if (hitIdx >= 0) {
+      const keepDayName = state.days[hitIdx].dayName;
+      state.days[hitIdx] = Object.assign({}, d, { dayName: keepDayName });
+    } else {
+      outsideDays.push(d);
+    }
+  });
+  if (outsideDays.length === 0) return;
+  if (!Array.isArray(state.history)) state.history = [];
+  const byWeek = {};
+  outsideDays.forEach(d => {
+    const dt = new Date(d.date + 'T00:00:00');
+    if (isNaN(dt)) return;
+    const wkMonday = formatDate(getThisMonday(dt));
+    if (!byWeek[wkMonday]) byWeek[wkMonday] = [];
+    byWeek[wkMonday].push(d);
+  });
+  const archivedAt = new Date().toLocaleString('ko-KR') + ' (복원)';
+  Object.keys(byWeek).sort().forEach(ws => {
+    const existing = state.history.find(h => h && h.weekStart === ws);
+    if (existing) {
+      if (!Array.isArray(existing.days)) existing.days = [];
+      byWeek[ws].forEach(d => {
+        const hit = existing.days.findIndex(e => e && e.date === d.date);
+        if (hit >= 0) existing.days[hit] = d;
+        else existing.days.push(d);
+      });
+      existing.days.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    } else {
+      state.history.push({
+        archivedAt: archivedAt,
+        weekStart: ws,
+        goals: { week: '', month: '' },
+        days: byWeek[ws].slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+      });
+    }
+  });
+  state.history.sort((a, b) => (a.weekStart || '').localeCompare(b.weekStart || ''));
+}
+
+function mergeImportedHistory(importedHistory) {
+  if (!Array.isArray(importedHistory) || importedHistory.length === 0) return;
+  if (!Array.isArray(state.history)) state.history = [];
+  importedHistory.forEach(h => {
+    if (!h || !h.weekStart) return;
+    const hit = state.history.findIndex(e => e && e.weekStart === h.weekStart);
+    if (hit >= 0) state.history[hit] = h;
+    else state.history.push(h);
+  });
+  state.history.sort((a, b) => (a.weekStart || '').localeCompare(b.weekStart || ''));
 }
 
 /* ── 헤더 접기/펼치기 (위젯별 개별 기억) ── */
@@ -770,6 +903,7 @@ window.toggleDevice = toggleDevice;
 window.exportJson = exportJson;
 window.importJson = importJson;
 window.showModal = showModal;
+window.showChoiceModal = showChoiceModal;
 window.hideModal = hideModal;
 window.confirmModal = confirmModal;
 window.toggleHeader = toggleHeader;

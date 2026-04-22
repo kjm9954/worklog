@@ -213,22 +213,35 @@
   }
   .side-table.important-grid {
     display: grid;
-    grid-template-columns: 48px 52px minmax(var(--imp-name-w), 1fr) 62px 84px 60px var(--imp-del-w);
+    grid-template-columns: 22px 48px 52px minmax(var(--imp-name-w), 1fr) 62px 84px 60px var(--imp-del-w);
     gap: 1px;
     background: var(--border);
     padding: 0;
     width: 100%;
-    min-width: 490px;
+    min-width: 512px;
   }
   .side-table.routine-grid {
     display: grid;
-    grid-template-columns: 48px 52px 56px minmax(var(--rt-name-w), 1fr) 62px 84px 60px var(--rt-del-w);
+    grid-template-columns: 22px 48px 52px 56px minmax(var(--rt-name-w), 1fr) 62px 84px 60px var(--rt-del-w);
     gap: 1px;
     background: var(--border);
     padding: 0;
     width: 100%;
-    min-width: 546px;
+    min-width: 568px;
   }
+  .st-cell.st-drag {
+    padding: 0;
+    cursor: grab;
+    color: var(--text-subtle);
+    user-select: none;
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+  .st-cell.st-drag:hover { color: var(--text); background: var(--bg); }
+  .st-cell.st-drag:active { cursor: grabbing; }
+  .side-table .st-row-dragging { opacity: 0.35; }
+  .side-table .st-row-drop-before { box-shadow: inset 0 2px 0 var(--q2); }
+  .side-table .st-row-drop-after { box-shadow: inset 0 -2px 0 var(--q2); }
   .st-cell {
     background: var(--card);
     padding: 3px 5px;
@@ -1004,6 +1017,7 @@
     if (counter) counter.textContent = state.importantTasks.length;
 
     const cells = [];
+    cells.push('<div class="st-cell st-head"></div>');
     cells.push('<div class="st-cell st-head">프로</div>');
     cells.push('<div class="st-cell st-head">구분</div>');
     cells.push('<div class="st-cell st-head">업무명</div>');
@@ -1028,7 +1042,8 @@
         const statusKey = boardStatusKey(it.status);
         const statusLabel = boardStatusLabel(statusKey);
 
-        cells.push(`<div class="st-cell st-row-first ${doneCls}" ${catAttr}><button type="button" class="board-pop-anchor" onclick="openBoardProjectPopover('important', ${i}, this)" title="프로젝트 선택 / 추가 / 삭제">${it.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(it.project)}</span>` : '<span class="daily-placeholder">-</span>'}</button></div>`);
+        cells.push(`<div class="st-cell st-drag" draggable="true" data-row="${i}" data-kind="important" title="드래그로 행 순서 변경">≡</div>`);
+        cells.push(`<div class="st-cell st-row-first ${doneCls}" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardProjectPopover('important', ${i}, this)" title="프로젝트 선택 / 추가 / 삭제">${it.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(it.project)}</span>` : '<span class="daily-placeholder">-</span>'}</button></div>`);
 
         const catKey = it.project + '|' + it.category;
         const isCatStart = (i === 0) || (catKey !== items[i - 1].project + '|' + items[i - 1].category);
@@ -1041,17 +1056,18 @@
           const catSuggestions = getCategorySuggestions('important');
           const catSel = buildCatInput('cat-chip', it.category, catSuggestions, `updateImportant(${i}, 'category', this.value)`, '구분');
           const spanStyle = size > 1 ? ` style="grid-row: span ${size}"` : '';
-          cells.push(`<div class="st-cell" ${catAttr}${spanStyle}>${catSel}</div>`);
+          cells.push(`<div class="st-cell" ${catAttr}${spanStyle} data-row="${i}">${catSel}</div>`);
         }
 
-        cells.push(`<div class="st-cell ${doneCls}" ${catAttr}><input type="text" class="side-name" placeholder="업무명" title="${escapeHtml(it.name || '')}" value="${escapeHtml(it.name)}" onchange="updateImportant(${i}, 'name', this.value)"></div>`);
-        cells.push(`<div class="st-cell" ${catAttr}><button type="button" class="board-pop-anchor" onclick="openBoardStatusPopover('important', ${i}, this)" title="클릭하여 상태 선택"><span class="daily-status ${statusKey}">${statusLabel}</span></button></div>`);
-        cells.push(`<div class="st-cell" ${catAttr}><input type="text" class="side-date date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(it.targetDate))}" onchange="onSideDateChange('important', ${i}, this.value)"></div>`);
-        cells.push(`<div class="st-cell" ${catAttr}>${ddayText ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
-        cells.push(`<div class="st-cell" ${catAttr}><button class="side-del" title="삭제" onclick="askDeleteImportant(${i})">×</button></div>`);
+        cells.push(`<div class="st-cell ${doneCls}" ${catAttr} data-row="${i}"><input type="text" class="side-name" placeholder="업무명" title="${escapeHtml(it.name || '')}" value="${escapeHtml(it.name)}" onchange="updateImportant(${i}, 'name', this.value)"></div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardStatusPopover('important', ${i}, this)" title="클릭하여 상태 선택"><span class="daily-status ${statusKey}">${statusLabel}</span></button></div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><input type="text" class="side-date date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(it.targetDate))}" onchange="onSideDateChange('important', ${i}, this.value)"></div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}">${ddayText ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button class="side-del" title="삭제" onclick="askDeleteImportant(${i})">×</button></div>`);
       }
     }
     list.innerHTML = cells.join('');
+    setupRowDnD(list, 'important');
   }
 
   function renderRoutines() {
@@ -1062,6 +1078,7 @@
     if (counter) counter.textContent = state.routines.length;
 
     const cells = [];
+    cells.push('<div class="st-cell st-head"></div>');
     cells.push('<div class="st-cell st-head">프로</div>');
     cells.push('<div class="st-cell st-head">구분</div>');
     cells.push('<div class="st-cell st-head">상세</div>');
@@ -1087,7 +1104,8 @@
         const statusKey = boardStatusKey(r.status);
         const statusLabel = boardStatusLabel(statusKey);
 
-        cells.push(`<div class="st-cell st-row-first ${doneCls}" ${catAttr}><button type="button" class="board-pop-anchor" onclick="openBoardProjectPopover('routine', ${i}, this)" title="프로젝트 선택 / 추가 / 삭제">${r.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(r.project)}</span>` : '<span class="daily-placeholder">-</span>'}</button></div>`);
+        cells.push(`<div class="st-cell st-drag" draggable="true" data-row="${i}" data-kind="routine" title="드래그로 행 순서 변경">≡</div>`);
+        cells.push(`<div class="st-cell st-row-first ${doneCls}" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardProjectPopover('routine', ${i}, this)" title="프로젝트 선택 / 추가 / 삭제">${r.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(r.project)}</span>` : '<span class="daily-placeholder">-</span>'}</button></div>`);
 
         const catKey = r.project + '|' + r.category;
         const isCatStart = (i === 0) || (catKey !== items[i - 1].project + '|' + items[i - 1].category);
@@ -1100,7 +1118,7 @@
           const catSuggestions = getCategorySuggestions('routineCat');
           const catSel = buildCatInput('cat-chip', r.category, catSuggestions, `updateRoutine(${i}, 'category', this.value)`, '구분');
           const spanStyle = size > 1 ? ` style="grid-row: span ${size}"` : '';
-          cells.push(`<div class="st-cell" ${catAttr}${spanStyle}>${catSel}</div>`);
+          cells.push(`<div class="st-cell" ${catAttr}${spanStyle} data-row="${i}">${catSel}</div>`);
         }
 
         const subKey = catKey + '|' + r.subCategory;
@@ -1116,17 +1134,84 @@
           const subSuggestions = getCategorySuggestions('routineSub');
           const subSel = buildCatInput('cat-chip', r.subCategory, subSuggestions, `updateRoutine(${i}, 'subCategory', this.value)`, '상세');
           const spanStyle = size > 1 ? ` style="grid-row: span ${size}"` : '';
-          cells.push(`<div class="st-cell" ${catAttr}${spanStyle}>${subSel}</div>`);
+          cells.push(`<div class="st-cell" ${catAttr}${spanStyle} data-row="${i}">${subSel}</div>`);
         }
 
-        cells.push(`<div class="st-cell ${doneCls}" ${catAttr}><input type="text" class="side-name" placeholder="업무명" title="${escapeHtml(r.name || '')}" value="${escapeHtml(r.name)}" onchange="updateRoutine(${i}, 'name', this.value)"></div>`);
-        cells.push(`<div class="st-cell" ${catAttr}><button type="button" class="board-pop-anchor" onclick="openBoardStatusPopover('routine', ${i}, this)" title="클릭하여 상태 선택"><span class="daily-status ${statusKey}">${statusLabel}</span></button></div>`);
-        cells.push(`<div class="st-cell" ${catAttr}><input type="text" class="side-date date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(r.targetDate))}" onchange="onSideDateChange('routine', ${i}, this.value)"></div>`);
-        cells.push(`<div class="st-cell" ${catAttr}>${ddayText ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
-        cells.push(`<div class="st-cell" ${catAttr}><button class="side-del" title="삭제" onclick="askDeleteRoutine(${i})">×</button></div>`);
+        cells.push(`<div class="st-cell ${doneCls}" ${catAttr} data-row="${i}"><input type="text" class="side-name" placeholder="업무명" title="${escapeHtml(r.name || '')}" value="${escapeHtml(r.name)}" onchange="updateRoutine(${i}, 'name', this.value)"></div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardStatusPopover('routine', ${i}, this)" title="클릭하여 상태 선택"><span class="daily-status ${statusKey}">${statusLabel}</span></button></div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><input type="text" class="side-date date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(r.targetDate))}" onchange="onSideDateChange('routine', ${i}, this.value)"></div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}">${ddayText ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button class="side-del" title="삭제" onclick="askDeleteRoutine(${i})">×</button></div>`);
       }
     }
     list.innerHTML = cells.join('');
+    setupRowDnD(list, 'routine');
+  }
+
+  function setupRowDnD(list, kind) {
+    let dragFrom = -1;
+    let lastTarget = null;
+    let insertAfter = false;
+    const clearMarks = () => {
+      list.querySelectorAll('.st-row-drop-before, .st-row-drop-after, .st-row-dragging').forEach(el => {
+        el.classList.remove('st-row-drop-before', 'st-row-drop-after', 'st-row-dragging');
+      });
+      lastTarget = null;
+    };
+    list.addEventListener('dragstart', function(e) {
+      const handle = e.target.closest('.st-drag');
+      if (!handle) { e.preventDefault(); return; }
+      dragFrom = Number(handle.dataset.row);
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', String(dragFrom)); } catch (err) {}
+      }
+      list.querySelectorAll(`[data-row="${dragFrom}"]`).forEach(el => el.classList.add('st-row-dragging'));
+    });
+    list.addEventListener('dragover', function(e) {
+      if (dragFrom < 0) return;
+      const cell = e.target.closest('[data-row]');
+      if (!cell) return;
+      const targetRow = Number(cell.dataset.row);
+      if (targetRow === dragFrom) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      const rect = cell.getBoundingClientRect();
+      insertAfter = (e.clientY - rect.top) > rect.height / 2;
+      if (lastTarget !== targetRow) {
+        list.querySelectorAll('.st-row-drop-before, .st-row-drop-after').forEach(el => {
+          el.classList.remove('st-row-drop-before', 'st-row-drop-after');
+        });
+        list.querySelectorAll(`[data-row="${targetRow}"]`).forEach(el => {
+          el.classList.add(insertAfter ? 'st-row-drop-after' : 'st-row-drop-before');
+        });
+        lastTarget = targetRow;
+      }
+    });
+    list.addEventListener('dragleave', function(e) {
+      if (!list.contains(e.relatedTarget)) clearMarks();
+    });
+    list.addEventListener('drop', function(e) {
+      e.preventDefault();
+      if (dragFrom < 0 || lastTarget === null) { clearMarks(); dragFrom = -1; return; }
+      const arr = kind === 'important' ? state.importantTasks : state.routines;
+      const from = dragFrom;
+      let to = lastTarget + (insertAfter ? 1 : 0);
+      if (from < to) to -= 1;
+      if (from !== to && from >= 0 && from < arr.length && to >= 0 && to < arr.length) {
+        const moved = arr.splice(from, 1)[0];
+        arr.splice(to, 0, moved);
+        saveState();
+        render();
+      } else {
+        clearMarks();
+      }
+      dragFrom = -1;
+    });
+    list.addEventListener('dragend', function() {
+      clearMarks();
+      dragFrom = -1;
+    });
   }
 
   function renderHeaderSub() {
