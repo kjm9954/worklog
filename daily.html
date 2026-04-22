@@ -36,22 +36,23 @@
 
   /* #daily 모드 레이아웃 — 2컬럼 (사이드바 + 본문), 중앙 정렬 */
   main#mode-daily.daily-layout {
-    flex: 1; overflow: hidden;
-    display: grid; grid-template-columns: 360px minmax(0, 1fr);
+    flex: 1; overflow: auto;
+    display: flex; flex-direction: row;
     gap: 16px; padding: 16px;
     box-sizing: border-box;
-    max-width: 1400px; width: 100%;
-    margin: 0 auto;
+    justify-content: center; align-items: flex-start;
   }
   main#mode-daily > .daily-sidebar {
+    flex: 0 0 360px; width: 360px;
     display: flex; flex-direction: column; gap: 12px;
-    overflow-y: auto; min-height: 0;
+    min-height: 0;
   }
   main#mode-daily > .daily-content {
-    overflow: auto; min-width: 0; min-height: 0;
+    flex: 0 0 auto; min-height: 0;
     display: flex; flex-direction: column;
+    width: fit-content;
   }
-  main#mode-daily > .daily-content > .daily-wrap { flex: 1; }
+  main#mode-daily > .daily-content > .daily-wrap { flex: 1; width: fit-content; }
 
   /* 사이드바 카드 */
   .daily-metric {
@@ -1342,6 +1343,8 @@
     box-shadow: var(--shadow-sm);
     overflow: hidden;
     transition: transform 0.2s ease, opacity 0.2s ease;
+    width: fit-content;
+    min-width: 720px;
   }
   .daily-card.is-today {
     border-color: var(--today-border);
@@ -1421,9 +1424,10 @@
     --dcol-progress-w: 90px; --dcol-est-w: 56px; --dcol-status-w: 64px;
     --dcol-done-w: 40px; --dcol-note-w: 140px; --dcol-delete-w: 28px;
   }
-  .daily-table-wrap { max-height: 520px; overflow-y: auto; overflow-x: auto; }
+  .daily-table-wrap { max-height: 520px; overflow-y: auto; width: fit-content; }
   .daily-table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     font-size: 13px;
     table-layout: fixed;
@@ -1448,25 +1452,33 @@
     font-weight: 500;
     font-size: 12px;
     text-align: left;
-    padding: 8px 10px;
+    padding: 0;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
     z-index: 1;
   }
+  .daily-th-inner {
+    position: relative;
+    display: block;
+    padding: 8px 10px;
+    min-height: 18px;
+  }
+  .daily-table th[data-align="right"] .daily-th-inner { text-align: right; }
   .daily-col-resize {
     position: absolute;
     right: -3px;
     top: 0;
-    width: 6px;
+    width: 8px;
     height: 100%;
     cursor: col-resize;
-    z-index: 2;
+    z-index: 3;
+    user-select: none;
   }
   .daily-col-resize.daily-col-resize-left { right: auto; left: -3px; }
   .daily-col-resize::after {
     content: '';
     position: absolute;
-    right: 2px;
+    right: 3px;
     top: 25%;
     width: 2px;
     height: 50%;
@@ -2699,18 +2711,18 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
             </colgroup>
             <thead>
               <tr>
-                <th>구분<div class="daily-col-resize" data-dcol="project"></div></th>
-                <th>분면<div class="daily-col-resize" data-dcol="quad"></div></th>
-                <th>업무명<div class="daily-col-resize" data-dcol="name"></div></th>
-                <th>목표<div class="daily-col-resize" data-dcol="target"></div></th>
-                <th>시작<div class="daily-col-resize" data-dcol="start"></div></th>
-                <th>종료<div class="daily-col-resize" data-dcol="end"></div></th>
-                <th style="text-align:right">진행<div class="daily-col-resize" data-dcol="progress"></div></th>
-                <th style="text-align:right">예상<div class="daily-col-resize" data-dcol="est"></div></th>
-                <th>상태<div class="daily-col-resize" data-dcol="status"></div></th>
-                <th>완료<div class="daily-col-resize" data-dcol="done"></div></th>
-                <th>메모<div class="daily-col-resize" data-dcol="note"></div></th>
-                <th aria-label="삭제"><div class="daily-col-resize daily-col-resize-left" data-dcol="delete"></div></th>
+                <th><div class="daily-th-inner">구분<div class="daily-col-resize" data-dcol="project"></div></div></th>
+                <th><div class="daily-th-inner">분면<div class="daily-col-resize" data-dcol="quad"></div></div></th>
+                <th><div class="daily-th-inner">업무명<div class="daily-col-resize" data-dcol="name"></div></div></th>
+                <th><div class="daily-th-inner">목표<div class="daily-col-resize" data-dcol="target"></div></div></th>
+                <th><div class="daily-th-inner">시작<div class="daily-col-resize" data-dcol="start"></div></div></th>
+                <th><div class="daily-th-inner">종료<div class="daily-col-resize" data-dcol="end"></div></div></th>
+                <th data-align="right"><div class="daily-th-inner">진행<div class="daily-col-resize" data-dcol="progress"></div></div></th>
+                <th data-align="right"><div class="daily-th-inner">예상<div class="daily-col-resize" data-dcol="est"></div></div></th>
+                <th><div class="daily-th-inner">상태<div class="daily-col-resize" data-dcol="status"></div></div></th>
+                <th><div class="daily-th-inner">완료<div class="daily-col-resize" data-dcol="done"></div></div></th>
+                <th><div class="daily-th-inner">메모<div class="daily-col-resize" data-dcol="note"></div></div></th>
+                <th aria-label="삭제"><div class="daily-th-inner"><div class="daily-col-resize daily-col-resize-left" data-dcol="delete"></div></div></th>
               </tr>
             </thead>
             <tbody>${rowsHtml}</tbody>
@@ -3411,6 +3423,8 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
 
   const LAST_QUADRANT_KEY = 'worklog.lastQuadrant';
   function getLastQuadrant() {
+    // state.lastQuadrant(클라우드 동기화)가 우선. 없으면 localStorage fallback.
+    if (state && ['q1','q2','q3','q4'].includes(state.lastQuadrant)) return state.lastQuadrant;
     try {
       const v = localStorage.getItem(LAST_QUADRANT_KEY);
       return ['q1','q2','q3','q4'].includes(v) ? v : 'q4';
@@ -3418,7 +3432,9 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
   }
   function setLastQuadrant(q) {
     if (!['q1','q2','q3','q4'].includes(q)) return;
+    if (state) state.lastQuadrant = q;
     try { localStorage.setItem(LAST_QUADRANT_KEY, q); } catch (e) {}
+    saveState(); // 클라우드 동기화 → 임베드 간 공유
   }
   window.__setLastQuadrant = setLastQuadrant;
 
@@ -3723,7 +3739,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
         <div class="col col-target"><input type="text" class="date-md date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(t.targetDate || dayDate))}" onchange="onTargetDateChange(${dayIdx}, '${qKey}', ${ti}, this.value)"></div>
         <div class="col col-start bulk-selectable" data-bulk-group="weekly-start" data-bulk-kind="task-start" data-bulk-key="${dayIdx}|${qKey}|${ti}">${timeInputHtml(dayIdx, qKey, ti, 'startTime', t.startTime)}</div>
         <div class="col col-end bulk-selectable" data-bulk-group="weekly-end" data-bulk-kind="task-end" data-bulk-key="${dayIdx}|${qKey}|${ti}">${timeInputHtml(dayIdx, qKey, ti, 'endTime', t.endTime)}</div>
-        <div class="col col-progress"><input type="text" inputmode="decimal" placeholder="0" value="${escapeHtml(t.progressHours || '')}" onchange="onProgressChange(${dayIdx}, '${qKey}', ${ti}, this.value)"></div>
+        <div class="col col-progress">${progress > 0 ? progress.toFixed(1) : DASH}</div>
         <div class="col col-est"><input type="text" inputmode="decimal" placeholder="0" value="${escapeHtml(t.estimatedHours)}" onchange="onEstimatedChange(${dayIdx}, '${qKey}', ${ti}, this.value)"></div>
         <div class="col col-done"><input type="checkbox" ${t.done ? 'checked' : ''} onchange="updateTask(${dayIdx}, '${qKey}', ${ti}, 'done', this.checked)"></div>
         <div class="col col-note"><input type="text" value="${escapeHtml(t.note)}" onchange="updateTask(${dayIdx}, '${qKey}', ${ti}, 'note', this.value)"></div>

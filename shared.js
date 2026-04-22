@@ -209,9 +209,9 @@ function calcHours(start, end) {
 
 function calcTaskHours(t) {
   if (!t) return 0;
-  const manual = parseFloat(t.progressHours);
-  if (!isNaN(manual)) return Math.max(0, manual);
-  return 0;
+  const base = calcTaskHoursBase(t);
+  const adj = Number(t.adjustHours) || 0;
+  return Math.max(0, base + adj);
 }
 
 // adjustHours 없는 자동 계산값 (팝오버 내부 base 표시용)
@@ -314,7 +314,8 @@ function createInitialState() {
     projectLabels: [],
     weekStart: formatDate(monday),
     days: createWeekDays(monday),
-    importantTasks: [], routines: [], history: []
+    importantTasks: [], routines: [], history: [],
+    lastQuadrant: 'q4'
   };
 }
 
@@ -326,6 +327,7 @@ function migrateState(s) {
   s.goals.week = typeof s.goals.week === 'string' ? s.goals.week : '';
   s.goals.month = typeof s.goals.month === 'string' ? s.goals.month : '';
   delete s.mainGoal;
+  s.lastQuadrant = ['q1','q2','q3','q4'].includes(s.lastQuadrant) ? s.lastQuadrant : 'q4';
   if (!Array.isArray(s.projectLabels)) s.projectLabels = [];
   s.projectLabels = s.projectLabels.filter(p => typeof p === 'string' && p.trim()).map(p => p.trim());
   if (!s.weekStart || !Array.isArray(s.days) || s.days.length === 0) {
@@ -669,7 +671,6 @@ function buildBackupPayload(scope) {
     payload.days = state.days;
     payload.history = state.history;
   } else if (scope === 'board') {
-    payload.goals = state.goals;
     payload.projectLabels = state.projectLabels;
     payload.importantTasks = state.importantTasks;
     payload.routines = state.routines;
@@ -700,7 +701,7 @@ function exportJson() {
     '다운로드할 범위를 선택해주세요.',
     [
       { label: '📅 업무일지 (주간 날짜별 · 히스토리)', value: 'daily' },
-      { label: '📋 중요·상시 업무 (목표 · 프로젝트 라벨)', value: 'board' },
+      { label: '📋 중요·상시 업무 (프로젝트 라벨)', value: 'board' },
       { label: '💾 전체 (모든 데이터)', value: 'all' }
     ]
   ).then(function(scope) {
