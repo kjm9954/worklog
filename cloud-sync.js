@@ -25,8 +25,11 @@ let cloudApplyingRemote = false;
 function cloudReadParams() {
   try {
     const sp = new URLSearchParams(location.search);
-    cloudPageId = sp.get('np') || sp.get('page') || null;
-    cloudKey = sp.get('nk') || null;
+    /* 해시(#np=...&nk=...)도 파싱 — iPad/iPhone 노션 앱이 쿼리 파라미터를 떨구는 버그 대응 */
+    const hashRaw = (location.hash || '').replace(/^#/, '');
+    const hp = new URLSearchParams(hashRaw);
+    cloudPageId = sp.get('np') || sp.get('page') || hp.get('np') || hp.get('page') || null;
+    cloudKey = sp.get('nk') || hp.get('nk') || null;
     const workerOk = typeof WORKER_URL === 'string' && WORKER_URL && !WORKER_URL.includes('REPLACE-ME');
     cloudEnabled = !!(cloudPageId && workerOk);
   } catch (e) { cloudEnabled = false; }
