@@ -918,15 +918,21 @@
     host.innerHTML = rows + axis;
   }
 
-  // 도넛: 선택된 scope 범위의 프로젝트별 총 시간
+  // 도넛/분포: 선택된 scope 범위의 프로젝트별 총 시간
+  // 라벨(state.projectLabels)에 포함된 값만 그대로 버킷 사용, 그 외는 "기타"로 합침.
   function collectProjectHours(scope) {
-    const acc = new Map();
+    const labels = (state && Array.isArray(state.projectLabels) && state.projectLabels.length)
+      ? state.projectLabels.slice()
+      : ['팝콘', '타운', '기타'];
+    const fallback = labels.includes('기타') ? '기타' : labels[labels.length - 1];
+    const acc = new Map(labels.map(l => [l, 0]));
     const addDay = d => {
       dayAllTasks(d).forEach(t => {
         const hrs = taskHours(t);
         if (hrs <= 0) return;
-        const key = (t.project || '(미지정)').trim() || '(미지정)';
-        acc.set(key, (acc.get(key) || 0) + hrs);
+        const raw = (t.project || '').trim();
+        const bucket = labels.includes(raw) ? raw : fallback;
+        acc.set(bucket, (acc.get(bucket) || 0) + hrs);
       });
     };
     if (scope === 'month') {
@@ -942,7 +948,9 @@
       const week = getSelectedWeek();
       (week.days || []).forEach(addDay);
     }
-    return Array.from(acc.entries()).map(([name, hours]) => ({ name, hours })).sort((a, b) => b.hours - a.hours);
+    return labels.map(name => ({ name, hours: acc.get(name) || 0 }))
+      .filter(x => x.hours > 0)
+      .sort((a, b) => b.hours - a.hours);
   }
 
   function renderDonut() {
