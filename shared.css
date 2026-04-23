@@ -210,6 +210,26 @@ button { font-family: inherit; }
 }
 .backup-reminder[hidden] { display: none; }
 
+/* 공용 우클릭 컨텍스트 메뉴 (board/daily 공통 스타일) */
+.board-row-menu {
+  position: fixed; z-index: 1000;
+  background: var(--card); color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  padding: 4px; min-width: 200px;
+  font-size: 13px;
+}
+.board-row-menu[hidden] { display: none; }
+.board-row-menu .item {
+  padding: 8px 12px; border-radius: var(--radius-sm);
+  cursor: pointer; user-select: none;
+}
+.board-row-menu .item:hover { background: var(--bg-2); }
+.board-row-menu .item.disabled { color: var(--text-muted); cursor: default; }
+.board-row-menu .item.disabled:hover { background: transparent; }
+.board-row-menu .hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
 /* 헤더 접기/펼치기 토글 (.header-actions 내부 첫 자식으로 편입) */
 .header-toggle-btn {
   width: 22px; height: 22px; padding: 0;

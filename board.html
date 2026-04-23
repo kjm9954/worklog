@@ -646,6 +646,8 @@
     </main>
   </div>
 
+  <div id="boardRowMenu" class="board-row-menu" hidden></div>
+
   <div class="modal-backdrop hidden" id="modalBackdrop">
     <div class="modal" role="dialog" aria-modal="true">
       <h3 class="modal-title" id="modalTitle">확인</h3>
@@ -1043,7 +1045,7 @@
         const statusKey = boardStatusKey(it.status);
         const statusLabel = boardStatusLabel(statusKey);
 
-        cells.push(`<div class="st-cell st-drag" draggable="true" data-row="${i}" data-kind="important" title="드래그로 행 순서 변경">≡</div>`);
+        cells.push(`<div class="st-cell st-drag" draggable="true" data-row="${i}" data-kind="important" title="드래그: 행 순서 변경 · 우클릭: 오늘 카드로 보내기" oncontextmenu="openImportantRowMenu(event, ${i})">≡</div>`);
         cells.push(`<div class="st-cell st-row-first ${doneCls}" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardProjectPopover('important', ${i}, this)" title="프로젝트 선택 / 추가 / 삭제">${it.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(it.project)}</span>` : '<span class="daily-placeholder">-</span>'}</button></div>`);
 
         const catKey = it.project + '|' + it.category;
@@ -1461,6 +1463,81 @@
       if (datePicker.el && !datePicker.el.classList.contains('hidden')) closeDatePicker();
     }, true);
   }
+
+  function closeBoardRowMenu() {
+    const m = document.getElementById('boardRowMenu');
+    if (m) { m.hidden = true; m.innerHTML = ''; }
+  }
+
+  // 오늘 카드(daily.html)의 state.days 인덱스를 계산. 주말이면 -1 반환(금요일에 편입).
+  function todayDailyIdx() {
+    const dow = new Date().getDay(); // Sun=0..Sat=6
+    const monIdx = (dow + 6) % 7;    // Mon=0..Sun=6
+    return monIdx < 5 ? monIdx : -1;
+  }
+
+  function sendImportantToToday(i) {
+    const it = state.importantTasks && state.importantTasks[i];
+    if (!it) return;
+    const name = (it.name || '').trim();
+    if (!name) { showModal('이동 불가', '업무명이 비어 있어요. 먼저 이름을 입력해주세요.', null); return; }
+    const task = {
+      project: it.project || '',
+      name: name,
+      note: it.category ? `[${it.category}]` : '',
+      targetDate: it.targetDate || '',
+      startTime: '', endTime: '',
+      estimatedHours: '', adjustHours: 0,
+      done: false
+    };
+    const tIdx = todayDailyIdx();
+    if (tIdx === -1) {
+      if (!Array.isArray(state.carryover)) state.carryover = [];
+      state.carryover.push({ qKey: 'q1', task });
+      saveState();
+      showModal('이동 예약됨', `"${name}" 은(는) 다음 주 월요일 오늘 카드에 추가됩니다.`, null);
+      return;
+    }
+    const day = state.days[tIdx];
+    if (!day.quadrants) day.quadrants = { q1: [], q2: [], q3: [], q4: [] };
+    if (!Array.isArray(day.quadrants.q1)) day.quadrants.q1 = [];
+    day.quadrants.q1.push(task);
+    saveState();
+    const ch = (typeof getBroadcastChannel === 'function') ? getBroadcastChannel() : null;
+    if (ch) { try { ch.postMessage({ type: 'worklog:task-sent-to-today', name }); } catch (e) {} }
+    showModal('오늘 카드로 이동', `"${name}" 을(를) 오늘의 Q1(중요·긴급)에 추가했어요.`, null);
+  }
+
+  window.openImportantRowMenu = function(ev, i) {
+    ev.preventDefault();
+    const it = state.importantTasks && state.importantTasks[i];
+    if (!it) return;
+    const menu = document.getElementById('boardRowMenu');
+    if (!menu) return;
+    const tIdx = todayDailyIdx();
+    const label = tIdx === -1 ? '오늘 카드로 보내기(다음 월요일 예약)' : '오늘 카드로 보내기 (Q1)';
+    const done = it.status === '완료';
+    menu.innerHTML = done
+      ? '<div class="item disabled">완료된 업무는 이동할 수 없어요</div>'
+      : `<div class="item" data-action="send">${label}</div>`;
+    menu.hidden = false;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const x = Math.min(ev.clientX, vw - menu.offsetWidth - 8);
+    const y = Math.min(ev.clientY, vh - menu.offsetHeight - 8);
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    const item = menu.querySelector('.item[data-action="send"]');
+    if (item) item.onclick = function() { closeBoardRowMenu(); sendImportantToToday(i); };
+  };
+
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('boardRowMenu');
+    if (menu && !menu.hidden && !menu.contains(e.target)) closeBoardRowMenu();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBoardRowMenu();
+  });
+  window.addEventListener('scroll', closeBoardRowMenu, true);
 
   (async function boardInit() {
     state = loadState();
