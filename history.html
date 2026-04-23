@@ -925,37 +925,28 @@
     host.innerHTML = rows + axis;
   }
 
-  // 분포: 선택된 scope 범위의 프로젝트별 총 시간 (daily) + board 항목 가중치
-  // 라벨(state.projectLabels)에 포함된 값만 그대로 버킷 사용, 그 외는 "기타"로 합침.
-  // board(중요·상시)는 hours 데이터가 없어 각 in-range 항목을 1.0h 가중치로 반영.
-  const BOARD_WEIGHT = 1.0;
-
+  // 분포: 업무일지(daily) 기준 프로젝트별 총 시간.
+  // 라벨(state.projectLabels)에 포함된 값(팝콘·타운 등)만 그대로 버킷 사용, 그 외는 "기타"로 합침.
   function collectProjectHours(scope) {
     const labels = (state && Array.isArray(state.projectLabels) && state.projectLabels.length)
       ? state.projectLabels.slice()
       : ['팝콘', '타운', '기타'];
     const fallback = labels.includes('기타') ? '기타' : labels[labels.length - 1];
-    const acc = new Map(labels.map(l => [l, { hours: 0, boardCount: 0 }]));
-    const bump = (raw, hrs, isBoard) => {
-      const bucket = labels.includes((raw || '').trim()) ? (raw || '').trim() : fallback;
-      const entry = acc.get(bucket);
-      entry.hours += hrs;
-      if (isBoard) entry.boardCount += 1;
-    };
+    const acc = new Map(labels.map(l => [l, 0]));
     const addDay = d => {
       dayAllTasks(d).forEach(t => {
         const hrs = taskHours(t);
         if (hrs <= 0) return;
-        bump(t.project, hrs, false);
+        const raw = (t.project || '').trim();
+        const bucket = labels.includes(raw) ? raw : fallback;
+        acc.set(bucket, (acc.get(bucket) || 0) + hrs);
       });
     };
-    // 범위 [fromStr, toStr] 둘 다 yyyy-mm-dd 포함
-    let fromStr = '', toStr = '';
     if (scope === 'month') {
       const now = new Date();
       const first = new Date(now.getFullYear(), now.getMonth(), 1);
       const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      fromStr = dateKey(first); toStr = dateKey(last);
+      const fromStr = dateKey(first), toStr = dateKey(last);
       (state.days || []).forEach(d => { if (d && d.date && d.date >= fromStr && d.date <= toStr) addDay(d); });
       (state.history || []).forEach(w => {
         if (!w) return;
@@ -964,27 +955,9 @@
     } else {
       const week = getSelectedWeek();
       (week.days || []).forEach(addDay);
-      if (week.days && week.days.length) {
-        fromStr = week.days[0].date || '';
-        toStr = week.days[week.days.length - 1].date || '';
-      }
     }
-    // 상시/중요 업무: targetDate가 범위 내면 1.0h 가중치로 합산
-    if (fromStr && toStr) {
-      const addBoard = arr => {
-        (arr || []).forEach(it => {
-          if (!it || !it.targetDate) return;
-          if (it.targetDate < fromStr || it.targetDate > toStr) return;
-          bump(it.project, BOARD_WEIGHT, true);
-        });
-      };
-      addBoard(state.importantTasks);
-      addBoard(state.routines);
-    }
-    return labels.map(name => {
-      const v = acc.get(name) || { hours: 0, boardCount: 0 };
-      return { name, hours: v.hours, boardCount: v.boardCount };
-    }).filter(x => x.hours > 0)
+    return labels.map(name => ({ name, hours: acc.get(name) || 0 }))
+      .filter(x => x.hours > 0)
       .sort((a, b) => b.hours - a.hours);
   }
 
@@ -1012,11 +985,10 @@
       const relFill = (d.hours / maxHours) * 100;
       const name = (d.name || '').trim() || '(미지정)';
       const color = colorForProject(name);
-      const boardTag = d.boardCount > 0 ? `<span class="board-tag" title="상시·중요 업무 ${d.boardCount}건 반영 (건당 ${BOARD_WEIGHT.toFixed(1)}h)">+${d.boardCount}건</span>` : '';
       return `
-        <div class="h-dist-row" title="${escapeHtml(name)}: ${d.hours.toFixed(1)}h · ${pct.toFixed(1)}%${d.boardCount > 0 ? ' · 보드 ' + d.boardCount + '건' : ''}">
+        <div class="h-dist-row" title="${escapeHtml(name)}: ${d.hours.toFixed(1)}h · ${pct.toFixed(1)}%">
           <span class="dot" style="background:${color}"></span>
-          <span class="proj-name">${escapeHtml(name)}${boardTag}</span>
+          <span class="proj-name">${escapeHtml(name)}</span>
           <span class="mini-bar"><span class="mini-bar-fill" style="width:${relFill.toFixed(1)}%;background:${color}"></span></span>
           <span class="hrs">${d.hours.toFixed(1)}h</span>
           <span class="pct">${pct.toFixed(0)}%</span>
