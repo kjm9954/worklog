@@ -219,7 +219,7 @@
   }
   .side-table.important-grid {
     display: grid;
-    grid-template-columns: 22px var(--b-imp-proj) var(--b-imp-cat) minmax(120px, 1fr) var(--b-imp-status) var(--b-imp-date) var(--b-imp-dday) var(--b-imp-del);
+    grid-template-columns: 22px var(--b-imp-proj) var(--b-imp-cat) var(--b-imp-name, minmax(120px, 1fr)) var(--b-imp-status) var(--b-imp-date) var(--b-imp-dday) var(--b-imp-del);
     gap: 1px;
     background: var(--border);
     padding: 0;
@@ -228,7 +228,7 @@
   }
   .side-table.routine-grid {
     display: grid;
-    grid-template-columns: 22px var(--b-rt-proj) var(--b-rt-cat) var(--b-rt-detail) minmax(120px, 1fr) var(--b-rt-status) var(--b-rt-date) var(--b-rt-dday) var(--b-rt-del);
+    grid-template-columns: 22px var(--b-rt-proj) var(--b-rt-cat) var(--b-rt-detail) var(--b-rt-name, minmax(120px, 1fr)) var(--b-rt-status) var(--b-rt-date) var(--b-rt-dday) var(--b-rt-del);
     gap: 1px;
     background: var(--border);
     padding: 0;
@@ -1045,7 +1045,7 @@
     cells.push('<div class="st-cell st-head"></div>');
     cells.push(`<div class="st-cell st-head">프로${rh('imp-proj')}</div>`);
     cells.push(`<div class="st-cell st-head">구분${rh('imp-cat')}</div>`);
-    cells.push('<div class="st-cell st-head">업무명</div>');
+    cells.push(`<div class="st-cell st-head">업무명${rh('imp-name')}</div>`);
     cells.push(`<div class="st-cell st-head">상태${rh('imp-status')}</div>`);
     cells.push(`<div class="st-cell st-head">마감일${rh('imp-date')}</div>`);
     cells.push(`<div class="st-cell st-head">디데이${rh('imp-dday')}</div>`);
@@ -1110,7 +1110,7 @@
     cells.push(`<div class="st-cell st-head">프로${rh('rt-proj')}</div>`);
     cells.push(`<div class="st-cell st-head">구분${rh('rt-cat')}</div>`);
     cells.push(`<div class="st-cell st-head">상세${rh('rt-detail')}</div>`);
-    cells.push('<div class="st-cell st-head">업무명</div>');
+    cells.push(`<div class="st-cell st-head">업무명${rh('rt-name')}</div>`);
     cells.push(`<div class="st-cell st-head">상태${rh('rt-status')}</div>`);
     cells.push(`<div class="st-cell st-head">마감일${rh('rt-date')}</div>`);
     cells.push(`<div class="st-cell st-head">디데이${rh('rt-dday')}</div>`);
@@ -1569,12 +1569,20 @@
     'imp-proj': 48, 'imp-cat': 52, 'imp-status': 62, 'imp-date': 84, 'imp-dday': 60, 'imp-del': 40,
     'rt-proj': 48, 'rt-cat': 52, 'rt-detail': 56, 'rt-status': 62, 'rt-date': 84, 'rt-dday': 60, 'rt-del': 40
   };
+  // name은 기본값 없음(1fr). 드래그 시 고정 폭으로 전환, 더블클릭으로 다시 1fr 복원.
+  const B_FLEX_COLS = new Set(['imp-name', 'rt-name']);
   const B_COL_MIN = 36;
-  const B_COL_MAX = 260;
+  const B_COL_MAX = 600;
   const B_COL_STORAGE_KEY = 'worklog-board-col-widths';
 
   function applyBCol(key, w) {
     document.documentElement.style.setProperty(`--b-${key}`, w + 'px');
+  }
+  function isKnownBCol(key) {
+    return !!key && (key in B_COL_DEFAULTS || B_FLEX_COLS.has(key));
+  }
+  function clearBCol(key) {
+    document.documentElement.style.removeProperty(`--b-${key}`);
   }
   function loadBoardColWidths() {
     try {
@@ -1585,18 +1593,38 @@
         const w = Number(saved[k]);
         if (w && w >= B_COL_MIN && w <= B_COL_MAX) applyBCol(k, w);
       });
+      B_FLEX_COLS.forEach(k => {
+        const w = Number(saved[k]);
+        if (w && w >= B_COL_MIN && w <= B_COL_MAX) applyBCol(k, w);
+      });
     } catch (e) {}
   }
   function saveBoardColWidths() {
     try {
       const cs = getComputedStyle(document.documentElement);
+      const inline = document.documentElement.style;
       const out = {};
       Object.keys(B_COL_DEFAULTS).forEach(k => {
         const raw = cs.getPropertyValue(`--b-${k}`).trim();
         out[k] = parseInt(raw, 10) || B_COL_DEFAULTS[k];
       });
+      // name: 저장은 인라인 스타일이 설정돼 있을 때만 — 기본(1fr) 상태는 저장 안 함
+      B_FLEX_COLS.forEach(k => {
+        const raw = inline.getPropertyValue(`--b-${k}`).trim();
+        const px = parseInt(raw, 10);
+        if (raw && px) out[k] = px;
+      });
       localStorage.setItem(B_COL_STORAGE_KEY, JSON.stringify(out));
     } catch (e) {}
+  }
+  function currentBColWidth(key, handle) {
+    const inline = document.documentElement.style.getPropertyValue(`--b-${key}`).trim();
+    const px = parseInt(inline, 10);
+    if (px) return px;
+    if (key in B_COL_DEFAULTS) return B_COL_DEFAULTS[key];
+    // flex 컬럼(name): 현재 렌더된 헤더 셀의 실측 폭 사용
+    const headCell = handle && handle.closest('.st-cell');
+    return headCell ? Math.round(headCell.getBoundingClientRect().width) : 200;
   }
   function initBoardColResize() {
     let drag = null;
@@ -1604,10 +1632,8 @@
       const h = e.target.closest && e.target.closest('.b-col-resize');
       if (!h) return;
       const key = h.dataset.bcol;
-      if (!key || !(key in B_COL_DEFAULTS)) return;
-      const cs = getComputedStyle(document.documentElement);
-      const cur = parseInt(cs.getPropertyValue(`--b-${key}`), 10) || B_COL_DEFAULTS[key];
-      drag = { key, startX: e.clientX, startW: cur, handle: h };
+      if (!isKnownBCol(key)) return;
+      drag = { key, startX: e.clientX, startW: currentBColWidth(key, h), handle: h };
       h.classList.add('dragging');
       document.body.classList.add('resizing-col');
       e.preventDefault();
@@ -1625,13 +1651,14 @@
       drag = null;
       saveBoardColWidths();
     });
-    // 더블클릭으로 기본값 복원
+    // 더블클릭으로 기본값 복원 (name은 1fr 플렉스로 되돌림)
     document.addEventListener('dblclick', function(e) {
       const h = e.target.closest && e.target.closest('.b-col-resize');
       if (!h) return;
       const key = h.dataset.bcol;
-      if (!key || !(key in B_COL_DEFAULTS)) return;
-      applyBCol(key, B_COL_DEFAULTS[key]);
+      if (!isKnownBCol(key)) return;
+      if (B_FLEX_COLS.has(key)) clearBCol(key);
+      else applyBCol(key, B_COL_DEFAULTS[key]);
       saveBoardColWidths();
     });
   }
