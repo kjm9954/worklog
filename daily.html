@@ -1192,6 +1192,38 @@
   :root[data-device="mobile"] .modal-message { font-size: 13px; }
   :root[data-device="mobile"] .project-edit-modal { max-width: 92vw; padding: 16px; }
 
+  /* Phase 1 모바일 축약 뷰: 좁은 화면에서 daily-table을 업무명+완료 2컬럼으로 */
+  @media (max-width: 768px) {
+    .daily-wrap { padding: 0 10px; margin: 10px auto; }
+    .daily-table-wrap { width: 100%; overflow-x: hidden; }
+    .daily-table { width: 100%; min-width: 0; table-layout: auto; }
+    .daily-card { min-width: 0; width: 100%; }
+
+    .daily-table col.dcol-project,
+    .daily-table col.dcol-quad,
+    .daily-table col.dcol-target,
+    .daily-table col.dcol-start,
+    .daily-table col.dcol-end,
+    .daily-table col.dcol-progress,
+    .daily-table col.dcol-est,
+    .daily-table col.dcol-status,
+    .daily-table col.dcol-note,
+    .daily-table col.dcol-delete { display: none; }
+    .daily-table col.dcol-name { width: auto; }
+    .daily-table col.dcol-done { width: 56px; }
+
+    .daily-table thead th:not(:nth-child(3)):not(:nth-child(10)),
+    .daily-table tbody td:not(:nth-child(3)):not(:nth-child(10)):not(.daily-empty) {
+      display: none;
+    }
+    .daily-table th, .daily-table td { padding: 8px 10px; font-size: 13px; }
+    .daily-table td.daily-name-cell { white-space: normal; word-break: break-word; }
+    .daily-table .daily-col-resize { display: none; }
+
+    .daily-hint-wrap { display: none; }
+    .daily-retro-wrap { padding: 10px 12px; }
+  }
+
   /* Phase 7a: 상호작용 힌트 강화 (hover) */
   .task-row:not(.task-head) { transition: background 0.15s; }
   .task-row:not(.task-head):hover { background: var(--bg-2); }
