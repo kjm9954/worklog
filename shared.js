@@ -940,6 +940,33 @@ function renderBackupReminder(targetId) {
 window.getBackupStaleness = getBackupStaleness;
 window.renderBackupReminder = renderBackupReminder;
 window.refreshBackupReminder = function() { renderBackupReminder('backupReminder'); };
+
+// 업무명 매칭: 이번 주 + history의 모든 quadrant task 누적 시간 (진행값 기준)
+function sumTaskHoursByName(name) {
+  const key = (name || '').trim().toLowerCase();
+  if (!key || !state) return 0;
+  let total = 0;
+  const accDay = (d) => {
+    if (!d || !d.quadrants) return;
+    ['q1','q2','q3','q4'].forEach(q => {
+      const arr = d.quadrants[q];
+      if (!Array.isArray(arr)) return;
+      arr.forEach(t => {
+        if (t && (t.name || '').trim().toLowerCase() === key) total += calcTaskHours(t);
+      });
+    });
+  };
+  (state.days || []).forEach(accDay);
+  (state.history || []).forEach(w => (w && w.days || []).forEach(accDay));
+  return total;
+}
+function hasImportantByName(name) {
+  const key = (name || '').trim().toLowerCase();
+  if (!key || !state || !Array.isArray(state.importantTasks)) return false;
+  return state.importantTasks.some(it => it && (it.name || '').trim().toLowerCase() === key);
+}
+window.sumTaskHoursByName = sumTaskHoursByName;
+window.hasImportantByName = hasImportantByName;
 window.showChoiceModal = showChoiceModal;
 window.hideModal = hideModal;
 window.confirmModal = confirmModal;

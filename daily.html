@@ -2835,7 +2835,9 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     const progTitle = hasAdj
       ? `자동 계산값 ${adj > 0 ? '+' : ''}${adj.toFixed(2)}h 보정됨 · 클릭하여 조정`
       : '클릭하면 30분 단위 ± 또는 직접 입력';
-    const nameHtml = t.name ? escapeHtml(t.name) : '<span class="daily-placeholder">업무 이름</span>';
+    const isImportant = t.name && typeof hasImportantByName === 'function' && hasImportantByName(t.name);
+    const importantStar = isImportant ? '<span class="daily-important-star" title="중요 업무와 이름이 일치합니다">★</span>' : '';
+    const nameHtml = t.name ? (importantStar + escapeHtml(t.name)) : '<span class="daily-placeholder">업무 이름</span>';
     const estHtml = (t.estimatedHours === '' || t.estimatedHours === DASH) ? '<span class="daily-placeholder">-</span>' : parseFloat(t.estimatedHours).toFixed(1);
     const targetRaw = t.targetDate || '';
     const targetDisplay = targetRaw ? formatDateDisplay(targetRaw) : '';

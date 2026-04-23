@@ -230,6 +230,27 @@ button { font-family: inherit; }
 .board-row-menu .item.disabled:hover { background: transparent; }
 .board-row-menu .hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
+/* 업무명 매칭 — 누적 시간 배지 (board 중요 업무) */
+.name-with-accum {
+  display: flex; align-items: center; gap: 6px;
+  width: 100%; min-width: 0;
+}
+.name-with-accum .side-name { flex: 1 1 auto; min-width: 0; }
+.accum-h {
+  flex: 0 0 auto;
+  font-size: 0.7rem; font-weight: 600; color: var(--q2, #4a90e2);
+  background: var(--q2-soft, rgba(74, 144, 226, 0.1));
+  padding: 2px 6px; border-radius: 10px;
+  white-space: nowrap; user-select: none;
+}
+
+/* 업무명 매칭 — 중요 업무 표시 (daily 행) */
+.daily-important-star {
+  color: var(--q2, #4a90e2);
+  font-size: 0.75rem; margin-right: 4px;
+  cursor: help; user-select: none;
+}
+
 /* 헤더 접기/펼치기 토글 (.header-actions 내부 첫 자식으로 편입) */
 .header-toggle-btn {
   width: 22px; height: 22px; padding: 0;

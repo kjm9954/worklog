@@ -1062,7 +1062,9 @@
           cells.push(`<div class="st-cell" ${catAttr}${spanStyle} data-row="${i}">${catSel}</div>`);
         }
 
-        cells.push(`<div class="st-cell ${doneCls}" ${catAttr} data-row="${i}"><input type="text" class="side-name" placeholder="업무명" title="${escapeHtml(it.name || '')}" value="${escapeHtml(it.name)}" onchange="updateImportant(${i}, 'name', this.value)"></div>`);
+        const totalH = (typeof sumTaskHoursByName === 'function') ? sumTaskHoursByName(it.name) : 0;
+        const totalBadge = totalH > 0 ? `<span class="accum-h" title="이번 주 + 히스토리 누적">Σ ${totalH.toFixed(1)}h</span>` : '';
+        cells.push(`<div class="st-cell ${doneCls}" ${catAttr} data-row="${i}"><div class="name-with-accum"><input type="text" class="side-name" placeholder="업무명" title="${escapeHtml(it.name || '')}" value="${escapeHtml(it.name)}" onchange="updateImportant(${i}, 'name', this.value)">${totalBadge}</div></div>`);
         cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardStatusPopover('important', ${i}, this)" title="클릭하여 상태 선택"><span class="daily-status ${statusKey}">${statusLabel}</span></button></div>`);
         cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><input type="text" class="side-date date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(it.targetDate))}" onchange="onSideDateChange('important', ${i}, this.value)"></div>`);
         cells.push(`<div class="st-cell" ${catAttr} data-row="${i}">${ddayText ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
