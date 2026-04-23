@@ -315,7 +315,8 @@ function createInitialState() {
     weekStart: formatDate(monday),
     days: createWeekDays(monday),
     importantTasks: [], routines: [], history: [],
-    lastQuadrant: 'q4'
+    lastQuadrant: 'q4',
+    lastExportAt: null
   };
 }
 
@@ -328,6 +329,7 @@ function migrateState(s) {
   s.goals.month = typeof s.goals.month === 'string' ? s.goals.month : '';
   delete s.mainGoal;
   s.lastQuadrant = ['q1','q2','q3','q4'].includes(s.lastQuadrant) ? s.lastQuadrant : 'q4';
+  s.lastExportAt = (typeof s.lastExportAt === 'number' && isFinite(s.lastExportAt)) ? s.lastExportAt : null;
   if (!Array.isArray(s.projectLabels)) s.projectLabels = [];
   s.projectLabels = s.projectLabels.filter(p => typeof p === 'string' && p.trim()).map(p => p.trim());
   if (!s.weekStart || !Array.isArray(s.days) || s.days.length === 0) {
@@ -710,6 +712,9 @@ function exportJson() {
       const payload = buildBackupPayload(scope);
       const prefix = scope === 'daily' ? 'worklog-daily' : scope === 'board' ? 'worklog-board' : 'worklog-all';
       downloadJsonFile(payload, prefix);
+      state.lastExportAt = Date.now();
+      saveState();
+      if (typeof window.refreshBackupReminder === 'function') window.refreshBackupReminder();
     } catch (err) {
       showModal('백업 실패', '백업 중 오류가 발생했습니다.\n' + (err.message || ''), null);
     }
@@ -902,6 +907,28 @@ window.toggleDevice = toggleDevice;
 window.exportJson = exportJson;
 window.importJson = importJson;
 window.showModal = showModal;
+
+// 백업 신선도 체크 — 마지막 백업이 7일 초과거나 한 번도 없으면 stale
+function getBackupStaleness() {
+  const ts = state && state.lastExportAt;
+  if (!ts) return { stale: true, days: null, never: true };
+  const days = Math.floor((Date.now() - ts) / 86400000);
+  return { stale: days >= 7, days, never: false };
+}
+
+function renderBackupReminder(targetId) {
+  const el = document.getElementById(targetId || 'backupReminder');
+  if (!el) return;
+  const s = getBackupStaleness();
+  if (!s.stale) { el.hidden = true; el.textContent = ''; return; }
+  el.hidden = false;
+  el.textContent = s.never ? '⚠ 아직 JSON 백업 기록이 없어요' : `⚠ 마지막 백업 ${s.days}일 전`;
+  el.title = '헤더의 "백업" 버튼으로 지금 JSON을 내려받으세요.';
+}
+
+window.getBackupStaleness = getBackupStaleness;
+window.renderBackupReminder = renderBackupReminder;
+window.refreshBackupReminder = function() { renderBackupReminder('backupReminder'); };
 window.showChoiceModal = showChoiceModal;
 window.hideModal = hideModal;
 window.confirmModal = confirmModal;

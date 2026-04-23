@@ -1947,6 +1947,7 @@
       <div class="header-actions">
         <button type="button" class="header-toggle-btn" id="headerToggleBtn" aria-expanded="true" title="헤더 접기" onclick="toggleHeader()"></button>
         <span id="cloudStatus" class="cloud-status" data-tone="" title="클라우드 동기화 상태">⌂</span>
+        <span id="backupReminder" class="backup-reminder" hidden></span>
         <button class="btn sm" onclick="exportJson()" title="JSON 백업"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg> 백업</button>
         <button class="btn sm" onclick="document.getElementById('importInput').click()" title="JSON 복원"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> 복원</button>
         <input type="file" id="importInput" accept="application/json,.json" style="display:none" onchange="importJson(event, render)">
@@ -4706,6 +4707,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     autoPinOnFirstLoad();
     initColResize();
     initSidebarResize();
+    if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
 
     // 클라우드(Notion) 동기화: 원격이 있으면 로컬 덮어쓰고 재렌더. 없으면 현재 state 업로드.
     if (typeof initCloudSync === 'function') {

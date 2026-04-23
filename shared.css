@@ -197,6 +197,19 @@ button { font-family: inherit; }
 .cloud-status[data-tone="err"] { color: var(--q1); border-color: var(--q1); }
 .cloud-status[data-tone=""] { opacity: 0.55; }
 
+/* 백업 리마인더 배지 — 마지막 export 7일 초과 또는 전혀 없을 때 노출 */
+.backup-reminder {
+  display: inline-flex; align-items: center;
+  height: 22px; padding: 0 8px;
+  border: 1px solid var(--q1, #d97a7a);
+  background: var(--q1-soft, rgba(217, 122, 122, 0.12));
+  color: var(--q1, #d97a7a);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem; font-weight: 600; line-height: 1;
+  white-space: nowrap; user-select: none; cursor: help;
+}
+.backup-reminder[hidden] { display: none; }
+
 /* 헤더 접기/펼치기 토글 (.header-actions 내부 첫 자식으로 편입) */
 .header-toggle-btn {
   width: 22px; height: 22px; padding: 0;

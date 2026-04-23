@@ -595,6 +595,7 @@
       <div class="header-actions">
         <button type="button" class="header-toggle-btn" id="headerToggleBtn" aria-expanded="true" title="헤더 접기" onclick="toggleHeader()"></button>
         <span id="cloudStatus" class="cloud-status" data-tone="" title="클라우드 동기화 상태">⌂</span>
+        <span id="backupReminder" class="backup-reminder" hidden></span>
         <button class="btn sm" onclick="exportJson()" title="JSON 백업">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg>
           백업
@@ -1470,6 +1471,7 @@
     initDatePicker();
     subscribeStateChanges(render);
     render();
+    if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
 
     if (typeof initCloudSync === 'function') {
       await initCloudSync(function(remote) {
