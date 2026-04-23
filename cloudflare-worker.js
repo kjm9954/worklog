@@ -14,8 +14,10 @@
    ───────────────────────────────────────────────────────────────────────
 
    엔드포인트
-     GET  /?p=<page_id>   → 해당 페이지의 첫 code 블록 JSON 파싱해 반환
-     PUT  /?p=<page_id>   (body: state JSON) → code 블록 덮어쓰기 / 없으면 생성
+     GET  /?p=<page_id>   → toggle("WorkLog State") 내부 code 블록 JSON 반환
+                            (없으면 레거시 top-level code 블록 fallback)
+     PUT  /?p=<page_id>   (body: state JSON) → toggle 내부 code 블록 덮어쓰기
+                            없으면 toggle+code 생성, 레거시 code 블록은 삭제
    요청 헤더
      X-Widget-Key: <WIDGET_SECRET>  (WIDGET_SECRET 설정 시 필수)
    ========================================================================= */
@@ -23,6 +25,7 @@
 const NOTION_VERSION = '2022-06-28';
 const CODE_LANGUAGE = 'json';
 const RICH_TEXT_MAX = 2000;
+const TOGGLE_LABEL = 'WorkLog State (do not edit)';
 
 export default {
   async fetch(request, env) {
@@ -83,40 +86,90 @@ async function listChildren(notion, pageId) {
   return res.json();
 }
 
-async function loadState(notion, pageId) {
-  const data = await listChildren(notion, pageId);
-  const codeBlock = (data.results || []).find(b => b && b.type === 'code');
+function readRichText(arr) {
+  return (arr || []).map(r => r.plain_text || '').join('');
+}
+
+function parseCodeJson(codeBlock) {
   if (!codeBlock) return null;
-  const text = (codeBlock.code.rich_text || []).map(r => r.plain_text || '').join('');
+  const text = readRichText(codeBlock.code && codeBlock.code.rich_text);
   if (!text) return null;
   try { return JSON.parse(text); } catch (e) { return null; }
 }
 
+async function findToggle(notion, pageId) {
+  const data = await listChildren(notion, pageId);
+  const results = data.results || [];
+  const toggle = results.find(b => b && b.type === 'toggle'
+    && readRichText(b.toggle && b.toggle.rich_text).startsWith(TOGGLE_LABEL));
+  const legacyCode = results.find(b => b && b.type === 'code');
+  return { toggle, legacyCode };
+}
+
+async function loadState(notion, pageId) {
+  const { toggle, legacyCode } = await findToggle(notion, pageId);
+  if (toggle) {
+    const children = await listChildren(notion, toggle.id);
+    const codeBlock = (children.results || []).find(b => b && b.type === 'code');
+    return parseCodeJson(codeBlock);
+  }
+  return parseCodeJson(legacyCode);
+}
+
+function buildRichText(text) {
+  const chunks = splitChunks(text, RICH_TEXT_MAX);
+  return chunks.map(c => ({ type: 'text', text: { content: c } }));
+}
+
 async function saveState(notion, pageId, state) {
   const text = JSON.stringify(state);
-  const chunks = splitChunks(text, RICH_TEXT_MAX);
-  const richText = chunks.map(c => ({ type: 'text', text: { content: c } }));
+  const richText = buildRichText(text);
 
-  const data = await listChildren(notion, pageId);
-  const codeBlock = (data.results || []).find(b => b && b.type === 'code');
+  const { toggle, legacyCode } = await findToggle(notion, pageId);
 
-  if (codeBlock) {
-    const upd = await notion(`/blocks/${codeBlock.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ code: { rich_text: richText, language: CODE_LANGUAGE } }),
-    });
-    if (!upd.ok) throw new Error('notion patch failed: ' + upd.status + ' ' + await upd.text());
+  if (toggle) {
+    const children = await listChildren(notion, toggle.id);
+    const codeBlock = (children.results || []).find(b => b && b.type === 'code');
+    if (codeBlock) {
+      const upd = await notion(`/blocks/${codeBlock.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ code: { rich_text: richText, language: CODE_LANGUAGE } }),
+      });
+      if (!upd.ok) throw new Error('notion patch failed: ' + upd.status + ' ' + await upd.text());
+    } else {
+      const add = await notion(`/blocks/${toggle.id}/children`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          children: [{
+            object: 'block', type: 'code',
+            code: { rich_text: richText, language: CODE_LANGUAGE },
+          }],
+        }),
+      });
+      if (!add.ok) throw new Error('notion append failed: ' + add.status + ' ' + await add.text());
+    }
   } else {
     const add = await notion(`/blocks/${pageId}/children`, {
       method: 'PATCH',
       body: JSON.stringify({
         children: [{
-          object: 'block', type: 'code',
-          code: { rich_text: richText, language: CODE_LANGUAGE },
+          object: 'block', type: 'toggle',
+          toggle: {
+            rich_text: [{ type: 'text', text: { content: TOGGLE_LABEL } }],
+            children: [{
+              object: 'block', type: 'code',
+              code: { rich_text: richText, language: CODE_LANGUAGE },
+            }],
+          },
         }],
       }),
     });
     if (!add.ok) throw new Error('notion append failed: ' + add.status + ' ' + await add.text());
+  }
+
+  if (legacyCode) {
+    const del = await notion(`/blocks/${legacyCode.id}`, { method: 'DELETE' });
+    if (!del.ok) throw new Error('notion delete legacy failed: ' + del.status + ' ' + await del.text());
   }
 }
 
