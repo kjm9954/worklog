@@ -211,9 +211,15 @@
     background: var(--card);
     overflow: hidden;
   }
+  :root {
+    --b-imp-proj: 48px; --b-imp-cat: 52px; --b-imp-status: 62px;
+    --b-imp-date: 84px; --b-imp-dday: 60px; --b-imp-del: 40px;
+    --b-rt-proj: 48px; --b-rt-cat: 52px; --b-rt-detail: 56px;
+    --b-rt-status: 62px; --b-rt-date: 84px; --b-rt-dday: 60px; --b-rt-del: 40px;
+  }
   .side-table.important-grid {
     display: grid;
-    grid-template-columns: 22px 48px 52px minmax(var(--imp-name-w), 1fr) 62px 84px 60px var(--imp-del-w);
+    grid-template-columns: 22px var(--b-imp-proj) var(--b-imp-cat) minmax(120px, 1fr) var(--b-imp-status) var(--b-imp-date) var(--b-imp-dday) var(--b-imp-del);
     gap: 1px;
     background: var(--border);
     padding: 0;
@@ -222,13 +228,28 @@
   }
   .side-table.routine-grid {
     display: grid;
-    grid-template-columns: 22px 48px 52px 56px minmax(var(--rt-name-w), 1fr) 62px 84px 60px var(--rt-del-w);
+    grid-template-columns: 22px var(--b-rt-proj) var(--b-rt-cat) var(--b-rt-detail) minmax(120px, 1fr) var(--b-rt-status) var(--b-rt-date) var(--b-rt-dday) var(--b-rt-del);
     gap: 1px;
     background: var(--border);
     padding: 0;
     width: 100%;
     min-width: 568px;
   }
+  .st-cell.st-head { position: relative; }
+  .b-col-resize {
+    position: absolute; top: 0; right: -4px; bottom: 0;
+    width: 8px; cursor: col-resize; z-index: 3;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .b-col-resize::before {
+    content: ''; width: 2px; height: 60%;
+    background: transparent; border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .b-col-resize:hover::before,
+  .b-col-resize.dragging::before { background: var(--q2, #4a90e2); }
+  body.resizing-col { cursor: col-resize; user-select: none; }
+  body.resizing-col * { cursor: col-resize !important; }
   .st-cell.st-drag {
     padding: 0;
     cursor: grab;
@@ -1020,13 +1041,14 @@
     if (counter) counter.textContent = state.importantTasks.length;
 
     const cells = [];
+    const rh = k => `<div class="b-col-resize" data-bcol="${k}" title="드래그하여 너비 조절"></div>`;
     cells.push('<div class="st-cell st-head"></div>');
-    cells.push('<div class="st-cell st-head">프로</div>');
-    cells.push('<div class="st-cell st-head">구분</div>');
+    cells.push(`<div class="st-cell st-head">프로${rh('imp-proj')}</div>`);
+    cells.push(`<div class="st-cell st-head">구분${rh('imp-cat')}</div>`);
     cells.push('<div class="st-cell st-head">업무명</div>');
-    cells.push('<div class="st-cell st-head">상태</div>');
-    cells.push('<div class="st-cell st-head">마감일</div>');
-    cells.push('<div class="st-cell st-head">디데이</div>');
+    cells.push(`<div class="st-cell st-head">상태${rh('imp-status')}</div>`);
+    cells.push(`<div class="st-cell st-head">마감일${rh('imp-date')}</div>`);
+    cells.push(`<div class="st-cell st-head">디데이${rh('imp-dday')}</div>`);
     cells.push('<div class="st-cell st-head">삭제</div>');
 
     const items = state.importantTasks;
@@ -1083,14 +1105,15 @@
     if (counter) counter.textContent = state.routines.length;
 
     const cells = [];
+    const rh = k => `<div class="b-col-resize" data-bcol="${k}" title="드래그하여 너비 조절"></div>`;
     cells.push('<div class="st-cell st-head"></div>');
-    cells.push('<div class="st-cell st-head">프로</div>');
-    cells.push('<div class="st-cell st-head">구분</div>');
-    cells.push('<div class="st-cell st-head">상세</div>');
+    cells.push(`<div class="st-cell st-head">프로${rh('rt-proj')}</div>`);
+    cells.push(`<div class="st-cell st-head">구분${rh('rt-cat')}</div>`);
+    cells.push(`<div class="st-cell st-head">상세${rh('rt-detail')}</div>`);
     cells.push('<div class="st-cell st-head">업무명</div>');
-    cells.push('<div class="st-cell st-head">상태</div>');
-    cells.push('<div class="st-cell st-head">마감일</div>');
-    cells.push('<div class="st-cell st-head">디데이</div>');
+    cells.push(`<div class="st-cell st-head">상태${rh('rt-status')}</div>`);
+    cells.push(`<div class="st-cell st-head">마감일${rh('rt-date')}</div>`);
+    cells.push(`<div class="st-cell st-head">디데이${rh('rt-dday')}</div>`);
     cells.push('<div class="st-cell st-head">삭제</div>');
 
     const items = state.routines;
@@ -1541,6 +1564,78 @@
   });
   window.addEventListener('scroll', closeBoardRowMenu, true);
 
+  // ── 보드 컬럼 리사이즈 ───────────────────────────────────────
+  const B_COL_DEFAULTS = {
+    'imp-proj': 48, 'imp-cat': 52, 'imp-status': 62, 'imp-date': 84, 'imp-dday': 60, 'imp-del': 40,
+    'rt-proj': 48, 'rt-cat': 52, 'rt-detail': 56, 'rt-status': 62, 'rt-date': 84, 'rt-dday': 60, 'rt-del': 40
+  };
+  const B_COL_MIN = 36;
+  const B_COL_MAX = 260;
+  const B_COL_STORAGE_KEY = 'worklog-board-col-widths';
+
+  function applyBCol(key, w) {
+    document.documentElement.style.setProperty(`--b-${key}`, w + 'px');
+  }
+  function loadBoardColWidths() {
+    try {
+      const raw = localStorage.getItem(B_COL_STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      Object.keys(B_COL_DEFAULTS).forEach(k => {
+        const w = Number(saved[k]);
+        if (w && w >= B_COL_MIN && w <= B_COL_MAX) applyBCol(k, w);
+      });
+    } catch (e) {}
+  }
+  function saveBoardColWidths() {
+    try {
+      const cs = getComputedStyle(document.documentElement);
+      const out = {};
+      Object.keys(B_COL_DEFAULTS).forEach(k => {
+        const raw = cs.getPropertyValue(`--b-${k}`).trim();
+        out[k] = parseInt(raw, 10) || B_COL_DEFAULTS[k];
+      });
+      localStorage.setItem(B_COL_STORAGE_KEY, JSON.stringify(out));
+    } catch (e) {}
+  }
+  function initBoardColResize() {
+    let drag = null;
+    document.addEventListener('mousedown', function(e) {
+      const h = e.target.closest && e.target.closest('.b-col-resize');
+      if (!h) return;
+      const key = h.dataset.bcol;
+      if (!key || !(key in B_COL_DEFAULTS)) return;
+      const cs = getComputedStyle(document.documentElement);
+      const cur = parseInt(cs.getPropertyValue(`--b-${key}`), 10) || B_COL_DEFAULTS[key];
+      drag = { key, startX: e.clientX, startW: cur, handle: h };
+      h.classList.add('dragging');
+      document.body.classList.add('resizing-col');
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!drag) return;
+      const delta = e.clientX - drag.startX;
+      const newW = Math.max(B_COL_MIN, Math.min(B_COL_MAX, drag.startW + delta));
+      applyBCol(drag.key, newW);
+    });
+    document.addEventListener('mouseup', function() {
+      if (!drag) return;
+      drag.handle.classList.remove('dragging');
+      document.body.classList.remove('resizing-col');
+      drag = null;
+      saveBoardColWidths();
+    });
+    // 더블클릭으로 기본값 복원
+    document.addEventListener('dblclick', function(e) {
+      const h = e.target.closest && e.target.closest('.b-col-resize');
+      if (!h) return;
+      const key = h.dataset.bcol;
+      if (!key || !(key in B_COL_DEFAULTS)) return;
+      applyBCol(key, B_COL_DEFAULTS[key]);
+      saveBoardColWidths();
+    });
+  }
+
   (async function boardInit() {
     state = loadState();
     autoRolloverWeek();
@@ -1549,7 +1644,9 @@
     initHeaderCollapse();
     initDatePicker();
     subscribeStateChanges(render);
+    loadBoardColWidths();
     render();
+    initBoardColResize();
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
 
     if (typeof initCloudSync === 'function') {
