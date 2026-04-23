@@ -316,7 +316,8 @@ function createInitialState() {
     days: createWeekDays(monday),
     importantTasks: [], routines: [], history: [],
     lastQuadrant: 'q4',
-    lastExportAt: null
+    lastExportAt: null,
+    carryover: []
   };
 }
 
@@ -330,6 +331,7 @@ function migrateState(s) {
   delete s.mainGoal;
   s.lastQuadrant = ['q1','q2','q3','q4'].includes(s.lastQuadrant) ? s.lastQuadrant : 'q4';
   s.lastExportAt = (typeof s.lastExportAt === 'number' && isFinite(s.lastExportAt)) ? s.lastExportAt : null;
+  s.carryover = Array.isArray(s.carryover) ? s.carryover.filter(x => x && typeof x === 'object' && typeof x.qKey === 'string') : [];
   if (!Array.isArray(s.projectLabels)) s.projectLabels = [];
   s.projectLabels = s.projectLabels.filter(p => typeof p === 'string' && p.trim()).map(p => p.trim());
   if (!s.weekStart || !Array.isArray(s.days) || s.days.length === 0) {
@@ -497,6 +499,15 @@ function autoRolloverWeek() {
   const monday = getThisMonday();
   state.weekStart = formatDate(monday);
   state.days = createWeekDays(monday);
+  if (Array.isArray(state.carryover) && state.carryover.length) {
+    const mon = state.days[0];
+    state.carryover.forEach(item => {
+      const q = ['q1','q2','q3','q4'].includes(item.qKey) ? item.qKey : 'q4';
+      if (!mon.quadrants[q]) mon.quadrants[q] = [];
+      mon.quadrants[q].push(item.task);
+    });
+    state.carryover = [];
+  }
   try { localStorage.setItem(LAST_ROLLOVER_KEY, todayMonday); } catch (e) {}
   saveState();
 }
