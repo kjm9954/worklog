@@ -148,13 +148,86 @@
   }
   .h-day-more:hover { color: var(--q2); }
 
-  /* 도넛 */
-  .h-donut-wrap { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
-  .h-donut-svg { flex: 0 0 auto; }
-  .h-donut-legend { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
-  .h-donut-legend .lg-row { display: flex; align-items: center; gap: 8px; }
-  .h-donut-legend .lg-swatch { width: 12px; height: 12px; border-radius: 2px; }
-  .h-donut-legend .lg-val { color: var(--text-muted); margin-left: auto; }
+  /* 프로젝트 분포 — stacked bar + 랭킹 리스트 */
+  .h-dist-wrap { display: flex; flex-direction: column; gap: 14px; }
+  .h-dist-head {
+    display: flex; align-items: baseline; gap: 10px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .h-dist-head .total {
+    font-size: 18px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .h-dist-head .total-sub { color: var(--text-muted); font-size: 11px; }
+
+  .h-stacked-bar {
+    display: flex; width: 100%; height: 24px;
+    border-radius: 6px; overflow: hidden;
+    background: var(--bg-2);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .h-stacked-seg {
+    position: relative;
+    min-width: 2px;
+    transition: flex-basis 0.3s;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+  .h-stacked-seg:not(:last-child) {
+    border-right: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  .h-dist-rows { display: flex; flex-direction: column; gap: 6px; }
+  .h-dist-row {
+    display: grid;
+    grid-template-columns: 14px minmax(80px, 140px) 1fr 60px 44px;
+    align-items: center; gap: 10px;
+    padding: 4px 2px;
+    font-size: 12px;
+    min-width: 0;
+  }
+  .h-dist-row .dot {
+    width: 10px; height: 10px; border-radius: 3px;
+    justify-self: center;
+  }
+  .h-dist-row .proj-name {
+    font-weight: 600; color: var(--text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .h-dist-row .mini-bar {
+    position: relative; height: 6px;
+    background: var(--bg-2); border-radius: 3px; overflow: hidden;
+    min-width: 0;
+  }
+  .h-dist-row .mini-bar-fill {
+    position: absolute; top: 0; left: 0; bottom: 0;
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+  .h-dist-row .hrs {
+    font-variant-numeric: tabular-nums;
+    color: var(--text); font-weight: 600;
+    text-align: right;
+  }
+  .h-dist-row .pct {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted); font-size: 11px;
+    text-align: right;
+  }
+  .h-dist-row:hover { background: var(--bg-2); border-radius: var(--radius-sm); }
+  .h-dist-empty { padding: 20px; text-align: center; color: var(--text-subtle); font-size: 12px; }
+
+  @media (max-width: 560px) {
+    .h-dist-row {
+      grid-template-columns: 12px minmax(60px, 1fr) 50px 40px;
+      gap: 8px;
+    }
+    .h-dist-row .mini-bar { display: none; }
+  }
   .h-donut-toggle { display: inline-flex; gap: 2px; background: var(--bg-2); padding: 2px; border-radius: var(--radius-sm); margin-left: auto; }
   .h-donut-toggle button {
     padding: 3px 10px; border: none; background: transparent;
@@ -436,7 +509,7 @@
 
         <section class="h-card" style="margin-top:10px">
           <h3 class="h-section-title">프로젝트 시간 분포 <div class="h-donut-toggle" id="hDonutToggle"><button data-scope="week" class="on" onclick="hSetDonutScope('week')">이번 주</button><button data-scope="month" onclick="hSetDonutScope('month')">이번 달</button></div></h3>
-          <div class="h-donut-wrap" id="hDonutWrap"></div>
+          <div class="h-dist-wrap" id="hDonutWrap"></div>
         </section>
       </div>
 
@@ -877,34 +950,43 @@
     const data = collectProjectHours(hDonutScope);
     document.querySelectorAll('#hDonutToggle button').forEach(b => b.classList.toggle('on', b.dataset.scope === hDonutScope));
     const total = data.reduce((s, x) => s + x.hours, 0);
-    if (total === 0) { wrap.innerHTML = '<div class="h-day-empty" style="padding:24px">시간 기록이 없습니다.</div>'; return; }
-    const R = 60, r = 40, cx = 80, cy = 80;
-    let acc = 0;
-    const slices = data.map(d => {
-      const frac = d.hours / total;
-      const a0 = acc * 2 * Math.PI - Math.PI / 2;
-      acc += frac;
-      const a1 = acc * 2 * Math.PI - Math.PI / 2;
-      const large = frac > 0.5 ? 1 : 0;
-      const x0 = cx + R * Math.cos(a0), y0 = cy + R * Math.sin(a0);
-      const x1 = cx + R * Math.cos(a1), y1 = cy + R * Math.sin(a1);
-      const xi1 = cx + r * Math.cos(a1), yi1 = cy + r * Math.sin(a1);
-      const xi0 = cx + r * Math.cos(a0), yi0 = cy + r * Math.sin(a0);
-      const dPath = `M ${x0} ${y0} A ${R} ${R} 0 ${large} 1 ${x1} ${y1} L ${xi1} ${yi1} A ${r} ${r} 0 ${large} 0 ${xi0} ${yi0} Z`;
-      return `<path d="${dPath}" fill="${colorForProject(d.name)}"><title>${escapeHtml(d.name)}: ${d.hours.toFixed(1)}h (${(frac*100).toFixed(0)}%)</title></path>`;
+    if (total === 0) {
+      wrap.innerHTML = '<div class="h-dist-empty">시간 기록이 없습니다.</div>';
+      return;
+    }
+    const scopeLabel = hDonutScope === 'week' ? '이번 주 합계' : '이번 달 합계';
+    const activeProjects = data.length;
+    // 2% 미만 세그먼트는 라벨 숨김
+    const maxHours = data[0].hours;
+    const segs = data.map(d => {
+      const pct = d.hours / total * 100;
+      const showLabel = pct >= 8;
+      const name = (d.name || '').trim() || '(미지정)';
+      return `<div class="h-stacked-seg" style="flex:${d.hours} 1 0;background:${colorForProject(name)}" title="${escapeHtml(name)}: ${d.hours.toFixed(1)}h (${pct.toFixed(0)}%)">${showLabel ? escapeHtml(name) + ' ' + pct.toFixed(0) + '%' : ''}</div>`;
     }).join('');
-    const legend = data.map(d => `
-      <div class="lg-row">
-        <span class="lg-swatch" style="background:${colorForProject(d.name)}"></span>
-        <span>${escapeHtml(d.name)}</span>
-        <span class="lg-val">${d.hours.toFixed(1)}h · ${((d.hours/total)*100).toFixed(0)}%</span>
-      </div>`).join('');
+    const rows = data.map(d => {
+      const pct = d.hours / total * 100;
+      const relFill = (d.hours / maxHours) * 100;
+      const name = (d.name || '').trim() || '(미지정)';
+      const color = colorForProject(name);
+      return `
+        <div class="h-dist-row" title="${escapeHtml(name)}: ${d.hours.toFixed(1)}h · ${pct.toFixed(1)}%">
+          <span class="dot" style="background:${color}"></span>
+          <span class="proj-name">${escapeHtml(name)}</span>
+          <span class="mini-bar"><span class="mini-bar-fill" style="width:${relFill.toFixed(1)}%;background:${color}"></span></span>
+          <span class="hrs">${d.hours.toFixed(1)}h</span>
+          <span class="pct">${pct.toFixed(0)}%</span>
+        </div>
+      `;
+    }).join('');
     wrap.innerHTML = `
-      <svg class="h-donut-svg" width="160" height="160" viewBox="0 0 160 160">${slices}
-        <text x="80" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="var(--text)">${total.toFixed(1)}h</text>
-        <text x="80" y="94" text-anchor="middle" font-size="10" fill="var(--text-muted)">${hDonutScope === 'week' ? '이번 주' : '이번 달'}</text>
-      </svg>
-      <div class="h-donut-legend">${legend}</div>`;
+      <div class="h-dist-head">
+        <span class="total">${total.toFixed(1)}h</span>
+        <span class="total-sub">${scopeLabel} · ${activeProjects}개 프로젝트</span>
+      </div>
+      <div class="h-stacked-bar">${segs}</div>
+      <div class="h-dist-rows">${rows}</div>
+    `;
   }
 
   // 히트맵: 최근 8주 × 5요일 (Mon-Fri)
