@@ -81,6 +81,7 @@
     display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
     gap: 16px; align-items: start;
   }
+  .h-week-layout > * { min-width: 0; }
   @media (max-width: 960px) {
     .h-week-layout { grid-template-columns: 1fr; }
   }
@@ -88,10 +89,10 @@
 
   /* 주간 업무 — 컴팩트 카드 */
   .h-week-grid {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px;
   }
   @media (max-width: 700px) {
-    .h-week-grid { grid-template-columns: 1fr 1fr; }
+    .h-week-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 480px) {
     .h-week-grid { grid-template-columns: 1fr; }
@@ -102,6 +103,7 @@
     position: relative; cursor: pointer;
     border: 1px solid transparent;
     transition: border-color 0.15s, background 0.15s;
+    min-width: 0; overflow: hidden;
   }
   .h-day:hover { border-color: var(--q2, #4a90e2); background: var(--card); }
   .h-day.has-retro::after {
@@ -131,11 +133,12 @@
     display: flex; align-items: center; gap: 5px;
     font-size: 11px; color: var(--text);
     line-height: 1.35;
+    min-width: 0;
   }
   .h-day-task .chk { width: 9px; height: 9px; flex-shrink: 0; border-radius: 50%; }
   .h-day-task .chk.on { background: var(--prog-ok, #3fa95a); }
   .h-day-task .chk.off { border: 1px solid var(--border-strong); }
-  .h-day-task .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .h-day-task .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .h-day-task .hrs { font-size: 10px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
   .h-day-task.done .name { text-decoration: line-through; color: var(--text-muted); }
   .h-day-empty { font-size: 10px; color: var(--text-subtle); text-align: center; padding: 10px 0; }
