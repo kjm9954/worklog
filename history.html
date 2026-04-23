@@ -429,29 +429,15 @@
       <div id="hWeekView">
         <div class="h-summary-chips" id="hSummaryChips"></div>
 
-        <div class="h-week-layout" style="margin-top:12px">
-          <section class="h-card">
-            <h3 class="h-section-title">주간 업무 <span class="muted" id="hWeekRetro"></span></h3>
-            <div class="h-week-grid" id="hWeekGrid"></div>
-          </section>
+        <section class="h-card" style="margin-top:12px">
+          <h3 class="h-section-title">주간 업무 <span class="muted" id="hWeekRetro"></span></h3>
+          <div class="h-week-grid" id="hWeekGrid"></div>
+        </section>
 
-          <div class="h-week-right">
-            <section class="h-card">
-              <h3 class="h-section-title">프로젝트 시간 분포 <div class="h-donut-toggle" id="hDonutToggle"><button data-scope="week" class="on" onclick="hSetDonutScope('week')">이번 주</button><button data-scope="month" onclick="hSetDonutScope('month')">이번 달</button></div></h3>
-              <div class="h-donut-wrap" id="hDonutWrap"></div>
-            </section>
-
-            <section class="h-card">
-              <h3 class="h-section-title">주간 자동 요약
-                <div class="h-summary-actions">
-                  <button class="btn sm" onclick="hGenerateSummary()">↻ 생성</button>
-                  <button class="btn sm" onclick="hCopySummary()">복사</button>
-                </div>
-              </h3>
-              <div class="h-auto-summary" id="hAutoSummary"></div>
-            </section>
-          </div>
-        </div>
+        <section class="h-card" style="margin-top:10px">
+          <h3 class="h-section-title">프로젝트 시간 분포 <div class="h-donut-toggle" id="hDonutToggle"><button data-scope="week" class="on" onclick="hSetDonutScope('week')">이번 주</button><button data-scope="month" onclick="hSetDonutScope('month')">이번 달</button></div></h3>
+          <div class="h-donut-wrap" id="hDonutWrap"></div>
+        </section>
       </div>
 
       <!-- 월간 뷰 -->
