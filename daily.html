@@ -2000,6 +2000,9 @@
             <div class="daily-day-tabs" id="dailyDayTabs"></div>
             <button class="daily-nav-btn" onclick="dailyMove(1)" title="다음 날" aria-label="다음 날">▶</button>
             <button class="daily-today-btn" onclick="dailyGoToday()">📅 오늘</button>
+            <button class="daily-today-btn daily-archive-btn"
+                    onclick="askArchive()"
+                    title="이번 주 기록을 지난주로 이동하고 오늘 날짜에 맞춰 새 주로 시작합니다">📦 주간 갱신</button>
           </div>
           <div id="dailyCard"></div>
           <div class="daily-hint-wrap">
@@ -3900,7 +3903,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     const summary = weekSummaryHtml();
     let historyBody;
     if (state.history.length === 0) {
-      historyBody = '<div class="history-empty">아직 보관된 주간이 없어요.<br>주간 탭 좌측의 <b>📦 주간 갱신</b> 버튼으로 이번 주를 히스토리에 보관할 수 있어요.</div>';
+      historyBody = '<div class="history-empty">아직 보관된 주간이 없어요.<br>일간 뷰 상단의 <b>📦 주간 갱신</b> 버튼으로 이번 주를 히스토리에 보관할 수 있어요.</div>';
     } else {
       const indexed = state.history.map((h, idx) => ({ h, idx }));
       indexed.sort((a, b) => (b.h.archivedAt || '').localeCompare(a.h.archivedAt || ''));
@@ -4084,7 +4087,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     if (withTasks.length === 0) {
       list.innerHTML = scope === 'month'
         ? '<div class="history-empty">최근 30일 내 기록이 없어요.<br><b>📂 전체 기간</b>을 눌러 이전 기록을 확인할 수 있어요.</div>'
-        : '<div class="history-empty">기록된 업무가 없어요.<br>주간 탭에서 업무를 입력한 뒤 <b>📦 주간 갱신</b>으로 보관해주세요.</div>';
+        : '<div class="history-empty">기록된 업무가 없어요.<br>업무를 입력한 뒤 <b>📦 주간 갱신</b>으로 보관해주세요.</div>';
       return;
     }
 
