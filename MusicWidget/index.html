@@ -24,48 +24,66 @@
       cursor: pointer;
     }
 
+    /* 중앙 이미지 박스: 가로/세로 가운데 + 위젯 짧은 변 기준으로 반응형 사이즈 */
+    #discBox {
+      position: absolute;
+      top: 46%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: clamp(200px, 70vmin, 420px);
+      aspect-ratio: 1 / 1;
+    }
+
     #disc {
       position: absolute;
-      bottom: 18%;
-      right: 6%;
-      width: 45%;
-      max-width: 260px;
-      aspect-ratio: 1 / 1;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       object-fit: cover;
       image-rendering: pixelated;
-      transform: rotate(0deg);
       pointer-events: none;
       -webkit-user-drag: none;
+      transform: rotate(0deg);
     }
 
+    /* 텍스트는 이미지 안 하단 가운데에 오버레이 (이미지 회전과 분리) */
     #datetime {
       position: absolute;
+      left: 0;
+      right: 0;
       bottom: 14%;
-      left: 6%;
+      text-align: center;
       color: #ffffff;
-      font-size: clamp(11px, 3.4vw, 16px);
+      font-size: clamp(11px, 3vmin, 17px);
       font-weight: 700;
       line-height: 1.55;
       letter-spacing: 0.5px;
-      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55), 2px 2px 0 rgba(0, 0, 0, 0.35);
+      text-shadow:
+        1px 1px 0 #000,
+        -1px 1px 0 #000,
+        1px -1px 0 #000,
+        -1px -1px 0 #000,
+        2px 2px 0 rgba(0, 0, 0, 0.55);
       pointer-events: none;
       white-space: nowrap;
     }
 
+    /* 컨트롤 바: 가로 가운데, 위젯 크기에 따라 함께 변동 */
     #controlBar {
       position: absolute;
-      bottom: 4%;
+      bottom: 5%;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: clamp(28px, 12vw, 56px);
-      padding: clamp(10px, 2.6vw, 16px) clamp(28px, 9vw, 52px);
+      gap: clamp(28px, 12vmin, 64px);
+      padding: clamp(12px, 3vmin, 20px) clamp(28px, 9vmin, 56px);
       background: #5BB143;
       border-radius: 9999px;
-      min-width: 65%;
+      width: clamp(220px, 75vmin, 440px);
+      max-width: 88%;
       box-sizing: border-box;
     }
 
@@ -75,13 +93,14 @@
       border: none;
       padding: 0;
       cursor: pointer;
-      width: clamp(30px, 8vw, 40px);
-      height: clamp(30px, 8vw, 40px);
+      width: clamp(34px, 10vmin, 52px);
+      height: clamp(34px, 10vmin, 52px);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #ffffff;
       transition: opacity 0.12s ease;
+      flex-shrink: 0;
     }
 
     #controlBar button::before {
@@ -106,8 +125,10 @@
 </head>
 <body>
   <div id="widget">
-    <img id="disc" src="./minecraft_office_circle.png" alt="" draggable="false" />
-    <div id="datetime"></div>
+    <div id="discBox">
+      <img id="disc" src="./minecraft_office_circle.png" alt="" draggable="false" />
+      <div id="datetime"></div>
+    </div>
     <div id="controlBar">
       <button id="pauseBtn" type="button" aria-label="일시정지">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
