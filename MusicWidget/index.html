@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Music Widget</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      font-family: 'Press Start 2P', 'NeoDunggeunmo', 'D2Coding', 'Consolas', monospace;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    #widget {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    #disc {
+      position: absolute;
+      bottom: 18%;
+      right: 6%;
+      width: 45%;
+      max-width: 260px;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      object-fit: cover;
+      image-rendering: pixelated;
+      transform: rotate(0deg);
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    #datetime {
+      position: absolute;
+      bottom: 14%;
+      left: 6%;
+      color: #ffffff;
+      font-size: clamp(11px, 3.4vw, 16px);
+      font-weight: 700;
+      line-height: 1.55;
+      letter-spacing: 0.5px;
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55), 2px 2px 0 rgba(0, 0, 0, 0.35);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    #controlBar {
+      position: absolute;
+      bottom: 4%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(28px, 12vw, 56px);
+      padding: clamp(10px, 2.6vw, 16px) clamp(28px, 9vw, 52px);
+      background: #5BB143;
+      border-radius: 9999px;
+      min-width: 65%;
+      box-sizing: border-box;
+    }
+
+    #controlBar button {
+      position: relative;
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      width: clamp(30px, 8vw, 40px);
+      height: clamp(30px, 8vw, 40px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      transition: opacity 0.12s ease;
+    }
+
+    #controlBar button::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+
+    #controlBar button:hover { opacity: 0.85; }
+    #controlBar button:active { opacity: 0.6; }
+
+    #controlBar button svg {
+      width: 58%;
+      height: 58%;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="widget">
+    <img id="disc" src="./minecraft_office_circle.png" alt="" draggable="false" />
+    <div id="datetime"></div>
+    <div id="controlBar">
+      <button id="pauseBtn" type="button" aria-label="일시정지">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="7" y="6" width="3.5" height="12" rx="0.4" fill="#FFFFFF" />
+          <rect x="13.5" y="6" width="3.5" height="12" rx="0.4" fill="#FFFFFF" />
+        </svg>
+      </button>
+      <button id="playBtn" type="button" aria-label="재생">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <polygon points="8,5.5 18,12 8,18.5" fill="#FFFFFF" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 같은 폴더에 음원 파일을 'music.mp3' 라는 이름으로 두세요. 파일명 바꾸시려면 src 만 수정. -->
+  <audio id="bgm" src="./music.mp3" preload="auto" loop></audio>
+
+  <script>
+    (() => {
+      const disc = document.getElementById('disc');
+      const datetime = document.getElementById('datetime');
+      const widget = document.getElementById('widget');
+      const bgm = document.getElementById('bgm');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const playBtn = document.getElementById('playBtn');
+
+      // ---------- 1초마다 한국어 날짜/시간 갱신 ----------
+      function updateClock() {
+        const now = new Date();
+        const date = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
+        const time = now.toLocaleTimeString('ko-KR');
+        datetime.innerHTML = `${date}<br>${time}`;
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+
+      // ---------- 회전 (rAF + 누적 각도 방식) ----------
+      // CSS animation-play-state 만으로는 일부 환경에서 0도로 리셋되는 이슈가 있어
+      // 직접 각도를 누적해 transform 으로 찍는다.
+      const SPIN_DURATION_MS = 30000; // 한 바퀴 30초
+      let spinStartTime = 0;
+      let spinStartAngle = 0;
+      let isSpinning = false;
+      let rafId = 0;
+
+      function startSpin() {
+        if (isSpinning) return;
+        spinStartTime = performance.now();
+        isSpinning = true;
+        rafId = requestAnimationFrame(tickSpin);
+      }
+      function tickSpin(now) {
+        if (!isSpinning) return;
+        const elapsed = now - spinStartTime;
+        const angle = (spinStartAngle + (elapsed / SPIN_DURATION_MS) * 360) % 360;
+        disc.style.transform = `rotate(${angle}deg)`;
+        rafId = requestAnimationFrame(tickSpin);
+      }
+      function stopSpin() {
+        if (!isSpinning) return;
+        const elapsed = performance.now() - spinStartTime;
+        spinStartAngle = (spinStartAngle + (elapsed / SPIN_DURATION_MS) * 360) % 360;
+        isSpinning = false;
+        if (rafId) cancelAnimationFrame(rafId);
+      }
+
+      // ---------- 자동재생 게이트 ----------
+      // 페이지 로드 직후엔 play() 호출 X (브라우저 정책상 차단됨).
+      // 위젯 영역 어디서든 첫 클릭/터치가 발생하면 그때부터 재생 시작.
+      let unlocked = false;
+      function unlockAndPlay() {
+        if (unlocked) return;
+        unlocked = true;
+        bgm.play().catch(() => {});
+        startSpin();
+      }
+      widget.addEventListener('click', unlockAndPlay);
+      widget.addEventListener('touchstart', unlockAndPlay, { passive: true });
+
+      // ---------- 일시정지 / 재생 버튼 ----------
+      pauseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        unlocked = true; // 첫 클릭이 일시정지 버튼이었던 경우에도 게이트 해제
+        if (!bgm.paused) {
+          bgm.pause();
+          stopSpin();
+        }
+      });
+      playBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        unlocked = true;
+        if (bgm.paused) {
+          bgm.play().catch(() => {});
+          startSpin();
+        }
+      });
+
+      // ---------- 끊김 없는 무한 루프 (loop 속성 보강) ----------
+      // <audio loop> 이미 있지만, 일부 환경 대비해 ended 핸들러로 한 번 더 보장.
+      bgm.addEventListener('ended', () => {
+        bgm.currentTime = 0;
+        bgm.play().catch(() => {});
+      });
+    })();
+  </script>
+</body>
+</html>
