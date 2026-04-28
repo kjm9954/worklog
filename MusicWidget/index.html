@@ -30,31 +30,35 @@
       cursor: pointer;
     }
 
-    /* 중앙 디스크 박스: 가로/세로 가운데 + 위젯 짧은 변 기준 반응형 */
+    /* 중앙 디스크 박스: 위젯 가운데에 배치, 사이즈는 자식 GIF 자연 크기에 맞춤 */
     #discBox {
       position: absolute;
-      top: 46%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: clamp(200px, 70vmin, 420px);
-      aspect-ratio: 1 / 1;
     }
 
-    /* GIF 본체와 일시정지 캡처 캔버스를 같은 자리에 겹쳐 둠 */
-    #disc, #discFreeze {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
+    /* GIF 는 원본 비율·크기 그대로. 위젯이 작아 넘치면 비례 축소만 적용 */
+    #disc {
+      display: block;
+      max-width: 90vw;
+      max-height: 70vh;
+      width: auto;
+      height: auto;
       image-rendering: pixelated;
       pointer-events: none;
       -webkit-user-drag: none;
     }
 
-    /* 일시정지 상태에서만 캡처 캔버스를 보여 GIF 위에 덮음 */
-    #discFreeze { opacity: 0; }
+    /* 일시정지 캡처 캔버스: GIF 위에 같은 자리·같은 크기로 정확히 덮음 */
+    #discFreeze {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0;
+    }
     #discBox.paused #discFreeze { opacity: 1; }
 
     /* 텍스트는 디스크 안 하단 가운데. Galmuri9 픽셀 폰트 적용 */
@@ -184,23 +188,19 @@
       // GIF 본체는 항상 백그라운드 진행 중. 일시정지 시 그 순간의 프레임을
       // canvas 에 떠 GIF 위에 덮어 보여주고, 재생 시 캔버스를 숨겨
       // 백그라운드에서 진행 중이던 GIF 가 그 시점부터 자연스럽게 이어 보이게 함.
-      // GIF 가 가로형이라 정사각형 박스에 cover 처럼 보이도록 가운데 정사각형 영역을 잘라 그림.
+      // 원본 비율을 유지해야 하므로 표시 사이즈를 그대로 캔버스에 풀로 그림(자르기 없음).
       function captureFreezeFrame() {
         if (!discImg.complete || discImg.naturalWidth === 0) return;
         const dpr = window.devicePixelRatio || 1;
-        const w = Math.max(1, Math.round(discBox.clientWidth * dpr));
-        const h = Math.max(1, Math.round(discBox.clientHeight * dpr));
+        const rect = discImg.getBoundingClientRect();
+        const w = Math.max(1, Math.round(rect.width * dpr));
+        const h = Math.max(1, Math.round(rect.height * dpr));
         if (discFreeze.width !== w) discFreeze.width = w;
         if (discFreeze.height !== h) discFreeze.height = h;
         const ctx = discFreeze.getContext('2d');
         ctx.clearRect(0, 0, w, h);
-        const naturalW = discImg.naturalWidth;
-        const naturalH = discImg.naturalHeight;
-        const side = Math.min(naturalW, naturalH);
-        const sx = (naturalW - side) / 2;
-        const sy = (naturalH - side) / 2;
         try {
-          ctx.drawImage(discImg, sx, sy, side, side, 0, 0, w, h);
+          ctx.drawImage(discImg, 0, 0, w, h);
         } catch (_) {}
       }
 
