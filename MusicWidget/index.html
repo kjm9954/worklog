@@ -32,8 +32,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: clamp(10px, 2vmin, 20px);
+      overflow: hidden;
     }
 
     /* 디스크 박스: 자식 img 자연 크기에 맞춰 사이즈 결정. relative = #datetime/#discFreeze 의 기준 */
@@ -41,11 +42,12 @@
       position: relative;
     }
 
-    /* GIF 는 원본 비율·크기 그대로. 위젯이 작아 넘치면 비례 축소만 적용 */
+    /* GIF 는 원본 비율·크기 그대로. 위젯이 작아 넘치면 비례 축소만 적용.
+       max-height 는 컨트롤 바 자리를 확보하기 위해 보수적으로 잡음 */
     #disc {
       display: block;
       max-width: 90vw;
-      max-height: 70vh;
+      max-height: 60vh;
       width: auto;
       height: auto;
       image-rendering: pixelated;
@@ -87,8 +89,10 @@
       z-index: 2;
     }
 
-    /* 컨트롤 바: 디스크 바로 아래 일반 흐름. 가로폭은 JS 가 GIF 폭과 동기화 */
+    /* 컨트롤 바: 디스크 바로 아래 일반 흐름. 가로폭은 JS 가 GIF 폭 + 살짝 더 넓게 동기화.
+       flex-shrink: 0 으로 위젯이 작아져도 컨트롤 바는 자리 유지 */
     #controlBar {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -172,10 +176,15 @@
       const pauseBtn = document.getElementById('pauseBtn');
       const controlBar = document.getElementById('controlBar');
 
-      // ---------- 컨트롤 바 가로폭을 GIF 가로폭과 동기화 ----------
+      // ---------- 컨트롤 바 가로폭을 GIF 가로폭 + 살짝 더 넓게 동기화 ----------
+      // 위젯이 매우 좁으면 (위젯 폭 - 이미지 폭) 만큼만 추가해 컨트롤 바가 위젯 밖으로 안 나가게.
       function syncControlBarWidth() {
-        const w = discImg.getBoundingClientRect().width;
-        if (w > 0) controlBar.style.width = w + 'px';
+        const imgW = discImg.getBoundingClientRect().width;
+        if (imgW <= 0) return;
+        const widgetW = widget.getBoundingClientRect().width;
+        const room = Math.max(0, widgetW - imgW);
+        const extra = Math.min(24, room);
+        controlBar.style.width = (imgW + extra) + 'px';
       }
       if (typeof ResizeObserver !== 'undefined') {
         new ResizeObserver(syncControlBarWidth).observe(discImg);
