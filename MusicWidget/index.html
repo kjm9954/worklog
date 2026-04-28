@@ -24,7 +24,7 @@
       cursor: pointer;
     }
 
-    /* 중앙 이미지 박스: 가로/세로 가운데 + 위젯 짧은 변 기준으로 반응형 사이즈 */
+    /* 중앙 디스크 박스: 가로/세로 가운데 + 위젯 짧은 변 기준 반응형 */
     #discBox {
       position: absolute;
       top: 46%;
@@ -34,7 +34,8 @@
       aspect-ratio: 1 / 1;
     }
 
-    #disc {
+    /* GIF 본체와 일시정지 캡처 캔버스를 같은 자리에 겹쳐 둠 */
+    #disc, #discFreeze {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -44,10 +45,13 @@
       image-rendering: pixelated;
       pointer-events: none;
       -webkit-user-drag: none;
-      transform: rotate(0deg);
     }
 
-    /* 텍스트는 이미지 안 하단 가운데에 오버레이 (이미지 회전과 분리) */
+    /* 일시정지 상태에서만 캡처 캔버스를 보여줘서 GIF 위에 덮음 */
+    #discFreeze { opacity: 0; }
+    #discBox.paused #discFreeze { opacity: 1; }
+
+    /* 텍스트는 디스크 안 하단 가운데, 캔버스/GIF 위 (z-index) */
     #datetime {
       position: absolute;
       left: 0;
@@ -67,9 +71,10 @@
         2px 2px 0 rgba(0, 0, 0, 0.55);
       pointer-events: none;
       white-space: nowrap;
+      z-index: 2;
     }
 
-    /* 컨트롤 바: 가로 가운데, 위젯 크기에 따라 함께 변동 */
+    /* 컨트롤 바 */
     #controlBar {
       position: absolute;
       bottom: 5%;
@@ -121,7 +126,7 @@
       display: block;
     }
 
-    /* 토글 버튼 아이콘: 디폴트(정지) = 재생 ▶ 보임, .playing(재생 중) = 일시정지 || 보임 */
+    /* 토글 버튼 아이콘 전환 */
     #toggleBtn .ic-pause { display: none; }
     #toggleBtn.playing .ic-play { display: none; }
     #toggleBtn.playing .ic-pause { display: block; }
@@ -129,8 +134,9 @@
 </head>
 <body>
   <div id="widget">
-    <div id="discBox">
-      <img id="disc" src="./minecraft_office_circle.png" alt="" draggable="false" />
+    <div id="discBox" class="paused">
+      <img id="disc" src="./disc.gif" alt="" draggable="false" />
+      <canvas id="discFreeze" aria-hidden="true"></canvas>
       <div id="datetime"></div>
     </div>
     <div id="controlBar">
@@ -146,12 +152,14 @@
     </div>
   </div>
 
-  <!-- 같은 폴더에 음원 파일을 'music.mp3' 라는 이름으로 두세요. 파일명 바꾸시려면 src 만 수정. -->
+  <!-- 같은 폴더에 GIF 는 'disc.gif', 음원은 'music.mp3' 이름으로 두세요. -->
   <audio id="bgm" src="./music.mp3" preload="auto" loop></audio>
 
   <script>
     (() => {
-      const disc = document.getElementById('disc');
+      const discImg = document.getElementById('disc');
+      const discFreeze = document.getElementById('discFreeze');
+      const discBox = document.getElementById('discBox');
       const datetime = document.getElementById('datetime');
       const widget = document.getElementById('widget');
       const bgm = document.getElementById('bgm');
@@ -167,32 +175,48 @@
       updateClock();
       setInterval(updateClock, 1000);
 
-      // ---------- 회전 (rAF + 누적 각도 방식) ----------
-      const SPIN_DURATION_MS = 30000; // 한 바퀴 30초
-      let spinStartTime = 0;
-      let spinStartAngle = 0;
-      let isSpinning = false;
-      let rafId = 0;
+      // ---------- GIF 일시정지(현재 프레임 캡처) / 재개 ----------
+      // 핵심: GIF 본체는 항상 백그라운드 진행. 일시정지 시 그 순간의
+      // 보이는 프레임을 canvas 에 drawImage 로 떠서 GIF 위에 덮어 보여주고,
+      // 재생 시 캔버스를 숨기면 백그라운드에서 진행 중이던 GIF 가
+      // 그 시점부터 자연스럽게 이어서 보이는 효과.
+      function captureFreezeFrame() {
+        if (!discImg.complete || discImg.naturalWidth === 0) return;
+        const dpr = window.devicePixelRatio || 1;
+        const w = Math.max(1, Math.round(discBox.clientWidth * dpr));
+        const h = Math.max(1, Math.round(discBox.clientHeight * dpr));
+        if (discFreeze.width !== w) discFreeze.width = w;
+        if (discFreeze.height !== h) discFreeze.height = h;
+        const ctx = discFreeze.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        try {
+          ctx.drawImage(discImg, 0, 0, w, h);
+        } catch (_) {
+          // 같은 폴더 상대경로 GIF 라 일반적으로 발생하지 않음
+        }
+      }
 
-      function startSpin() {
-        if (isSpinning) return;
-        spinStartTime = performance.now();
-        isSpinning = true;
-        rafId = requestAnimationFrame(tickSpin);
+      function freezeGif() {
+        captureFreezeFrame();
+        discBox.classList.add('paused');
       }
-      function tickSpin(now) {
-        if (!isSpinning) return;
-        const elapsed = now - spinStartTime;
-        const angle = (spinStartAngle + (elapsed / SPIN_DURATION_MS) * 360) % 360;
-        disc.style.transform = `rotate(${angle}deg)`;
-        rafId = requestAnimationFrame(tickSpin);
+      function unfreezeGif() {
+        discBox.classList.remove('paused');
       }
-      function stopSpin() {
-        if (!isSpinning) return;
-        const elapsed = performance.now() - spinStartTime;
-        spinStartAngle = (spinStartAngle + (elapsed / SPIN_DURATION_MS) * 360) % 360;
-        isSpinning = false;
-        if (rafId) cancelAnimationFrame(rafId);
+
+      // 위젯이 리사이즈 되면 캡처도 다시 (정지 상태일 때만)
+      window.addEventListener('resize', () => {
+        if (discBox.classList.contains('paused')) captureFreezeFrame();
+      });
+
+      // GIF 가 로드되면 첫 프레임을 캡처해 정지 상태로 진입
+      function onGifReady() {
+        if (bgm.paused) freezeGif();
+      }
+      if (discImg.complete && discImg.naturalWidth > 0) {
+        onGifReady();
+      } else {
+        discImg.addEventListener('load', onGifReady);
       }
 
       // ---------- 자동재생 게이트 ----------
@@ -201,27 +225,30 @@
         if (unlocked) return;
         unlocked = true;
         bgm.play().catch(() => {});
-        startSpin();
       }
       widget.addEventListener('click', unlockAndPlay);
       widget.addEventListener('touchstart', unlockAndPlay, { passive: true });
 
-      // ---------- 토글 버튼 (재생 ↔ 일시정지) ----------
+      // ---------- 토글 버튼 ----------
       toggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        unlocked = true; // 첫 클릭이 토글 버튼이었던 경우에도 게이트 해제
+        unlocked = true;
         if (bgm.paused) {
           bgm.play().catch(() => {});
-          startSpin();
         } else {
           bgm.pause();
-          stopSpin();
         }
       });
 
-      // 재생/일시정지 상태가 어떤 경로로 바뀌든 아이콘 자동 동기화
-      bgm.addEventListener('play', () => toggleBtn.classList.add('playing'));
-      bgm.addEventListener('pause', () => toggleBtn.classList.remove('playing'));
+      // ---------- 재생/일시정지 상태 변화에 아이콘 + GIF 동기화 ----------
+      bgm.addEventListener('play', () => {
+        toggleBtn.classList.add('playing');
+        unfreezeGif();
+      });
+      bgm.addEventListener('pause', () => {
+        toggleBtn.classList.remove('playing');
+        freezeGif();
+      });
 
       // ---------- 끊김 없는 무한 루프 ----------
       bgm.addEventListener('ended', () => {
