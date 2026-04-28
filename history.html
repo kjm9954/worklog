@@ -303,15 +303,14 @@
     gap: 6px;
   }
   .h-cal-day {
-    aspect-ratio: 1.1 / 1;
     background: var(--bg-2);
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
-    padding: 6px 8px; cursor: pointer;
-    display: flex; flex-direction: column;
+    padding: 5px 7px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 2px;
     transition: border-color 0.15s, background 0.15s, transform 0.1s;
     position: relative;
-    min-height: 78px;
+    min-height: 56px;
   }
   .h-cal-day:hover {
     border-color: var(--q2, #4a90e2);
@@ -341,13 +340,13 @@
 
   .h-cal-day-body {
     flex: 1; display: flex; flex-direction: column;
-    justify-content: flex-end; gap: 4px; margin-top: 4px;
+    justify-content: flex-end; gap: 2px;
   }
   .h-cal-day-dots {
     display: flex; gap: 2px; flex-wrap: wrap;
   }
   .h-cal-day-dot {
-    width: 6px; height: 6px; border-radius: 50%;
+    width: 5px; height: 5px; border-radius: 50%;
     background: var(--border-strong);
   }
   .h-cal-day-dot.done { background: var(--prog-ok, #3fa95a); }
@@ -355,11 +354,11 @@
   .h-cal-day-count {
     font-size: 10px; font-weight: 600; color: var(--text-muted);
     display: flex; justify-content: space-between; align-items: baseline;
-    line-height: 1.2;
+    line-height: 1.1;
   }
   .h-cal-day-count .done { color: var(--prog-ok, #3fa95a); }
   .h-cal-day-bar {
-    height: 3px; background: var(--border);
+    height: 2px; background: var(--border);
     border-radius: 2px; overflow: hidden;
   }
   .h-cal-day-bar-fill {
@@ -561,11 +560,20 @@
   <script>
   'use strict';
 
-  // 선택된 주(주 월요일 날짜 문자열). null이면 현재 주(state.days).
+  // 선택된 주(주 월요일 날짜 문자열). 진입 시 지난 주로 초기화(historyInit에서).
   let hWeekStart = null;
   let hDonutScope = 'week';
   let hMode = 'week';                    // 'week' | 'month'
   let hMonthAnchor = todayFirstOfMonth(); // 월간 뷰에서 표시 중인 달의 1일 Date
+
+  // 주 월요일 문자열 ± 주 단위 이동
+  function shiftWeekStart(weekStart, deltaWeeks) {
+    if (!weekStart) return null;
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + deltaWeeks * 7);
+    return dateKey(d);
+  }
+  function previousWeekStart(weekStart) { return shiftWeekStart(weekStart, -1); }
 
   function todayFirstOfMonth() {
     const t = new Date();
@@ -620,13 +628,13 @@
       render();
       return;
     }
-    const weeks = allWeekStarts();
-    if (weeks.length === 0) return;
+    // 데이터 유무와 상관없이 ±7일 단위로 자유 이동.
+    // 다음(▶)으로 이동 시 이번 주를 초과하지 않도록 제한.
     const cur = hWeekStart || state.weekStart;
-    const idx = weeks.indexOf(cur);
-    const next = idx + delta;
-    if (next < 0 || next >= weeks.length) return;
-    hWeekStart = weeks[next];
+    const next = shiftWeekStart(cur, delta);
+    if (!next) return;
+    if (delta > 0 && state.weekStart && next > state.weekStart) return;
+    hWeekStart = (next === state.weekStart) ? null : next;
     render();
   };
 
@@ -680,11 +688,10 @@
       return;
     }
     const week = getSelectedWeek();
-    const weeks = allWeekStarts();
-    const idx = weeks.indexOf(week.weekStart);
     label.innerHTML = `${formatRange(week.weekStart)}<span class="sub">${week.isCurrent ? '이번 주' : (week.weekStart || '기록 없음')}</span>`;
-    prev.disabled = (idx < 0 || idx >= weeks.length - 1);
-    next.disabled = (idx <= 0);
+    // 이전(◀)은 항상 가능, 다음(▶)은 이번 주를 넘어가지 않도록 제한
+    prev.disabled = false;
+    next.disabled = !!(state.weekStart && week.weekStart && week.weekStart >= state.weekStart);
     prev.title = '이전 주'; next.title = '다음 주';
   }
 
@@ -1139,6 +1146,8 @@
     initModalBase();
     initHeaderCollapse();
     subscribeStateChanges(render);
+    // 진입 시 지난 주로 초기화 (요청)
+    if (state.weekStart) hWeekStart = previousWeekStart(state.weekStart);
     render();
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
     if (typeof initCloudSync === 'function') {
