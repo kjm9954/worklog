@@ -78,11 +78,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: clamp(28px, 12vmin, 64px);
       padding: clamp(12px, 3vmin, 20px) clamp(28px, 9vmin, 56px);
       background: #5BB143;
       border-radius: 9999px;
-      width: clamp(220px, 75vmin, 440px);
+      width: clamp(180px, 55vmin, 320px);
       max-width: 88%;
       box-sizing: border-box;
     }
@@ -121,6 +120,11 @@
       height: 58%;
       display: block;
     }
+
+    /* 토글 버튼 아이콘: 디폴트(정지) = 재생 ▶ 보임, .playing(재생 중) = 일시정지 || 보임 */
+    #toggleBtn .ic-pause { display: none; }
+    #toggleBtn.playing .ic-play { display: none; }
+    #toggleBtn.playing .ic-pause { display: block; }
   </style>
 </head>
 <body>
@@ -130,15 +134,13 @@
       <div id="datetime"></div>
     </div>
     <div id="controlBar">
-      <button id="pauseBtn" type="button" aria-label="일시정지">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <button id="toggleBtn" type="button" aria-label="재생/일시정지">
+        <svg class="ic-play" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <polygon points="8,5.5 18,12 8,18.5" fill="#FFFFFF" />
+        </svg>
+        <svg class="ic-pause" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect x="7" y="6" width="3.5" height="12" rx="0.4" fill="#FFFFFF" />
           <rect x="13.5" y="6" width="3.5" height="12" rx="0.4" fill="#FFFFFF" />
-        </svg>
-      </button>
-      <button id="playBtn" type="button" aria-label="재생">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <polygon points="8,5.5 18,12 8,18.5" fill="#FFFFFF" />
         </svg>
       </button>
     </div>
@@ -153,8 +155,7 @@
       const datetime = document.getElementById('datetime');
       const widget = document.getElementById('widget');
       const bgm = document.getElementById('bgm');
-      const pauseBtn = document.getElementById('pauseBtn');
-      const playBtn = document.getElementById('playBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
 
       // ---------- 1초마다 한국어 날짜/시간 갱신 ----------
       function updateClock() {
@@ -167,8 +168,6 @@
       setInterval(updateClock, 1000);
 
       // ---------- 회전 (rAF + 누적 각도 방식) ----------
-      // CSS animation-play-state 만으로는 일부 환경에서 0도로 리셋되는 이슈가 있어
-      // 직접 각도를 누적해 transform 으로 찍는다.
       const SPIN_DURATION_MS = 30000; // 한 바퀴 30초
       let spinStartTime = 0;
       let spinStartAngle = 0;
@@ -197,8 +196,6 @@
       }
 
       // ---------- 자동재생 게이트 ----------
-      // 페이지 로드 직후엔 play() 호출 X (브라우저 정책상 차단됨).
-      // 위젯 영역 어디서든 첫 클릭/터치가 발생하면 그때부터 재생 시작.
       let unlocked = false;
       function unlockAndPlay() {
         if (unlocked) return;
@@ -209,26 +206,24 @@
       widget.addEventListener('click', unlockAndPlay);
       widget.addEventListener('touchstart', unlockAndPlay, { passive: true });
 
-      // ---------- 일시정지 / 재생 버튼 ----------
-      pauseBtn.addEventListener('click', (e) => {
+      // ---------- 토글 버튼 (재생 ↔ 일시정지) ----------
+      toggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        unlocked = true; // 첫 클릭이 일시정지 버튼이었던 경우에도 게이트 해제
-        if (!bgm.paused) {
+        unlocked = true; // 첫 클릭이 토글 버튼이었던 경우에도 게이트 해제
+        if (bgm.paused) {
+          bgm.play().catch(() => {});
+          startSpin();
+        } else {
           bgm.pause();
           stopSpin();
         }
       });
-      playBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        unlocked = true;
-        if (bgm.paused) {
-          bgm.play().catch(() => {});
-          startSpin();
-        }
-      });
 
-      // ---------- 끊김 없는 무한 루프 (loop 속성 보강) ----------
-      // <audio loop> 이미 있지만, 일부 환경 대비해 ended 핸들러로 한 번 더 보장.
+      // 재생/일시정지 상태가 어떤 경로로 바뀌든 아이콘 자동 동기화
+      bgm.addEventListener('play', () => toggleBtn.classList.add('playing'));
+      bgm.addEventListener('pause', () => toggleBtn.classList.remove('playing'));
+
+      // ---------- 끊김 없는 무한 루프 ----------
       bgm.addEventListener('ended', () => {
         bgm.currentTime = 0;
         bgm.play().catch(() => {});
