@@ -2889,12 +2889,20 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
   window.toggleDailyDone = function(dayIdx, qKey, ti) {
     const task = state.days[dayIdx] && state.days[dayIdx].quadrants[qKey] && state.days[dayIdx].quadrants[qKey][ti];
     if (!task) return;
-    task.done = !task.done;
-    // 체크박스와 상태 배지 일관성: 완료 체크 시 userStatus='done', 해제 시 자동 모드로 복귀
-    task.userStatus = task.done ? 'done' : '';
+    if (task.done) {
+      // 완료 → 진행중 (시작 시각 유지, 비어있으면 현재 시각 자동 기입)
+      task.done = false;
+      task.userStatus = 'doing';
+      if (!task.startTime || task.startTime === DASH) {
+        task.startTime = formatNowTime();
+      }
+    } else {
+      // 대기/진행중 → 완료
+      task.done = true;
+      task.userStatus = 'done';
+    }
     saveState();
     renderDaily();
-    // 기존 주간 그리드도 동기화
     if (typeof renderWeekGrid === 'function') renderWeekGrid();
   };
 
@@ -3416,9 +3424,9 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
       origVal = task.note || '';
     }
     cellEl.classList.add('is-editing');
-    // 시작 셀이 빈 상태로 열리면 현재 시각을 초깃값으로 제안
+    // 시작/종료 셀이 빈 상태로 열리면 현재 시각을 초깃값으로 제안 (수동 수정 가능)
     let initialInputVal = origVal;
-    if (field === 'startTime' && origVal === '') initialInputVal = currentTimeHHMM();
+    if ((field === 'startTime' || field === 'endTime') && origVal === '') initialInputVal = currentTimeHHMM();
     cellEl.innerHTML = `<input class="daily-edit-input" type="text" value="${escapeHtml(initialInputVal)}">`;
     const input = cellEl.querySelector('input');
     dailyEdit = {
