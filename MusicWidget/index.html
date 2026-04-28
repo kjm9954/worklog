@@ -84,7 +84,7 @@
       z-index: 2;
     }
 
-    /* 컨트롤 바: 재생 ▶ → 일시정지 || 좌→우 순서 */
+    /* 컨트롤 바: 재생 ▶ → 일시정지 || 좌→우 순서. 가로폭은 JS 가 GIF 폭과 동기화 */
     #controlBar {
       position: absolute;
       bottom: 5%;
@@ -97,8 +97,6 @@
       padding: clamp(12px, 3vmin, 20px) clamp(28px, 9vmin, 56px);
       background: #5BB143;
       border-radius: 9999px;
-      width: clamp(220px, 75vmin, 440px);
-      max-width: 88%;
       box-sizing: border-box;
     }
 
@@ -173,6 +171,19 @@
       const bgm = document.getElementById('bgm');
       const playBtn = document.getElementById('playBtn');
       const pauseBtn = document.getElementById('pauseBtn');
+      const controlBar = document.getElementById('controlBar');
+
+      // ---------- 컨트롤 바 가로폭을 GIF 가로폭과 동기화 ----------
+      function syncControlBarWidth() {
+        const w = discImg.getBoundingClientRect().width;
+        if (w > 0) controlBar.style.width = w + 'px';
+      }
+      if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(syncControlBarWidth).observe(discImg);
+      }
+      window.addEventListener('resize', syncControlBarWidth);
+      discImg.addEventListener('load', syncControlBarWidth);
+      if (discImg.complete && discImg.naturalWidth > 0) syncControlBarWidth();
 
       // ---------- 1초마다 한국어 날짜/시간 갱신 ----------
       function updateClock() {
