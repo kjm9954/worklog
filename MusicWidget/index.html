@@ -23,19 +23,22 @@
       user-select: none;
     }
 
+    /* 위젯 = 위젯 전체. 자식(디스크 + 컨트롤 바)을 column flex 로 묶어 가운데 정렬 */
     #widget {
       position: relative;
       width: 100%;
       height: 100%;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(10px, 2vmin, 20px);
     }
 
-    /* 중앙 디스크 박스: 위젯 가운데에 배치, 사이즈는 자식 GIF 자연 크기에 맞춤 */
+    /* 디스크 박스: 자식 img 자연 크기에 맞춰 사이즈 결정. relative = #datetime/#discFreeze 의 기준 */
     #discBox {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      position: relative;
     }
 
     /* GIF 는 원본 비율·크기 그대로. 위젯이 작아 넘치면 비례 축소만 적용 */
@@ -84,12 +87,8 @@
       z-index: 2;
     }
 
-    /* 컨트롤 바: 재생 ▶ → 일시정지 || 좌→우 순서. 가로폭은 JS 가 GIF 폭과 동기화 */
+    /* 컨트롤 바: 디스크 바로 아래 일반 흐름. 가로폭은 JS 가 GIF 폭과 동기화 */
     #controlBar {
-      position: absolute;
-      bottom: 5%;
-      left: 50%;
-      transform: translateX(-50%);
       display: flex;
       align-items: center;
       justify-content: center;
