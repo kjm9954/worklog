@@ -196,16 +196,35 @@
   }
   .week-rate-sub b { color: var(--text); font-weight: 600; }
 
-  /* 모바일(<900px): 세로 스택 */
-  @media (max-width: 900px) {
+  /* 좁은 뷰포트(<1100px): 사이드바를 위로 스택, 컨텐츠 가로 폭 확보 */
+  @media (max-width: 1100px) {
     main#mode-daily.daily-layout {
-      grid-template-columns: 1fr;
-      overflow: auto;
+      flex-direction: column;
+      align-items: stretch;
+      overflow-x: hidden; overflow-y: auto;
     }
     main#mode-daily > .daily-sidebar {
-      flex-direction: row; overflow-x: auto;
+      flex: 0 0 auto;
+      width: 100%;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    main#mode-daily > .daily-sidebar > .daily-metric { min-width: 240px; flex-shrink: 0; }
+    main#mode-daily > .daily-sidebar > .daily-metric {
+      min-width: 240px;
+      flex: 1 1 280px;
+    }
+    main#mode-daily > .daily-content {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    main#mode-daily > .daily-content > .daily-wrap {
+      width: 100%;
+      max-width: 100%;
+    }
+    .daily-card { min-width: 0; }
+    .daily-table-wrap { overflow-x: auto; }
   }
   :root[data-device="mobile"] main#mode-daily.daily-layout {
     display: flex; flex-direction: column;
