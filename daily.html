@@ -239,21 +239,11 @@
     padding: 10px; gap: 10px;
     max-width: none;
   }
-  :root[data-device="mobile"] main#mode-daily > .daily-sidebar {
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    overflow: visible;
-    flex: 0 0 auto;
-  }
-  :root[data-device="mobile"] main#mode-daily > .daily-sidebar > .daily-metric {
-    min-width: 240px; max-width: 360px; flex: 1 1 240px;
-    padding: 8px 12px; gap: 6px;
-  }
+  /* 모바일에서는 업무일지(테이블)에 집중 — 사이드바(메트릭 카드) 전체 숨김 */
+  :root[data-device="mobile"] main#mode-daily > .daily-sidebar { display: none; }
   :root[data-device="mobile"] main#mode-daily > .daily-content {
-    overflow: visible; flex: 0 0 auto;
-    width: 100%; max-width: 720px; margin: 0 auto;
+    overflow: visible; flex: 1 1 auto;
+    width: 100%; max-width: none; margin: 0;
   }
   :root[data-device="mobile"] .daily-metric-title { font-size: 0.8125rem; }
   :root[data-device="mobile"] .daily-metric-count { font-size: 0.6875rem; padding: 1px 6px; }
@@ -1577,6 +1567,19 @@
   }
   .daily-table td.daily-name-cell,
   .daily-table td.daily-note-cell { text-align: left; }
+  /* 시작·종료·예상·메모는 보조 정보 — 헤더/셀 1px 작게 + 셀 텍스트 회색 */
+  .daily-table thead th:nth-child(5),
+  .daily-table thead th:nth-child(6),
+  .daily-table thead th:nth-child(8),
+  .daily-table thead th:nth-child(11) {
+    font-size: 11px;
+  }
+  .daily-table td.daily-time,
+  .daily-table td.daily-editable[data-field="estimatedHours"],
+  .daily-table td.daily-note-cell {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
   .daily-table tr:last-child td { border-bottom: none; }
   .daily-table tbody tr:hover td { background: var(--bg-2); }
   .daily-date-input {
