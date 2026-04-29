@@ -196,34 +196,41 @@
   }
   .week-rate-sub b { color: var(--text); font-weight: 600; }
 
-  /* 좁은 뷰포트(<1100px): 사이드바를 위로 스택, 컨텐츠 가로 폭 확보 */
-  @media (max-width: 1100px) {
+  /* 좁은 뷰포트(<1400px): 사이드바를 위로 스택, 컨텐츠 가로 폭 확보 */
+  @media (max-width: 1400px) {
     main#mode-daily.daily-layout {
-      flex-direction: column;
-      align-items: stretch;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
       overflow-x: hidden; overflow-y: auto;
+      padding: 12px;
+      gap: 10px;
     }
     main#mode-daily > .daily-sidebar {
-      flex: 0 0 auto;
-      width: 100%;
-      flex-direction: row;
-      flex-wrap: wrap;
+      flex: 0 0 auto !important;
+      width: 100% !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
       gap: 8px;
+      overflow-x: visible !important;
     }
     main#mode-daily > .daily-sidebar > .daily-metric {
       min-width: 240px;
       flex: 1 1 280px;
     }
     main#mode-daily > .daily-content {
-      width: 100%;
-      max-width: 100%;
+      flex: 1 1 auto !important;
+      width: 100% !important;
+      max-width: 100% !important;
       overflow-x: auto;
     }
     main#mode-daily > .daily-content > .daily-wrap {
-      width: 100%;
-      max-width: 100%;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
-    .daily-card { min-width: 0; }
+    .daily-card { min-width: 0; width: fit-content; max-width: 100%; }
     .daily-table-wrap { overflow-x: auto; }
   }
   :root[data-device="mobile"] main#mode-daily.daily-layout {
