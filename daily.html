@@ -239,11 +239,15 @@
     padding: 10px; gap: 10px;
     max-width: none;
   }
-  /* 모바일에서는 업무일지(테이블)에 집중 — 사이드바(메트릭 카드) 전체 숨김 */
-  :root[data-device="mobile"] main#mode-daily > .daily-sidebar { display: none; }
+  /* 모바일에서는 업무일지(테이블)에 집중 — 사이드바(메트릭 카드) 전체 숨김.
+     자동 1400px 미디어 쿼리의 row 재배치를 확실히 누르기 위해 !important 사용. */
+  :root[data-device="mobile"] main#mode-daily > .daily-sidebar { display: none !important; }
   :root[data-device="mobile"] main#mode-daily > .daily-content {
-    overflow: visible; flex: 1 1 auto;
-    width: 100%; max-width: none; margin: 0;
+    overflow: visible !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
   }
   :root[data-device="mobile"] .daily-metric-title { font-size: 0.8125rem; }
   :root[data-device="mobile"] .daily-metric-count { font-size: 0.6875rem; padding: 1px 6px; }
@@ -3487,9 +3491,14 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
             task.estimatedHours = (isFinite(n) && n >= 0) ? String(n) : info.origVal;
           }
         } else if (info.field === 'startTime' || info.field === 'endTime') {
-          const parsed = parseTimeInput(raw);
-          // null = 잘못된 입력 → 원래 값 유지
-          if (parsed !== null) task[info.field] = parsed;
+          if (raw === '') {
+            // 빈 값으로 비우면 '-' 표시로 되돌림
+            task[info.field] = '';
+          } else {
+            const parsed = parseTimeInput(raw);
+            // null = 잘못된 입력 → 원래 값 유지
+            if (parsed !== null) task[info.field] = parsed;
+          }
         } else if (info.field === 'targetDate') {
           const day = state.days[info.dayIdx];
           const y = day && day.date ? parseInt(day.date.split('-')[0], 10) : new Date().getFullYear();
