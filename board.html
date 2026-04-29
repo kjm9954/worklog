@@ -1089,7 +1089,9 @@
         cells.push(`<div class="st-cell ${doneCls}" ${catAttr} data-row="${i}"><div class="name-with-accum"><input type="text" class="side-name" placeholder="업무명" title="${escapeHtml(it.name || '')}" value="${escapeHtml(it.name)}" onchange="updateImportant(${i}, 'name', this.value)">${totalBadge}</div></div>`);
         cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardStatusPopover('important', ${i}, this)" title="클릭하여 상태 선택"><span class="daily-status ${statusKey}">${statusLabel}</span></button></div>`);
         cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><input type="text" class="side-date date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(it.targetDate))}" onchange="onSideDateChange('important', ${i}, this.value)"></div>`);
-        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}">${ddayText ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
+        // 완료 처리된 행은 디데이 칩 숨김 — 마감 추적 대상에서 빠진 것을 시각적으로 알림
+        const showDday = ddayText && it.status !== '완료';
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}">${showDday ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
         cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button class="side-del" title="삭제" onclick="askDeleteImportant(${i})">×</button></div>`);
       }
     }
@@ -1168,7 +1170,9 @@
         cells.push(`<div class="st-cell ${doneCls}" ${catAttr} data-row="${i}"><input type="text" class="side-name" placeholder="업무명" title="${escapeHtml(r.name || '')}" value="${escapeHtml(r.name)}" onchange="updateRoutine(${i}, 'name', this.value)"></div>`);
         cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardStatusPopover('routine', ${i}, this)" title="클릭하여 상태 선택"><span class="daily-status ${statusKey}">${statusLabel}</span></button></div>`);
         cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><input type="text" class="side-date date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(r.targetDate))}" onchange="onSideDateChange('routine', ${i}, this.value)"></div>`);
-        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}">${ddayText ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
+        // 완료 처리된 행은 디데이 칩 숨김 — 마감 추적 대상에서 빠진 것을 시각적으로 알림
+        const showDday = ddayText && r.status !== '완료';
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}">${showDday ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
         cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button class="side-del" title="삭제" onclick="askDeleteRoutine(${i})">×</button></div>`);
       }
     }
