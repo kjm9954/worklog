@@ -49,7 +49,7 @@
   .board-main {
     flex: 1;
     overflow-y: auto;
-    width: min(100%, var(--board-page-max, 1360px));
+    width: min(100%, var(--board-page-max, 1800px));
     margin: 0 auto;
     padding: 14px;
     display: flex;
@@ -120,6 +120,8 @@
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
+    width: min(100%, var(--board-grid-w, 100%));
+    margin: 0 auto;
   }
   .board-stat {
     background: var(--card);
@@ -153,8 +155,10 @@
   }
   .board-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, var(--board-routine-panel-w, 636px));
-    gap: 14px;
+    grid-template-columns: minmax(320px, var(--board-calendar-panel-w, 1fr)) 10px minmax(0, var(--board-routine-panel-w, 636px));
+    width: min(100%, var(--board-grid-w, 100%));
+    margin: 0 auto;
+    gap: 10px;
     align-items: start;
   }
   .board-section {
@@ -169,6 +173,38 @@
     width: var(--board-routine-panel-w, 636px);
     max-width: 100%;
     justify-self: end;
+  }
+  .board-grid-resizer {
+    width: 10px;
+    align-self: stretch;
+    min-height: 160px;
+    border: 0;
+    background: transparent;
+    cursor: col-resize;
+    position: relative;
+    border-radius: var(--radius-sm);
+  }
+  .board-grid-resizer::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: 4px;
+    width: 2px;
+    border-radius: 999px;
+    background: transparent;
+    transition: background 0.15s;
+  }
+  .board-grid-resizer:hover::before,
+  .board-grid-resizer.dragging::before {
+    background: var(--q2);
+  }
+  body.resizing-board-grid {
+    cursor: col-resize;
+    user-select: none;
+  }
+  body.resizing-board-grid * {
+    cursor: col-resize !important;
   }
   .board-section-head {
     display: flex;
@@ -456,27 +492,17 @@
     border-radius: var(--radius-sm);
     background: var(--card);
   }
-  .board-undated {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    background: var(--card);
+  .board-undated-popover {
+    width: min(360px, calc(100vw - 16px));
+    max-height: min(520px, calc(100vh - 24px));
+    overflow-y: auto;
+    padding: 10px;
   }
-  .board-undated-toggle {
-    width: 100%;
-    padding: 10px 12px;
-    border: 0;
-    background: var(--card);
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
+  .board-undated-popover .board-undated-list {
+    padding: 10px 0 0;
+    border-top: 1px solid var(--border);
+    background: transparent;
   }
-  .board-undated-toggle:hover { background: var(--bg); }
   .board-undated-list {
     padding: 0 12px 12px;
     display: flex;
@@ -560,7 +586,7 @@
     overflow: hidden;
   }
   :root {
-    --board-page-max: 1360px;
+    --board-page-max: 1800px;
     --b-imp-proj: 48px; --b-imp-cat: 52px; --b-imp-status: 62px;
     --b-imp-date: 84px; --b-imp-dday: 60px; --b-imp-del: 40px;
     --b-rt-proj: 48px; --b-rt-cat: 52px; --b-rt-detail: 56px;
@@ -950,7 +976,8 @@
 
   @media (max-width: 1280px) {
     .board-hero { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .board-grid { grid-template-columns: 1fr; }
+    .board-grid { grid-template-columns: 1fr; width: 100%; }
+    .board-grid-resizer { display: none; }
     .board-routine-section { width: 100%; justify-self: stretch; }
     .board-cal-shell { grid-template-columns: 1fr; }
   }
@@ -1005,7 +1032,7 @@
     <main class="board-main">
       <section class="board-hero" id="boardStats"></section>
 
-      <div class="board-grid">
+      <div class="board-grid" id="boardGrid">
         <section class="board-section board-important-section">
           <div class="board-section-head">
             <div class="board-section-title-wrap">
@@ -1019,6 +1046,8 @@
             <div id="importantList" class="side-table important-grid"></div>
           </div>
         </section>
+
+        <button type="button" class="board-grid-resizer" id="boardGridResizer" title="달력 / 상시 업무 폭 조절" aria-label="달력과 상시 업무 폭 조절"></button>
 
         <section class="board-section board-routine-section">
           <div class="board-section-head">
@@ -1067,7 +1096,6 @@
   const BOARD_WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
   let boardMonthAnchor = loadBoardMonthAnchor();
   let boardSelectedDate = formatDate(new Date());
-  let boardUndatedOpen = true;
   let boardTodayPulse = false;
 
   function loadBoardMonthAnchor() {
@@ -1534,6 +1562,50 @@
     return state.importantTasks.length - 1;
   }
 
+  function renderUndatedCards() {
+    const undatedItems = importantUndatedTasks();
+    if (!undatedItems.length) return '<div class="board-day-empty">미지정 항목이 없어요.</div>';
+    return undatedItems.map(it => {
+      const idx = state.importantTasks.indexOf(it);
+      const slot = projectSlot(it.project) || '';
+      const statusKey = boardStatusKey(it.status);
+      return `
+        <div class="board-undated-card ${boardCategoryTone(it.category)} ${it.status === '완료' ? 'done' : ''}"
+             draggable="true"
+             ondragstart="onImportantDragStart(event, ${idx})"
+             ondragend="onImportantDragEnd(event)">
+          <div class="board-day-card-title">
+            <span class="board-day-card-title-text">${escapeHtml(boardTaskLabel(it))}</span>
+            <button type="button" class="btn sm" data-imp-anchor="${idx}" onclick="openImportantEditor(${idx}, this)">편집</button>
+          </div>
+          <div class="board-day-card-meta">
+            ${it.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(it.project)}</span>` : '<span class="daily-placeholder">-</span>'}
+            ${it.category ? `<span>${escapeHtml(it.category)}</span>` : '<span>구분 없음</span>'}
+            <span class="daily-status ${statusKey}">${boardStatusLabel(statusKey)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.openBoardUndatedPopover = function(anchorEl) {
+    closeBoardPopover();
+    if (!anchorEl) return;
+    const pop = document.createElement('div');
+    pop.className = 'daily-popover board-undated-popover';
+    pop.innerHTML = `
+      <div class="board-editor-head">
+        <span>날짜 미지정</span>
+        <button type="button" class="board-editor-close" onclick="closeBoardPopover()" aria-label="닫기">✕</button>
+      </div>
+      <div class="board-undated-list" ondragover="onBoardUndatedDragOver(event)" ondrop="onBoardUndatedDrop(event)">${renderUndatedCards()}</div>
+    `;
+    document.body.appendChild(pop);
+    positionPopoverBelow(anchorEl, pop, { centered: true });
+    boardOpenPopover = { type: 'undated', el: pop };
+    attachBoardPopoverGlobalListeners();
+  };
+
   window.onBoardCalMove = function(delta) {
     setBoardMonthAnchor(new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth() + delta, 1), false);
     render();
@@ -1550,11 +1622,6 @@
       const cell = document.querySelector('.board-cal-day.today');
       if (cell) cell.classList.remove('pulse');
     }, 900);
-  };
-
-  window.toggleBoardUndated = function() {
-    boardUndatedOpen = !boardUndatedOpen;
-    renderImportantTasks();
   };
 
   window.onBoardDayClick = function(event, dateStr, count) {
@@ -1794,29 +1861,6 @@
     }
 
     const undatedItems = importantUndatedTasks();
-    const undatedCards = undatedItems.length
-      ? undatedItems.map(it => {
-          const idx = state.importantTasks.indexOf(it);
-          const slot = projectSlot(it.project) || '';
-          const statusKey = boardStatusKey(it.status);
-          return `
-            <div class="board-undated-card ${boardCategoryTone(it.category)} ${it.status === '완료' ? 'done' : ''}"
-                 draggable="true"
-                 ondragstart="onImportantDragStart(event, ${idx})"
-                 ondragend="onImportantDragEnd(event)">
-              <div class="board-day-card-title">
-                <span class="board-day-card-title-text">${escapeHtml(boardTaskLabel(it))}</span>
-                <button type="button" class="btn sm" data-imp-anchor="${idx}" onclick="openImportantEditor(${idx}, this)">편집</button>
-              </div>
-              <div class="board-day-card-meta">
-                ${it.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(it.project)}</span>` : '<span class="daily-placeholder">-</span>'}
-                ${it.category ? `<span>${escapeHtml(it.category)}</span>` : '<span>구분 없음</span>'}
-                <span class="daily-status ${statusKey}">${boardStatusLabel(statusKey)}</span>
-              </div>
-            </div>
-          `;
-        }).join('')
-      : '<div class="board-day-empty">미지정 항목이 없어요.</div>';
 
     list.innerHTML = `
       <div class="board-cal-toolbar">
@@ -1827,6 +1871,7 @@
           <button type="button" class="board-cal-nav-btn" onclick="onBoardCalMove(-1)">◀</button>
           <button type="button" class="board-cal-nav-btn" onclick="onBoardCalToday()">오늘</button>
           <button type="button" class="board-cal-nav-btn" onclick="onBoardCalMove(1)">▶</button>
+          <button type="button" class="board-cal-nav-btn" onclick="openBoardUndatedPopover(this)">📥 미지정 ${undatedItems.length}</button>
         </div>
       </div>
       <div class="board-cal-shell">
@@ -1842,13 +1887,6 @@
           </div>
           <div class="board-cal-grid">${dayCells.join('')}</div>
         </div>
-      </div>
-      <div class="board-undated">
-        <button type="button" class="board-undated-toggle" onclick="toggleBoardUndated()">
-          <span>📥 날짜 미지정 (${undatedItems.length})</span>
-          <span>${boardUndatedOpen ? '▾' : '▸'}</span>
-        </button>
-        <div class="board-undated-list" ${boardUndatedOpen ? '' : 'hidden'} ondragover="onBoardUndatedDragOver(event)" ondrop="onBoardUndatedDrop(event)">${undatedCards}</div>
       </div>
     `;
   }
@@ -2366,6 +2404,11 @@
   const B_COL_MIN = 36;
   const B_COL_MAX = 600;
   const B_COL_STORAGE_KEY = 'worklog-board-col-widths';
+  const B_LAYOUT_STORAGE_KEY = 'worklog-board-layout-widths';
+  const B_CALENDAR_PANEL_MIN = 320;
+  const B_GRID_RESIZER_W = 10;
+  const B_GRID_GAPS = 20;
+  let boardCalendarPanelManualWidth = loadBoardLayoutWidth();
 
   function applyBCol(key, w) {
     document.documentElement.style.setProperty(`--b-${key}`, w + 'px');
@@ -2388,12 +2431,66 @@
     if (key in B_COL_DEFAULTS) return B_COL_DEFAULTS[key];
     return B_ROUTINE_NAME_DEFAULT;
   }
+  function loadBoardLayoutWidth() {
+    try {
+      const raw = localStorage.getItem(B_LAYOUT_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const width = Number(parsed && parsed.calendarPanelWidth);
+      return width > 0 ? width : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function saveBoardLayoutWidth() {
+    try {
+      if (!boardCalendarPanelManualWidth) {
+        localStorage.removeItem(B_LAYOUT_STORAGE_KEY);
+        return;
+      }
+      localStorage.setItem(B_LAYOUT_STORAGE_KEY, JSON.stringify({ calendarPanelWidth: boardCalendarPanelManualWidth }));
+    } catch (e) {}
+  }
+  function routinePanelWidth() {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--board-routine-panel-w').trim();
+    const px = parseInt(raw, 10);
+    return px || 636;
+  }
+  function boardGridAvailableWidth() {
+    const grid = document.getElementById('boardGrid');
+    const parent = grid && grid.parentElement;
+    const rect = parent ? parent.getBoundingClientRect() : null;
+    const fallback = 1800;
+    if (!rect) return fallback;
+    const appWidth = Math.max(rect.width, window.innerWidth - 28);
+    return Math.min(appWidth, 1800);
+  }
+  function calendarPanelBounds() {
+    const max = Math.max(B_CALENDAR_PANEL_MIN, Math.floor(boardGridAvailableWidth() - routinePanelWidth() - B_GRID_RESIZER_W - B_GRID_GAPS));
+    return { min: B_CALENDAR_PANEL_MIN, max: max };
+  }
+  function clampCalendarPanelWidth(width) {
+    const bounds = calendarPanelBounds();
+    return Math.max(bounds.min, Math.min(bounds.max, Math.round(width)));
+  }
+  function syncBoardGridWidth() {
+    if (!boardCalendarPanelManualWidth) {
+      document.documentElement.style.removeProperty('--board-calendar-panel-w');
+      document.documentElement.style.removeProperty('--board-grid-w');
+      return;
+    }
+    boardCalendarPanelManualWidth = clampCalendarPanelWidth(boardCalendarPanelManualWidth);
+    const gridW = boardCalendarPanelManualWidth + routinePanelWidth() + B_GRID_RESIZER_W + B_GRID_GAPS;
+    document.documentElement.style.setProperty('--board-calendar-panel-w', boardCalendarPanelManualWidth + 'px');
+    document.documentElement.style.setProperty('--board-grid-w', gridW + 'px');
+  }
   function syncRoutinePanelWidth() {
     const colTotal = B_ROUTINE_DRAG_COL + B_ROUTINE_GRID_GAPS + B_ROUTINE_COLS.reduce((sum, key) => sum + routineBColWidth(key), 0);
     const tableW = Math.max(360, Math.ceil(colTotal));
-    const panelW = tableW + B_ROUTINE_PANEL_EXTRA;
+    const autoPanelW = tableW + B_ROUTINE_PANEL_EXTRA;
     document.documentElement.style.setProperty('--board-routine-table-w', tableW + 'px');
-    document.documentElement.style.setProperty('--board-routine-panel-w', panelW + 'px');
+    document.documentElement.style.setProperty('--board-routine-panel-w', autoPanelW + 'px');
+    syncBoardGridWidth();
   }
   function loadBoardColWidths() {
     try {
@@ -2475,6 +2572,42 @@
     });
   }
 
+  function initBoardGridResize() {
+    const handle = document.getElementById('boardGridResizer');
+    if (!handle) return;
+    let drag = null;
+    handle.addEventListener('mousedown', function(e) {
+      const important = document.querySelector('.board-important-section');
+      const current = boardCalendarPanelManualWidth || (important ? important.getBoundingClientRect().width : B_CALENDAR_PANEL_MIN);
+      drag = { startX: e.clientX, startW: current };
+      handle.classList.add('dragging');
+      document.body.classList.add('resizing-board-grid');
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!drag) return;
+      const delta = e.clientX - drag.startX;
+      boardCalendarPanelManualWidth = clampCalendarPanelWidth(drag.startW + delta);
+      syncBoardGridWidth();
+    });
+    document.addEventListener('mouseup', function() {
+      if (!drag) return;
+      handle.classList.remove('dragging');
+      document.body.classList.remove('resizing-board-grid');
+      drag = null;
+      saveBoardLayoutWidth();
+    });
+    handle.addEventListener('dblclick', function() {
+      boardCalendarPanelManualWidth = null;
+      saveBoardLayoutWidth();
+      syncBoardGridWidth();
+    });
+    window.addEventListener('resize', function() {
+      syncBoardGridWidth();
+      if (boardCalendarPanelManualWidth) saveBoardLayoutWidth();
+    });
+  }
+
   (async function boardInit() {
     state = loadState();
     autoRolloverWeek();
@@ -2487,6 +2620,7 @@
     syncPageTabs();
     render();
     initBoardColResize();
+    initBoardGridResize();
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
 
     if (typeof initCloudSync === 'function') {
