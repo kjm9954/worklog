@@ -268,109 +268,51 @@
   }
   .h-heat-tooltip[hidden] { display: none; }
 
-  /* 주간/월간 모드 토글 */
-  .h-mode-toggle {
-    display: inline-flex; gap: 2px;
-    background: var(--bg-2); padding: 2px;
+  .h-month-summary-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--q2-soft);
+    border: 1px solid #b8d4f0;
     border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 12px;
   }
-  .h-mode-toggle button {
-    padding: 6px 14px; border: none; background: transparent;
-    font-size: 13px; color: var(--text-muted); cursor: pointer;
-    border-radius: 3px; font-family: inherit; font-weight: 500;
-    transition: background 0.15s, color 0.15s;
+  .h-month-summary-strip b {
+    color: var(--q2);
+    font-weight: 700;
   }
-  .h-mode-toggle button.on {
-    background: var(--card); color: var(--text); font-weight: 700;
-    box-shadow: var(--shadow-sm);
+  .h-month-summary-dot {
+    color: var(--text-subtle);
   }
+  :root[data-theme="dark"] .h-month-summary-strip {
+    background: #1a2a3e;
+    border-color: #2b4068;
+    color: #b7c7e5;
+  }
+  :root[data-theme="dark"] .h-month-summary-strip b { color: #7fb6e8; }
 
-  /* 월간 달력 */
-  .h-cal-wrap { overflow: hidden; }
-  .h-cal-weekdays {
-    display: grid; grid-template-columns: repeat(7, 1fr);
-    gap: 6px; margin-bottom: 6px;
+  .h-report-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
-  .h-cal-weekday {
-    text-align: center; font-size: 11px; font-weight: 600;
-    color: var(--text-muted); padding: 4px 0;
+  .h-report-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
-  .h-cal-weekday.sat { color: var(--q2, #4a90e2); }
-  .h-cal-weekday.sun { color: var(--q1, #d97a7a); }
-
-  .h-cal-grid {
-    display: grid; grid-template-columns: repeat(7, 1fr);
+  .h-report-head .muted {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .h-summary-actions {
+    display: flex;
     gap: 6px;
-  }
-  .h-cal-day {
-    background: var(--bg-2);
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    padding: 5px 7px; cursor: pointer;
-    display: flex; flex-direction: column; gap: 2px;
-    transition: border-color 0.15s, background 0.15s, transform 0.1s;
-    position: relative;
-    min-height: 56px;
-  }
-  .h-cal-day:hover {
-    border-color: var(--q2, #4a90e2);
-    background: var(--card);
-    transform: translateY(-1px);
-  }
-  .h-cal-day.outside {
-    opacity: 0.35; cursor: default;
-    background: transparent;
-  }
-  .h-cal-day.outside:hover { border-color: transparent; transform: none; }
-  .h-cal-day.future { opacity: 0.55; }
-  .h-cal-day.today {
-    border-color: var(--q2, #4a90e2);
-    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-  }
-  .h-cal-day.weekend { background: var(--card); }
-  .h-cal-day.has-data { background: var(--card); }
-
-  .h-cal-day-num {
-    font-size: 13px; font-weight: 700; color: var(--text);
-    line-height: 1;
-  }
-  .h-cal-day.outside .h-cal-day-num { color: var(--text-subtle); }
-  .h-cal-day.sat .h-cal-day-num { color: var(--q2, #4a90e2); }
-  .h-cal-day.sun .h-cal-day-num { color: var(--q1, #d97a7a); }
-
-  .h-cal-day-body {
-    flex: 1; display: flex; flex-direction: column;
-    justify-content: flex-end; gap: 2px;
-  }
-  .h-cal-day-dots {
-    display: flex; gap: 2px; flex-wrap: wrap;
-  }
-  .h-cal-day-dot {
-    width: 5px; height: 5px; border-radius: 50%;
-    background: var(--border-strong);
-  }
-  .h-cal-day-dot.done { background: var(--prog-ok, #3fa95a); }
-  .h-cal-day-dot.doing { background: var(--q2, #4a90e2); }
-  .h-cal-day-count {
-    font-size: 10px; font-weight: 600; color: var(--text-muted);
-    display: flex; justify-content: space-between; align-items: baseline;
-    line-height: 1.1;
-  }
-  .h-cal-day-count .done { color: var(--prog-ok, #3fa95a); }
-  .h-cal-day-bar {
-    height: 2px; background: var(--border);
-    border-radius: 2px; overflow: hidden;
-  }
-  .h-cal-day-bar-fill {
-    height: 100%; background: var(--prog-ok, #3fa95a);
-    transition: width 0.2s;
-  }
-
-  /* 월간 요약 스트립 */
-  .h-month-strip {
-    display: flex; gap: 10px; flex-wrap: wrap;
-    margin-top: 12px; padding-top: 12px;
-    border-top: 1px solid var(--border);
+    margin-left: auto;
   }
 
   /* 하루 상세 모달 */
@@ -494,15 +436,13 @@
 
     <main class="history-main">
       <div class="h-nav">
-        <div class="h-mode-toggle" id="hModeToggle" role="tablist">
-          <button role="tab" data-mode="week" class="on" onclick="hSetMode('week')">주간</button>
-          <button role="tab" data-mode="month" onclick="hSetMode('month')">월간</button>
-        </div>
         <button class="h-nav-btn" id="hPrevBtn" onclick="hMove(-1)" title="이전" aria-label="이전">◀</button>
         <div class="h-nav-range" id="hRangeLabel">-</div>
         <button class="h-nav-btn" id="hNextBtn" onclick="hMove(1)" title="다음" aria-label="다음">▶</button>
         <button class="h-this-week-btn" onclick="hGoThis()" id="hThisBtn">📅 이번 주</button>
       </div>
+
+      <div class="h-month-summary-strip" id="hMonthSummaryStrip"></div>
 
       <!-- 주간 뷰 -->
       <div id="hWeekView">
@@ -517,25 +457,15 @@
           <h3 class="h-section-title">프로젝트 시간 분포 <div class="h-donut-toggle" id="hDonutToggle"><button data-scope="week" class="on" onclick="hSetDonutScope('week')">이번 주</button><button data-scope="month" onclick="hSetDonutScope('month')">이번 달</button></div></h3>
           <div class="h-dist-wrap" id="hDonutWrap"></div>
         </section>
-      </div>
-
-      <!-- 월간 뷰 -->
-      <div id="hMonthView" hidden>
-        <div class="h-summary-chips" id="hMonthStrip"></div>
-        <section class="h-card" style="margin-top:12px">
-          <h3 class="h-section-title">월간 달력 <span class="muted">날짜 클릭 → 그날의 업무일지</span></h3>
-          <div class="h-cal-wrap">
-            <div class="h-cal-weekdays">
-              <div class="h-cal-weekday sun">일</div>
-              <div class="h-cal-weekday">월</div>
-              <div class="h-cal-weekday">화</div>
-              <div class="h-cal-weekday">수</div>
-              <div class="h-cal-weekday">목</div>
-              <div class="h-cal-weekday">금</div>
-              <div class="h-cal-weekday sat">토</div>
+        <section class="h-card h-report-card" style="margin-top:10px">
+          <div class="h-report-head">
+            <h3 class="h-section-title" style="margin:0">자동 리포트 <span class="muted">현재 보고 있는 주 기준 요약</span></h3>
+            <div class="h-summary-actions">
+              <button class="btn sm" onclick="hGenerateSummary()">↻ 생성</button>
+              <button class="btn sm" onclick="hCopySummary()">📋 복사</button>
             </div>
-            <div class="h-cal-grid" id="hCalGrid"></div>
           </div>
+          <div class="h-auto-summary" id="hAutoSummary"></div>
         </section>
       </div>
     </main>
@@ -563,8 +493,6 @@
   // 선택된 주(주 월요일 날짜 문자열). 진입 시 지난 주로 초기화(historyInit에서).
   let hWeekStart = null;
   let hDonutScope = 'week';
-  let hMode = 'week';                    // 'week' | 'month'
-  let hMonthAnchor = todayFirstOfMonth(); // 월간 뷰에서 표시 중인 달의 1일 Date
 
   // 주 월요일 문자열 ± 주 단위 이동
   function shiftWeekStart(weekStart, deltaWeeks) {
@@ -574,14 +502,6 @@
     return dateKey(d);
   }
   function previousWeekStart(weekStart) { return shiftWeekStart(weekStart, -1); }
-
-  function todayFirstOfMonth() {
-    const t = new Date();
-    return new Date(t.getFullYear(), t.getMonth(), 1);
-  }
-  function sameMonth(a, b) {
-    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
-  }
   function pad2(n) { return String(n).padStart(2, '0'); }
   function dateKey(d) { return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
 
@@ -623,11 +543,6 @@
   }
 
   window.hMove = function(delta) {
-    if (hMode === 'month') {
-      hMonthAnchor = new Date(hMonthAnchor.getFullYear(), hMonthAnchor.getMonth() + delta, 1);
-      render();
-      return;
-    }
     // 데이터 유무와 상관없이 ±7일 단위로 자유 이동.
     // 다음(▶)으로 이동 시 이번 주를 초과하지 않도록 제한.
     const cur = hWeekStart || state.weekStart;
@@ -639,21 +554,10 @@
   };
 
   window.hGoThis = function() {
-    if (hMode === 'month') hMonthAnchor = todayFirstOfMonth();
-    else hWeekStart = null;
+    hWeekStart = null;
     render();
   };
   window.hSetDonutScope = function(scope) { hDonutScope = scope; renderDonut(); };
-
-  window.hSetMode = function(mode) {
-    if (hMode === mode) return;
-    hMode = mode;
-    document.querySelectorAll('#hModeToggle button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
-    document.getElementById('hWeekView').hidden = (mode !== 'week');
-    document.getElementById('hMonthView').hidden = (mode !== 'month');
-    document.getElementById('hThisBtn').textContent = (mode === 'month') ? '📅 이번 달' : '📅 이번 주';
-    render();
-  };
 
   function taskHours(t) { return (typeof calcTaskHours === 'function') ? calcTaskHours(t) : 0; }
 
@@ -679,14 +583,6 @@
     const label = document.getElementById('hRangeLabel');
     const prev = document.getElementById('hPrevBtn');
     const next = document.getElementById('hNextBtn');
-    if (hMode === 'month') {
-      const y = hMonthAnchor.getFullYear(), m = hMonthAnchor.getMonth() + 1;
-      const isThis = sameMonth(hMonthAnchor, new Date());
-      label.innerHTML = `${y}년 ${m}월<span class="sub">${isThis ? '이번 달' : ''}</span>`;
-      prev.disabled = false; next.disabled = false;
-      prev.title = '이전 달'; next.title = '다음 달';
-      return;
-    }
     const week = getSelectedWeek();
     label.innerHTML = `${formatRange(week.weekStart)}<span class="sub">${week.isCurrent ? '이번 주' : (week.weekStart || '기록 없음')}</span>`;
     // 이전(◀)은 항상 가능, 다음(▶)은 이번 주를 넘어가지 않도록 제한
@@ -704,76 +600,59 @@
     return idx;
   }
 
-  function renderMonthCalendar() {
-    const host = document.getElementById('hCalGrid');
-    const y = hMonthAnchor.getFullYear(), m = hMonthAnchor.getMonth();
-    const first = new Date(y, m, 1);
-    const last = new Date(y, m + 1, 0);
-    const firstWeekday = first.getDay(); // Sun=0
-    const daysInMonth = last.getDate();
-    const totalCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
-    const todayStr = dateKey(new Date());
+  function getVisibleMonthStats() {
+    const week = getSelectedWeek();
+    const base = week.weekStart ? new Date(week.weekStart) : new Date();
+    const year = base.getFullYear();
+    const month = base.getMonth();
     const dayIdx = buildDayIndex();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    let total = 0;
+    let done = 0;
+    let hours = 0;
+    let writtenDays = 0;
+    let weekdayCount = 0;
 
-    // 월간 합계 (이 달만)
-    let totMonth = 0, doneMonth = 0, hoursMonth = 0, activeMonth = 0;
-
-    const cells = [];
-    for (let i = 0; i < totalCells; i++) {
-      const cellDate = new Date(y, m, i - firstWeekday + 1);
-      const inMonth = cellDate.getMonth() === m;
-      const key = dateKey(cellDate);
-      const dow = cellDate.getDay();
-      const day = dayIdx.get(key);
-      const stats = day ? dayStats(day) : { total: 0, done: 0, hours: 0 };
-      if (inMonth) {
-        totMonth += stats.total; doneMonth += stats.done; hoursMonth += stats.hours;
-        if (stats.total > 0) activeMonth++;
-      }
-      const isToday = key === todayStr;
-      const isFuture = key > todayStr;
-      const cls = [
-        'h-cal-day',
-        !inMonth ? 'outside' : '',
-        isToday ? 'today' : '',
-        isFuture && inMonth ? 'future' : '',
-        dow === 0 ? 'sun' : '',
-        dow === 6 ? 'sat' : '',
-        (dow === 0 || dow === 6) ? 'weekend' : '',
-        stats.total > 0 ? 'has-data' : ''
-      ].filter(Boolean).join(' ');
-      const rate = stats.total ? Math.round((stats.done / stats.total) * 100) : 0;
-      const tasks = day ? dayAllTasks(day) : [];
-      const dots = tasks.slice(0, 8).map(t => {
-        const cls2 = t.done ? 'done' : (t.startTime || t.endTime ? 'doing' : '');
-        return `<span class="h-cal-day-dot ${cls2}"></span>`;
-      }).join('');
-      const countHtml = stats.total > 0
-        ? `<div class="h-cal-day-count"><span><b class="done">${stats.done}</b>/${stats.total}</span><span>${stats.hours > 0 ? stats.hours.toFixed(1) + 'h' : ''}</span></div>`
-        : '';
-      const barHtml = stats.total > 0
-        ? `<div class="h-cal-day-bar"><div class="h-cal-day-bar-fill" style="width:${rate}%"></div></div>`
-        : '';
-      const clickAttr = inMonth ? `onclick="openDayModal('${key}')"` : '';
-      cells.push(`
-        <div class="${cls}" ${clickAttr} title="${inMonth ? (key + (stats.total ? ' · ' + stats.done + '/' + stats.total + ' 완료' : ' · 기록 없음')) : ''}">
-          <div class="h-cal-day-num">${cellDate.getDate()}</div>
-          <div class="h-cal-day-body">
-            ${dots ? `<div class="h-cal-day-dots">${dots}</div>` : ''}
-            ${countHtml}
-            ${barHtml}
-          </div>
-        </div>
-      `);
+    for (let dayNum = 1; dayNum <= lastDate; dayNum++) {
+      const date = new Date(year, month, dayNum);
+      const dow = date.getDay();
+      if (dow >= 1 && dow <= 5) weekdayCount++;
+      const day = dayIdx.get(dateKey(date));
+      if (!day) continue;
+      const stats = dayStats(day);
+      const hasContent = stats.total > 0 || !!String(day.schedule || '').trim() || !!String(day.memo || '').trim() || !!String(day.retro || '').trim();
+      if (!hasContent) continue;
+      writtenDays++;
+      total += stats.total;
+      done += stats.done;
+      hours += stats.hours;
     }
-    host.innerHTML = cells.join('');
 
-    const rate = totMonth ? Math.round((doneMonth / totMonth) * 100) : 0;
-    document.getElementById('hMonthStrip').innerHTML = `
-      <div class="h-chip"><span class="lbl">이 달 완료율</span><span class="val">${rate}%</span><span class="sub">${doneMonth} / ${totMonth}</span></div>
-      <div class="h-chip"><span class="lbl">총 시간</span><span class="val">${hoursMonth.toFixed(1)}h</span><span class="sub">${activeMonth}일 활동</span></div>
-      <div class="h-chip"><span class="lbl">일평균</span><span class="val">${activeMonth ? (hoursMonth / activeMonth).toFixed(1) : '0.0'}h</span><span class="sub">활동일 기준</span></div>
-    `;
+    return {
+      year,
+      month: month + 1,
+      total,
+      done,
+      hours,
+      writtenDays,
+      weekdayCount,
+      rate: total ? Math.round(done / total * 100) : 0
+    };
+  }
+
+  function renderMonthSummaryStrip() {
+    const host = document.getElementById('hMonthSummaryStrip');
+    if (!host) return;
+    const stats = getVisibleMonthStats();
+    host.innerHTML = [
+      `<span>📅 ${stats.year}년 ${stats.month}월</span>`,
+      '<span class="h-month-summary-dot">·</span>',
+      `<span><b>완료율 ${stats.rate}%</b></span>`,
+      '<span class="h-month-summary-dot">·</span>',
+      `<span>총 ${stats.hours.toFixed(1)}h</span>`,
+      '<span class="h-month-summary-dot">·</span>',
+      `<span>${stats.writtenDays} / ${stats.weekdayCount}일 작성</span>`
+    ].join('');
   }
 
   // 하루 상세 모달
@@ -1095,10 +974,12 @@
 
   window.hGenerateSummary = function() {
     const host = document.getElementById('hAutoSummary');
+    if (!host) return;
     host.textContent = buildAutoSummary();
   };
   window.hCopySummary = function() {
     const host = document.getElementById('hAutoSummary');
+    if (!host) return;
     const text = host.textContent || '';
     if (!text) { showModal('요약 없음', '먼저 "↻ 생성" 버튼을 눌러주세요.', null); return; }
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1119,22 +1000,21 @@
     try {
       const stamp = 'worklog-autosummary-' + (state.weekStart || '');
       if (localStorage.getItem(stamp)) return;
-      document.getElementById('hAutoSummary').textContent = buildAutoSummary();
+      const host = document.getElementById('hAutoSummary');
+      if (!host) return;
+      host.textContent = buildAutoSummary();
       localStorage.setItem(stamp, String(Date.now()));
     } catch (e) {}
   }
 
   function render() {
     renderNav();
-    if (hMode === 'month') {
-      renderMonthCalendar();
-    } else {
-      renderSummaryChips();
-      renderWeekGrid();
-      renderDonut();
-      const autoHost = document.getElementById('hAutoSummary');
-      if (!autoHost.textContent.trim()) autoHost.textContent = '"↻ 생성" 버튼을 눌러 주간 요약을 생성해보세요.';
-    }
+    renderMonthSummaryStrip();
+    renderSummaryChips();
+    renderWeekGrid();
+    renderDonut();
+    const autoHost = document.getElementById('hAutoSummary');
+    if (autoHost && !autoHost.textContent.trim()) autoHost.textContent = '"↻ 생성" 버튼을 눌러 주간 요약을 생성해보세요.';
     if (typeof refreshBackupReminder === 'function') refreshBackupReminder();
   }
   window.render = render;

@@ -315,6 +315,7 @@ function createInitialState() {
     weekStart: formatDate(monday),
     days: createWeekDays(monday),
     importantTasks: [], routines: [], history: [],
+    memoChecklist: [],
     lastQuadrant: 'q4',
     lastExportAt: null,
     carryover: []
@@ -332,6 +333,15 @@ function migrateState(s) {
   s.lastQuadrant = ['q1','q2','q3','q4'].includes(s.lastQuadrant) ? s.lastQuadrant : 'q4';
   s.lastExportAt = (typeof s.lastExportAt === 'number' && isFinite(s.lastExportAt)) ? s.lastExportAt : null;
   s.carryover = Array.isArray(s.carryover) ? s.carryover.filter(x => x && typeof x === 'object' && typeof x.qKey === 'string') : [];
+  s.memoChecklist = Array.isArray(s.memoChecklist) ? s.memoChecklist : [];
+  s.memoChecklist = s.memoChecklist.map(item => {
+    const text = item && item.text != null ? String(item.text) : '';
+    return {
+      id: item && item.id ? item.id : uid(),
+      text: text,
+      checked: !!(item && item.checked)
+    };
+  }).filter(item => item.text.trim() || item.checked);
   if (!Array.isArray(s.projectLabels)) s.projectLabels = [];
   s.projectLabels = s.projectLabels.filter(p => typeof p === 'string' && p.trim()).map(p => p.trim());
   if (!s.weekStart || !Array.isArray(s.days) || s.days.length === 0) {

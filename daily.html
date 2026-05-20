@@ -79,6 +79,108 @@
     font-size: 0.8125rem; color: var(--text-subtle);
     text-align: center; padding: 14px 0;
   }
+  .memo-card {
+    background: var(--memo-bg);
+    border-color: var(--memo-border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    color: var(--memo-text);
+    resize: vertical;
+    overflow: auto;
+    min-height: 154px;
+  }
+  .memo-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 2px;
+    color: var(--memo-head);
+  }
+  .memo-card-title {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+  .memo-card-save {
+    font-size: 0.6875rem;
+    opacity: 0.65;
+  }
+  .memo-check-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .memo-check-empty {
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--memo-text) 70%, transparent);
+    padding: 4px 0 2px;
+  }
+  .memo-check-item {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr) 18px;
+    align-items: center;
+    gap: 8px;
+  }
+  .memo-check-item input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    accent-color: var(--memo-head);
+  }
+  .memo-check-text {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+    padding: 4px 0;
+    background: transparent;
+    color: var(--memo-text);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+  .memo-check-text::placeholder {
+    color: color-mix(in srgb, var(--memo-text) 55%, transparent);
+  }
+  .memo-check-text:focus {
+    border-color: color-mix(in srgb, var(--memo-head) 55%, transparent);
+    box-shadow: none;
+  }
+  .memo-check-item.checked .memo-check-text {
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+  .memo-check-del {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: color-mix(in srgb, var(--memo-text) 80%, transparent);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    font-size: 14px;
+  }
+  .memo-check-del:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--memo-text);
+  }
+  .memo-add-btn {
+    margin-top: 6px;
+    width: 100%;
+    border: 1px dashed var(--memo-border);
+    background: rgba(255,255,255,0.2);
+    color: var(--memo-head);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: left;
+  }
+  .memo-add-btn:hover {
+    background: rgba(255,255,255,0.34);
+  }
 
   /* D-Day 캘린더 스트립 (8칸: 오늘 ~ +7) */
   .dday-strip {
@@ -1202,9 +1304,6 @@
   :root[data-device="mobile"] .daily-table td { padding: 6px 8px; }
 
   :root[data-device="mobile"] .daily-add-row { padding: 10px; font-size: 12px; }
-  :root[data-device="mobile"] .daily-retro-wrap { padding: 10px 12px; flex-wrap: wrap; gap: 6px; }
-  :root[data-device="mobile"] .daily-retro-label { font-size: 11px; }
-  :root[data-device="mobile"] .daily-retro-input { font-size: 12px; }
 
   :root[data-device="mobile"] .daily-hint-wrap { display: none; }
   :root[data-device="mobile"] .modal { max-width: 92vw; padding: 16px; }
@@ -1261,7 +1360,6 @@
     .daily-table .daily-col-resize { display: none; }
 
     .daily-hint-wrap { display: none; }
-    .daily-retro-wrap { padding: 10px 12px; }
   }
 
   /* Phase 7a: 상호작용 힌트 강화 (hover) */
@@ -1916,41 +2014,6 @@
   }
   .daily-add-row:hover { background: var(--bg); color: var(--q2); }
 
-  /* 오늘 한 줄 회고 */
-  .daily-retro-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 18px 14px;
-    border-top: 1px solid var(--border);
-    background: var(--bg-2, transparent);
-  }
-  .daily-retro-label {
-    flex-shrink: 0;
-    font-size: 12px;
-    color: var(--text-subtle);
-    font-weight: 500;
-    letter-spacing: 0.2px;
-  }
-  .daily-retro-input {
-    flex: 1;
-    min-width: 0;
-    padding: 6px 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--card);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .daily-retro-input:focus {
-    border-color: var(--q2);
-    box-shadow: 0 0 0 2px var(--accent-soft);
-  }
-  .daily-retro-input::placeholder { color: var(--text-subtle); }
-
   .daily-empty { text-align: center; padding: 28px; color: var(--text-subtle); }
 
   /* 슬라이드 애니메이션 */
@@ -2011,6 +2074,14 @@
 
     <main class="mode-content active daily-layout" id="mode-daily">
       <aside class="daily-sidebar">
+        <section class="daily-metric memo-card">
+          <div class="memo-card-head">
+            <span class="memo-card-title">📌 MEMO</span>
+            <span class="memo-card-save">자동 저장</span>
+          </div>
+          <div class="memo-check-list" id="memoChecklist"></div>
+          <button type="button" class="memo-add-btn" onclick="addMemoChecklistItem()">+ 항목 추가</button>
+        </section>
         <section class="daily-metric daily-metric-dday">
           <div class="daily-metric-head">
             <h3 class="daily-metric-title">D-7 이내 마감</h3>
@@ -2573,7 +2644,123 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
   // 좌측 사이드바: D-7 이내 마감 + 주간 달성률
   // board(state.importantTasks/routines) 변경 시 subscribeStateChanges로 자동 갱신됨
   // ══════════════════════════════════════════════════════════════
+  let memoChecklistSaveTimer = null;
+  let memoChecklistFocusIndex = -1;
+
+  function ensureMemoChecklist() {
+    if (!Array.isArray(state.memoChecklist)) state.memoChecklist = [];
+  }
+
+  function queueMemoChecklistSave() {
+    if (memoChecklistSaveTimer) clearTimeout(memoChecklistSaveTimer);
+    memoChecklistSaveTimer = setTimeout(() => {
+      memoChecklistSaveTimer = null;
+      saveState();
+    }, 400);
+  }
+
+  function flushMemoChecklistSave() {
+    if (memoChecklistSaveTimer) {
+      clearTimeout(memoChecklistSaveTimer);
+      memoChecklistSaveTimer = null;
+    }
+    saveState();
+  }
+
+  function focusMemoChecklistInput(index) {
+    if (index < 0) return;
+    requestAnimationFrame(() => {
+      const input = document.querySelector(`.memo-check-text[data-idx="${index}"]`);
+      if (!input) return;
+      input.focus();
+      try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+    });
+  }
+
+  function renderMemoChecklist() {
+    const host = document.getElementById('memoChecklist');
+    if (!host) return;
+    ensureMemoChecklist();
+    if (state.memoChecklist.length === 0) {
+      host.innerHTML = '<div class="memo-check-empty">체크할 메모를 하나씩 추가해보세요.</div>';
+      return;
+    }
+    host.innerHTML = state.memoChecklist.map((item, idx) => `
+      <div class="memo-check-item ${item.checked ? 'checked' : ''}">
+        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleMemoChecklist(${idx}, this.checked)">
+        <input type="text" class="memo-check-text" data-idx="${idx}" placeholder="메모 항목 입력"
+               value="${escapeHtml(item.text || '')}"
+               oninput="updateMemoChecklistText(${idx}, this.value)"
+               onblur="flushMemoChecklistItemSave()"
+               onkeydown="memoChecklistKeydown(${idx}, event)">
+        <button type="button" class="memo-check-del" title="삭제" onclick="removeMemoChecklistItem(${idx})">×</button>
+      </div>
+    `).join('');
+    if (memoChecklistFocusIndex >= 0) {
+      const next = memoChecklistFocusIndex;
+      memoChecklistFocusIndex = -1;
+      focusMemoChecklistInput(next);
+    }
+  }
+
+  window.addMemoChecklistItem = function(afterIdx) {
+    ensureMemoChecklist();
+    const item = { id: uid(), text: '', checked: false };
+    if (typeof afterIdx === 'number' && afterIdx >= 0 && afterIdx < state.memoChecklist.length) {
+      state.memoChecklist.splice(afterIdx + 1, 0, item);
+      memoChecklistFocusIndex = afterIdx + 1;
+    } else {
+      state.memoChecklist.push(item);
+      memoChecklistFocusIndex = state.memoChecklist.length - 1;
+    }
+    saveState();
+    renderMemoChecklist();
+  };
+
+  window.updateMemoChecklistText = function(idx, value) {
+    ensureMemoChecklist();
+    if (!state.memoChecklist[idx]) return;
+    state.memoChecklist[idx].text = value == null ? '' : String(value);
+    queueMemoChecklistSave();
+  };
+
+  window.toggleMemoChecklist = function(idx, checked) {
+    ensureMemoChecklist();
+    if (!state.memoChecklist[idx]) return;
+    state.memoChecklist[idx].checked = !!checked;
+    saveState();
+    renderMemoChecklist();
+  };
+
+  window.removeMemoChecklistItem = function(idx) {
+    ensureMemoChecklist();
+    if (!state.memoChecklist[idx]) return;
+    state.memoChecklist.splice(idx, 1);
+    saveState();
+    renderMemoChecklist();
+  };
+
+  window.memoChecklistKeydown = function(idx, event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addMemoChecklistItem(idx);
+      return;
+    }
+    if (event.key === 'Backspace') {
+      const target = event.target;
+      if (target && !target.value && state.memoChecklist[idx]) {
+        event.preventDefault();
+        removeMemoChecklistItem(idx);
+      }
+    }
+  };
+
+  window.flushMemoChecklistItemSave = function() {
+    flushMemoChecklistSave();
+  };
+
   function renderSidebar() {
+    renderMemoChecklist();
     renderSidebarDday();
     renderSidebarWeekRate();
   }
@@ -2840,15 +3027,6 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
           </table>
         </div>
         <div class="daily-add-row" onclick="addDailyTask(${dailyIdx})">+ 업무 추가</div>
-        <div class="daily-retro-wrap">
-          <span class="daily-retro-label">오늘 한 줄</span>
-          <input class="daily-retro-input" type="text" maxlength="200"
-                 value="${escapeHtml(d.retro || '')}"
-                 placeholder="오늘 어땠어? (Enter로 저장)"
-                 onblur="setDailyRetro(${dailyIdx}, this.value)"
-                 onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();} else if(event.key==='Escape'){event.preventDefault();this.value=this.dataset.orig||'';this.blur();}"
-                 data-orig="${escapeHtml(d.retro || '')}">
-        </div>
       </div>
     `;
   }
@@ -3601,18 +3779,6 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
       return;
     }
     startDailyEditInternal(dayIdx, qKey, ti, field);
-  };
-
-  window.setDailyRetro = function(dayIdx, value) {
-    const day = state.days[dayIdx];
-    if (!day) return;
-    const v = (value == null ? '' : String(value)).trim();
-    if (day.retro === v) return; // 변경 없음 — 무의미한 render 생략
-    day.retro = v;
-    saveState();
-    // renderDaily 전체 재렌더 시 input 포커스/커서 위치 잃음.
-    // 값은 이미 저장됐으므로 강제 재렌더 없이 다음 뷰 전환 때 반영되게 둠.
-    if (typeof renderWeekGrid === 'function') renderWeekGrid();
   };
 
   const LAST_QUADRANT_KEY = 'worklog.lastQuadrant';

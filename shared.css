@@ -88,6 +88,10 @@
   --doing-fg: #1b69b5;
   --wait-bg: #f1f1f0;
   --wait-fg: #787774;
+  --memo-bg: #fff9c4;
+  --memo-border: #f7e98e;
+  --memo-text: #4a3f0a;
+  --memo-head: #8a7a1a;
 }
 
 :root[data-theme="dark"] {
@@ -138,6 +142,10 @@
   --doing-fg: #7fb6e8;
   --wait-bg: #2a2a28;
   --wait-fg: #9a9a97;
+  --memo-bg: #3a3520;
+  --memo-border: #5a5230;
+  --memo-text: #e8dca0;
+  --memo-head: #c9b974;
   /* 빨강 채도 완화 (눈부심 감소) */
   --q1: #f56c6c;
   --prog-low: #8b8a87;
