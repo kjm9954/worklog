@@ -12,6 +12,7 @@ const THEME_KEY = 'worklog-theme';
 const DEVICE_KEY = 'worklog-device';
 const SYNC_CHANNEL_NAME = 'worklog-sync';
 const LAST_ROLLOVER_KEY = 'worklog-last-rollover';
+const LAST_DAILY_CARRYOVER_KEY = 'worklog-last-daily-carryover';
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const DEFAULT_PROJECTS = ['메인', '서브', '기타'];
@@ -295,6 +296,95 @@ function flattenDayTasks(day) {
     arr.forEach((t, ti) => out.push({ task: t, qKey: qKey, ti: ti }));
   });
   return out;
+}
+
+function cloneTaskForCarryover(task, sourceDate, targetDate) {
+  return Object.assign({}, task, {
+    id: uid(),
+    targetDate: targetDate,
+    startTime: '',
+    endTime: '',
+    breakMinutes: 0,
+    done: false,
+    carriedOver: true,
+    originalDate: sourceDate || task.originalDate || task.targetDate || '',
+    sourceTaskId: task.sourceTaskId || task.id || '',
+    userStatus: '',
+    adjustHours: 0
+  });
+}
+
+function carryoverIdentity(task, sourceDate) {
+  if (!task) return '';
+  return task.sourceTaskId || task.id || ((sourceDate || task.originalDate || task.targetDate || '') + '|' + (task.name || ''));
+}
+
+function hasCarryoverDuplicate(day, qKey, sourceTask, sourceDate) {
+  if (!day || !day.quadrants || !Array.isArray(day.quadrants[qKey])) return false;
+  const sourceKey = carryoverIdentity(sourceTask, sourceDate);
+  return day.quadrants[qKey].some(t => {
+    if (!t) return false;
+    const sameSource = sourceKey && carryoverIdentity(t, t.originalDate) === sourceKey;
+    const sameLegacy = t.carriedOver
+      && (t.originalDate || '') === sourceDate
+      && (t.name || '') === (sourceTask.name || '');
+    const sameManual = !t.carriedOver
+      && (t.name || '') === (sourceTask.name || '')
+      && (t.project || '') === (sourceTask.project || '');
+    return sameSource || sameLegacy || sameManual;
+  });
+}
+
+function addUnfinishedTasksFromDay(sourceDay, targetDay) {
+  if (!sourceDay || !targetDay || !sourceDay.quadrants || !targetDay.quadrants) return 0;
+  let added = 0;
+  ['q1','q2','q3','q4'].forEach(qKey => {
+    const sourceTasks = Array.isArray(sourceDay.quadrants[qKey]) ? sourceDay.quadrants[qKey] : [];
+    if (!Array.isArray(targetDay.quadrants[qKey])) targetDay.quadrants[qKey] = [];
+    sourceTasks.forEach(task => {
+      if (!task || task.done || !(task.name || '').trim()) return;
+      if (hasCarryoverDuplicate(targetDay, qKey, task, sourceDay.date)) return;
+      targetDay.quadrants[qKey].push(cloneTaskForCarryover(task, sourceDay.date, targetDay.date));
+      added++;
+    });
+  });
+  return added;
+}
+
+function findLatestArchivedDayBefore(dateStr) {
+  if (!state || !Array.isArray(state.history) || !dateStr) return null;
+  let latest = null;
+  state.history.forEach(week => {
+    (week && week.days || []).forEach(day => {
+      if (!day || !day.date || day.date >= dateStr) return;
+      if (!latest || day.date > latest.date) latest = day;
+    });
+  });
+  return latest;
+}
+
+function getPreviousWorklogDay(dayIdx) {
+  if (!state || !Array.isArray(state.days) || dayIdx < 0) return null;
+  if (dayIdx > 0) return state.days[dayIdx - 1] || null;
+  const today = state.days[dayIdx];
+  return today ? findLatestArchivedDayBefore(today.date) : null;
+}
+
+function autoCarryoverYesterdayTasks() {
+  if (!state || !Array.isArray(state.days)) return 0;
+  const todayStr = formatDate(new Date());
+  const dayIdx = state.days.findIndex(d => d && d.date === todayStr);
+  if (dayIdx < 0) return 0;
+  try {
+    if (localStorage.getItem(LAST_DAILY_CARRYOVER_KEY) === todayStr) return 0;
+  } catch (e) {}
+  const sourceDay = getPreviousWorklogDay(dayIdx);
+  const targetDay = state.days[dayIdx];
+  if (!sourceDay || !targetDay || sourceDay.date === targetDay.date) return 0;
+  const added = addUnfinishedTasksFromDay(sourceDay, targetDay);
+  try { localStorage.setItem(LAST_DAILY_CARRYOVER_KEY, todayStr); } catch (e) {}
+  if (added > 0) saveState();
+  return added;
 }
 
 // 프로젝트 이름 → 슬롯 매핑 (색상 매핑용 — p1~p3 순환)

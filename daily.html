@@ -5000,6 +5000,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     state = loadState();
     // 로드 직후 주간 자동 롤오버: 저장된 weekStart가 이번 주가 아니면 history로 보관 후 갱신
     autoRolloverWeek();
+    autoCarryoverYesterdayTasks();
     initTheme();
     initDevice();
     initModalBase();
@@ -5019,7 +5020,10 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     // 클라우드(Notion) 동기화: 원격이 있으면 로컬 덮어쓰고 재렌더. 없으면 현재 state 업로드.
     if (typeof initCloudSync === 'function') {
       await initCloudSync(function(remote) {
-        if (window.applyRemoteState && window.applyRemoteState(remote)) render();
+        if (window.applyRemoteState && window.applyRemoteState(remote)) {
+          autoCarryoverYesterdayTasks();
+          render();
+        }
       });
     }
     saveState();

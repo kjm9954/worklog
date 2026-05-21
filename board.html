@@ -328,7 +328,8 @@
     gap: 4px;
   }
   .board-cal-day {
-    min-height: 94px;
+    position: relative;
+    min-height: 68px;
     padding: 5px 6px;
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
@@ -336,7 +337,7 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    cursor: pointer;
+    cursor: default;
     transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
     outline: none;
   }
@@ -365,9 +366,42 @@
     font-weight: 700;
     color: var(--text);
     line-height: 1;
+    padding-right: 20px;
   }
   .board-cal-day.today .board-cal-date { color: var(--q2); }
   .board-cal-day.sun .board-cal-date { color: var(--q1); }
+  .board-cal-add {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 16px;
+    cursor: pointer;
+    opacity: 0.18;
+    transition: opacity 0.12s, border-color 0.12s, background 0.12s, color 0.12s, transform 0.08s;
+  }
+  .board-cal-day:hover .board-cal-add,
+  .board-cal-day:focus-within .board-cal-add,
+  .board-cal-add:focus-visible {
+    opacity: 1;
+  }
+  .board-cal-add:hover,
+  .board-cal-add:focus-visible {
+    border-color: var(--q2);
+    background: var(--q2);
+    color: #fff;
+    transform: translateY(-1px);
+    outline: none;
+  }
   .board-cal-chip {
     display: block;
     padding: 2px 4px;
@@ -991,8 +1025,9 @@
     .board-title-row { justify-content: space-between; }
     .widget-tabs { width: 100%; }
     .widget-tab { flex: 1; min-width: 0; }
-    .board-cal-day { min-height: 82px; }
+    .board-cal-day { min-height: 62px; }
     .board-cal-grid { gap: 3px; }
+    .board-cal-add { opacity: 0.42; }
     .board-day-detail { padding: 10px; }
     .board-editor-grid { grid-template-columns: 1fr; }
   }
@@ -1631,10 +1666,7 @@
     const inCurrentMonth = boardIsSameMonth(dateStr, boardMonthAnchor);
     boardSelectedDate = dateStr;
     if (!inCurrentMonth) setBoardMonthAnchor(date, true);
-    const idx = createImportantTask(dateStr);
-    saveState();
     render();
-    openImportantEditorAfterRender(idx);
   };
 
   window.onBoardDayKeydown = function(event, dateStr) {
@@ -1816,10 +1848,13 @@
     const monthTitle = `${boardMonthAnchor.getFullYear()}년 ${boardMonthAnchor.getMonth() + 1}월`;
     const first = new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth(), 1);
     const offset = first.getDay();
+    const lastDate = new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth() + 1, 0).getDate();
     const start = new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth(), 1 - offset);
     const todayKey = formatDate(new Date());
     const dayCells = [];
-    for (let i = 0; i < 42; i++) {
+    const visibleWeeks = Math.ceil((offset + lastDate) / 7);
+    const totalCells = Math.max(35, visibleWeeks * 7);
+    for (let i = 0; i < totalCells; i++) {
       const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
       const key = boardDateKey(date);
       const inMonth = date.getMonth() === boardMonthAnchor.getMonth();
@@ -1832,7 +1867,7 @@
         date.getDay() === 0 ? 'sun' : '',
         boardTodayPulse && key === todayKey ? 'pulse' : ''
       ].filter(Boolean).join(' ');
-      const chips = items.slice(0, 2).map(it => {
+      const chips = items.slice(0, 1).map(it => {
         const idx = state.importantTasks.indexOf(it);
         return `<button type="button"
                   class="board-cal-chip ${boardCategoryTone(it.category)} ${it.status === '완료' ? 'done' : ''}"
@@ -1843,7 +1878,7 @@
                   onclick="event.stopPropagation(); openImportantEditor(${idx}, this)"
                   title="${escapeHtml(boardTaskLabel(it))}">${escapeHtml(boardTaskLabel(it))}</button>`;
       }).join('');
-      const more = items.length > 2 ? `<div class="board-cal-more">+${items.length - 2}</div>` : '';
+      const more = items.length > 1 ? `<div class="board-cal-more">+${items.length - 1}</div>` : '';
       dayCells.push(`
         <div class="${classes}"
              data-cal-date="${key}"
@@ -1854,6 +1889,11 @@
              ondragleave="onBoardDayDragLeave(event)"
              ondrop="onBoardDayDrop(event, '${key}')">
           <div class="board-cal-date">${date.getDate()}</div>
+          <button type="button"
+                  class="board-cal-add"
+                  onclick="event.stopPropagation(); addImportantTaskForDate('${key}')"
+                  title="이 날짜에 중요 업무 추가"
+                  aria-label="${key} 중요 업무 추가">+</button>
           ${chips}
           ${more}
         </div>
