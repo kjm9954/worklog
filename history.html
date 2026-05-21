@@ -398,13 +398,169 @@
     color: var(--text-subtle); font-size: 13px;
   }
 
-  /* 자동 요약 */
-  .h-auto-summary { white-space: pre-wrap; font-size: 13px; line-height: 1.6; color: var(--text); }
-  .h-auto-summary h4 { margin: 0 0 6px 0; font-size: 13px; font-weight: 700; }
+  /* 자동 진단 리포트 */
+  .h-auto-summary { color: var(--text); }
+  .h-diagnosis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .h-diagnosis-card {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow-sm);
+  }
+  .h-diagnosis-card[data-tone="risk"] { border-top: 3px solid var(--q1); }
+  .h-diagnosis-card[data-tone="bottleneck"] { border-top: 3px solid var(--q2); }
+  .h-diagnosis-card[data-tone="pattern"] { border-top: 3px solid var(--q3); }
+  .h-diagnosis-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .h-diagnosis-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .h-diagnosis-score {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .h-diagnosis-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+  .h-report-bar-stack { display: flex; height: 10px; overflow: hidden; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); }
+  .h-report-bar { min-width: 0; }
+  .h-report-bar.popcorn { background: var(--q2); }
+  .h-report-bar.town { background: var(--q3); }
+  .h-report-bar.other { background: var(--border-strong); }
+  .h-report-legend { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .h-report-legend-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+  }
+  .h-report-legend-item .name { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .h-report-legend-item .val { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .h-report-topline {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .h-report-pill {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .h-signal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .h-signal-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 6px;
+    align-items: center;
+    font-size: 12px;
+    min-width: 0;
+  }
+  .h-signal-badge {
+    border-radius: 999px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 800;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .h-signal-badge.hot { background: #ffe0e0; color: #a33; border-color: #f5b4b4; }
+  .h-signal-badge.warn { background: #fff4d9; color: #8a5a00; border-color: #f0d98f; }
+  .h-signal-badge.info { background: #e7f1fb; color: #1b69b5; border-color: #c5ddf3; }
+  .h-signal-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 700;
+  }
+  .h-signal-meta {
+    color: var(--text-muted);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .h-pattern-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .h-pattern-metric {
+    padding: 8px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .h-pattern-metric .num {
+    display: block;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .h-pattern-metric .lbl {
+    display: block;
+    margin-top: 4px;
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.25;
+  }
+  .h-report-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 72px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-subtle);
+    font-size: 12px;
+    text-align: center;
+    background: var(--card);
+  }
+  :root[data-theme="dark"] .h-signal-badge.hot { background: #3a1a1a; color: #ff8a8a; border-color: #5a2525; }
+  :root[data-theme="dark"] .h-signal-badge.warn { background: #3d3005; color: #ffd96a; border-color: #5a4b15; }
+  :root[data-theme="dark"] .h-signal-badge.info { background: #1e2e42; color: #7fb6e8; border-color: #2d4a6a; }
   .h-summary-actions { display: flex; gap: 6px; margin-left: auto; }
 
   @media (max-width: 900px) {
     .h-week-grid { grid-template-columns: repeat(2, 1fr); }
+    .h-diagnosis-grid { grid-template-columns: 1fr; }
   }
   @media (max-width: 600px) {
     .h-week-grid { grid-template-columns: 1fr; }
@@ -935,56 +1091,290 @@
   }
   function hideHeatTip() { document.getElementById('hHeatTooltip').hidden = true; }
 
-  // 주간 자동 요약
-  function buildAutoSummary() {
-    const week = getSelectedWeek();
-    const lines = [];
-    lines.push(`📅 ${formatRange(week.weekStart)} 주간 요약`);
-    const goal = (week.goals && week.goals.week || '').trim();
-    if (goal) lines.push(`🎯 주간 목표: ${goal}`);
-    let totDone = 0, totAll = 0, totHours = 0;
-    const projMap = new Map();
-    (week.days || []).slice(0, 5).forEach((d, i) => {
-      const tasks = dayAllTasks(d);
-      const done = tasks.filter(t => t && t.done).length;
-      const hrs = tasks.reduce((s, t) => s + taskHours(t), 0);
-      totDone += done; totAll += tasks.length; totHours += hrs;
-      tasks.forEach(t => {
-        const h = taskHours(t); if (h <= 0) return;
-        const k = (t.project || '(미지정)').trim() || '(미지정)';
-        projMap.set(k, (projMap.get(k) || 0) + h);
-      });
-      const retro = (d.retro || '').trim();
-      if (tasks.length || retro) {
-        const parts = [`${DAY_LABELS[i]} (${d.date || ''}): ${done}/${tasks.length} · ${hrs.toFixed(1)}h`];
-        if (retro) parts.push(`"${retro}"`);
-        lines.push('  · ' + parts.join(' — '));
+  // 주간 자동 진단 리포트
+  function reportTaskEntries(day) {
+    if (!day || !day.quadrants) return [];
+    const out = [];
+    ['q1','q2','q3','q4'].forEach(qKey => {
+      const arr = day.quadrants[qKey];
+      if (Array.isArray(arr)) {
+        arr.forEach(task => out.push({ day, qKey, task }));
       }
     });
-    lines.push('');
-    const rate = totAll ? Math.round(totDone / totAll * 100) : 0;
-    lines.push(`✅ 완료율: ${totDone}/${totAll} (${rate}%) · 총 ${totHours.toFixed(1)}h`);
-    const proj = Array.from(projMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    if (proj.length) {
-      lines.push('📊 프로젝트 TOP:');
-      proj.forEach(([k, v]) => lines.push(`  · ${k}: ${v.toFixed(1)}h (${(v/totHours*100).toFixed(0)}%)`));
+    return out;
+  }
+
+  function weekTaskEntries(week) {
+    const out = [];
+    (week.days || []).slice(0, 5).forEach((day, dayIdx) => {
+      reportTaskEntries(day).forEach(entry => {
+        entry.dayIdx = dayIdx;
+        out.push(entry);
+      });
+    });
+    return out;
+  }
+
+  function parseReportDate(dateStr) {
+    if (!dateStr || dateStr === DASH) return null;
+    const parts = String(dateStr).split('-').map(Number);
+    if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function reportDayDiff(fromDate, toDate) {
+    const from = parseReportDate(fromDate);
+    const to = parseReportDate(toDate);
+    if (!from || !to) return null;
+    return Math.round((to - from) / 86400000);
+  }
+
+  function reportTaskName(task) {
+    return (task && task.name && String(task.name).trim()) || '(이름 없음)';
+  }
+
+  function reportProjectName(task) {
+    return (task && task.project && String(task.project).trim()) || '미지정';
+  }
+
+  function reportCategoryName(entry) {
+    const task = entry.task || {};
+    if (task.category) return String(task.category).trim();
+    if (task.subCategory) return String(task.subCategory).trim();
+    const note = String(task.note || '');
+    const hit = note.match(/\[([^\]]+)\]/);
+    if (hit && hit[1]) return hit[1].trim();
+    const labels = { q1: 'Q1', q2: 'Q2', q3: 'Q3', q4: 'Q4' };
+    return labels[entry.qKey] || '구분 없음';
+  }
+
+  function reportTaskStarted(task) {
+    if (!task) return false;
+    return !!((task.startTime && task.startTime !== DASH) || (task.endTime && task.endTime !== DASH));
+  }
+
+  function reportTaskKey(task) {
+    return String(reportTaskName(task)).trim().toLowerCase();
+  }
+
+  function reportBucket(entry) {
+    const task = entry.task || {};
+    const haystack = [
+      task.project || '',
+      task.category || '',
+      task.subCategory || '',
+      task.name || '',
+      task.note || ''
+    ].join(' ').toLowerCase();
+    if (haystack.includes('팝콘') || haystack.includes('popcorn')) return 'popcorn';
+    if (haystack.includes('타운') || haystack.includes('town')) return 'town';
+    return 'other';
+  }
+
+  function topCount(entries, labelFn) {
+    const map = new Map();
+    entries.forEach(entry => {
+      const label = labelFn(entry);
+      if (!label) return;
+      map.set(label, (map.get(label) || 0) + 1);
+    });
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0] || null;
+  }
+
+  function reportFocusDay(week) {
+    const days = (week.days || []).slice(0, 5).filter(Boolean);
+    if (!days.length) return null;
+    const todayStr = formatDate(new Date());
+    if (week.isCurrent) {
+      return days.find(day => day.date === todayStr)
+        || days.slice().reverse().find(day => day.date && day.date <= todayStr)
+        || days[0];
     }
-    return lines.join('\n');
+    return days.slice().reverse().find(day => dayAllTasks(day).length || (day.retro || '').trim())
+      || days[days.length - 1];
+  }
+
+  function signalRowHtml(row) {
+    return `<div class="h-signal-row" title="${escapeHtml(row.title || row.name)}">
+      <span class="h-signal-badge ${row.tone || ''}">${escapeHtml(row.badge)}</span>
+      <span class="h-signal-name">${escapeHtml(row.name)}</span>
+      <span class="h-signal-meta">${escapeHtml(row.meta || '')}</span>
+    </div>`;
+  }
+
+  function emptyReportHtml(text) {
+    return `<div class="h-report-empty">${escapeHtml(text)}</div>`;
+  }
+
+  function buildAutoSummary() {
+    const week = getSelectedWeek();
+    const focusDay = reportFocusDay(week);
+    const focusDate = (focusDay && focusDay.date) || formatDate(new Date());
+    const entries = weekTaskEntries(week);
+    const todayEntries = focusDay ? reportTaskEntries(focusDay) : [];
+    const unfinishedToday = todayEntries.filter(entry => entry.task && !entry.task.done);
+    const bucketCounts = { popcorn: 0, town: 0, other: 0 };
+    unfinishedToday.forEach(entry => { bucketCounts[reportBucket(entry)]++; });
+    const unfinishedTotal = unfinishedToday.length;
+    const focusCount = bucketCounts.popcorn + bucketCounts.town;
+    const focusPct = unfinishedTotal ? Math.round(focusCount / unfinishedTotal * 100) : 0;
+    const pct = key => unfinishedTotal ? Math.max(0, Math.round(bucketCounts[key] / unfinishedTotal * 100)) : 0;
+    const topProject = topCount(unfinishedToday, entry => reportProjectName(entry.task));
+    const topCategory = topCount(unfinishedToday, reportCategoryName);
+
+    const riskRows = [];
+    const seenRisk = new Set();
+    function addRiskRows(filterFn, makeRow) {
+      entries.forEach(entry => {
+        const task = entry.task;
+        if (!task || !filterFn(entry)) return;
+        const key = (task.id || reportTaskName(task)) + '|' + ((entry.day && entry.day.date) || '');
+        if (seenRisk.has(key)) return;
+        seenRisk.add(key);
+        riskRows.push(makeRow(entry));
+      });
+    }
+    addRiskRows(
+      entry => !entry.task.done && reportDayDiff(focusDate, entry.task.targetDate) < 0,
+      entry => {
+        const diff = reportDayDiff(focusDate, entry.task.targetDate);
+        return { badge: `D+${Math.abs(diff)}`, tone: 'hot', name: reportTaskName(entry.task), meta: '미완료', title: `${entry.task.targetDate || ''} · 미완료` };
+      }
+    );
+    addRiskRows(
+      entry => !entry.task.done && reportDayDiff(focusDate, entry.task.targetDate) === 0,
+      entry => ({ badge: 'D-DAY', tone: 'warn', name: reportTaskName(entry.task), meta: '미완료', title: `${entry.task.targetDate || ''} · 미완료` })
+    );
+    addRiskRows(
+      entry => !entry.task.done && reportTaskStarted(entry.task),
+      entry => ({ badge: '진행', tone: 'info', name: reportTaskName(entry.task), meta: '체크 없음', title: '시작/종료 시간이 있지만 미완료' })
+    );
+    addRiskRows(
+      entry => entry.task.done && taskHours(entry.task) <= 0,
+      entry => ({ badge: '0h', tone: 'warn', name: reportTaskName(entry.task), meta: '완료', title: '완료 체크됨 · 실제 시간 0h' })
+    );
+
+    const carryoverRows = entries.filter(entry => {
+      const task = entry.task || {};
+      const age = reportDayDiff(task.originalDate, focusDate);
+      return !task.done && task.carriedOver && task.originalDate && age != null && age >= 2;
+    });
+    const overrunRows = entries.filter(entry => {
+      const task = entry.task || {};
+      const est = parseFloat(task.estimatedHours);
+      const hours = taskHours(task);
+      return isFinite(est) && est > 0 && hours >= est * 1.5;
+    });
+    const workedKeys = new Set(entries.filter(entry => {
+      const task = entry.task || {};
+      return taskHours(task) > 0 || reportTaskStarted(task) || task.done;
+    }).map(entry => reportTaskKey(entry.task)));
+    const untouchedImportant = (state.importantTasks || []).filter(item => {
+      if (!item || item.status === '완료') return false;
+      const key = reportTaskKey(item);
+      return key && !workedKeys.has(key);
+    });
+
+    const riskPreview = riskRows.slice(0, 3).map(signalRowHtml).join('');
+    const patternRows = [];
+    if (carryoverRows.length) {
+      patternRows.push({ badge: '이월', tone: 'hot', name: reportTaskName(carryoverRows[0].task), meta: `${carryoverRows.length}개 · 2일+` });
+    }
+    if (overrunRows.length) {
+      const first = overrunRows[0];
+      const est = parseFloat(first.task.estimatedHours);
+      const ratio = Math.round(taskHours(first.task) / est * 100);
+      patternRows.push({ badge: '150%', tone: 'warn', name: reportTaskName(first.task), meta: `${ratio}%` });
+    }
+    if (untouchedImportant.length) {
+      patternRows.push({ badge: '미작업', tone: 'info', name: reportTaskName(untouchedImportant[0]), meta: `${untouchedImportant.length}개` });
+    }
+
+    const bottleneckHtml = `
+      <div class="h-diagnosis-card" data-tone="bottleneck">
+        <div class="h-diagnosis-head">
+          <span class="h-diagnosis-label">병목</span>
+          <span class="h-diagnosis-score">${focusPct}%</span>
+        </div>
+        <div class="h-diagnosis-sub">${formatDateDisplay(focusDate)} 미완료 중 팝콘/타운 비중</div>
+        <div class="h-report-bar-stack" aria-label="팝콘 타운 기타 비중">
+          <span class="h-report-bar popcorn" style="width:${pct('popcorn')}%"></span>
+          <span class="h-report-bar town" style="width:${pct('town')}%"></span>
+          <span class="h-report-bar other" style="width:${pct('other')}%"></span>
+        </div>
+        <div class="h-report-legend">
+          <div class="h-report-legend-item"><span class="name">팝콘</span><span class="val">${bucketCounts.popcorn}</span></div>
+          <div class="h-report-legend-item"><span class="name">타운</span><span class="val">${bucketCounts.town}</span></div>
+          <div class="h-report-legend-item"><span class="name">기타</span><span class="val">${bucketCounts.other}</span></div>
+        </div>
+        <div class="h-report-topline">
+          <span class="h-report-pill">미완료 ${unfinishedTotal}</span>
+          <span class="h-report-pill">프로젝트 ${topProject ? escapeHtml(topProject[0]) + ' ' + topProject[1] : '-'}</span>
+          <span class="h-report-pill">구분 ${topCategory ? escapeHtml(topCategory[0]) + ' ' + topCategory[1] : '-'}</span>
+        </div>
+      </div>
+    `;
+    const riskHtml = `
+      <div class="h-diagnosis-card" data-tone="risk">
+        <div class="h-diagnosis-head">
+          <span class="h-diagnosis-label">위험</span>
+          <span class="h-diagnosis-score">${riskRows.length}</span>
+        </div>
+        <div class="h-diagnosis-sub">마감 초과 · D-DAY · 진행 후 미완료 · 완료 0h</div>
+        <div class="h-signal-list">${riskPreview || emptyReportHtml('감지된 위험 신호가 없습니다.')}</div>
+      </div>
+    `;
+    const patternHtml = `
+      <div class="h-diagnosis-card" data-tone="pattern">
+        <div class="h-diagnosis-head">
+          <span class="h-diagnosis-label">패턴</span>
+          <span class="h-diagnosis-score">${carryoverRows.length + overrunRows.length + untouchedImportant.length}</span>
+        </div>
+        <div class="h-diagnosis-sub">선택한 주 기준 반복 신호</div>
+        <div class="h-pattern-metrics">
+          <div class="h-pattern-metric"><span class="num">${carryoverRows.length}</span><span class="lbl">2일+ 이월</span></div>
+          <div class="h-pattern-metric"><span class="num">${overrunRows.length}</span><span class="lbl">150% 초과</span></div>
+          <div class="h-pattern-metric"><span class="num">${untouchedImportant.length}</span><span class="lbl">중요 미작업</span></div>
+        </div>
+        <div class="h-signal-list">${patternRows.slice(0, 3).map(signalRowHtml).join('') || emptyReportHtml('반복 패턴 신호가 없습니다.')}</div>
+      </div>
+    `;
+
+    const text = [
+      `오늘의 병목 진단 (${formatRange(week.weekStart)})`,
+      `병목: ${formatDateDisplay(focusDate)} 미완료 ${unfinishedTotal}개 중 팝콘 ${bucketCounts.popcorn}개, 타운 ${bucketCounts.town}개, 기타 ${bucketCounts.other}개`,
+      `위험: ${riskRows.length}개`,
+      ...riskRows.slice(0, 5).map(row => `- ${row.badge} ${row.name} ${row.meta || ''}`.trim()),
+      `패턴: 2일+ 이월 ${carryoverRows.length}개, 150% 초과 ${overrunRows.length}개, 중요 미작업 ${untouchedImportant.length}개`
+    ].join('\n');
+
+    return {
+      html: `<div class="h-diagnosis-grid">${bottleneckHtml}${riskHtml}${patternHtml}</div>`,
+      text
+    };
+  }
+
+  function renderAutoSummary() {
+    const host = document.getElementById('hAutoSummary');
+    if (!host) return;
+    const report = buildAutoSummary();
+    host.innerHTML = report.html;
+    host.dataset.summaryText = report.text;
   }
 
   window.hGenerateSummary = function() {
-    const host = document.getElementById('hAutoSummary');
-    if (!host) return;
-    host.textContent = buildAutoSummary();
+    renderAutoSummary();
   };
   window.hCopySummary = function() {
     const host = document.getElementById('hAutoSummary');
     if (!host) return;
-    const text = host.textContent || '';
-    if (!text) { showModal('요약 없음', '먼저 "↻ 생성" 버튼을 눌러주세요.', null); return; }
+    const text = host.dataset.summaryText || host.textContent || '';
+    if (!text) { showModal('리포트 없음', '자동 리포트를 먼저 생성해주세요.', null); return; }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(
-        () => showModal('복사 완료', '요약이 클립보드에 복사됐어요.', null),
+        () => showModal('복사 완료', '진단 리포트가 클립보드에 복사됐어요.', null),
         () => showModal('복사 실패', '브라우저가 거부했어요. 직접 선택해 복사해주세요.', null)
       );
     } else {
@@ -1000,9 +1390,7 @@
     try {
       const stamp = 'worklog-autosummary-' + (state.weekStart || '');
       if (localStorage.getItem(stamp)) return;
-      const host = document.getElementById('hAutoSummary');
-      if (!host) return;
-      host.textContent = buildAutoSummary();
+      renderAutoSummary();
       localStorage.setItem(stamp, String(Date.now()));
     } catch (e) {}
   }
@@ -1013,8 +1401,7 @@
     renderSummaryChips();
     renderWeekGrid();
     renderDonut();
-    const autoHost = document.getElementById('hAutoSummary');
-    if (autoHost && !autoHost.textContent.trim()) autoHost.textContent = '"↻ 생성" 버튼을 눌러 주간 요약을 생성해보세요.';
+    renderAutoSummary();
     if (typeof refreshBackupReminder === 'function') refreshBackupReminder();
   }
   window.render = render;
