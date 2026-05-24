@@ -1073,9 +1073,6 @@
             <div class="board-section-title-wrap">
               <h2 class="board-section-title">중요 업무 <span class="board-section-count" id="importantCount">0</span></h2>
             </div>
-            <div class="board-section-actions">
-              <button class="btn primary sm" onclick="addImportantTask()">+ 중요 업무</button>
-            </div>
           </div>
           <div class="board-table-wrap">
             <div id="importantList" class="side-table important-grid"></div>
@@ -1132,6 +1129,7 @@
   let boardMonthAnchor = loadBoardMonthAnchor();
   let boardSelectedDate = formatDate(new Date());
   let boardTodayPulse = false;
+  let boardDayClickTimer = null;
 
   function loadBoardMonthAnchor() {
     try {
@@ -1597,10 +1595,9 @@
     return state.importantTasks.length - 1;
   }
 
-  function renderUndatedCards() {
-    const undatedItems = importantUndatedTasks();
-    if (!undatedItems.length) return '<div class="board-day-empty">미지정 항목이 없어요.</div>';
-    return undatedItems.map(it => {
+  function renderImportantCardList(items, emptyText) {
+    if (!items.length) return `<div class="board-day-empty">${escapeHtml(emptyText)}</div>`;
+    return items.map(it => {
       const idx = state.importantTasks.indexOf(it);
       const slot = projectSlot(it.project) || '';
       const statusKey = boardStatusKey(it.status);
@@ -1623,6 +1620,20 @@
     }).join('');
   }
 
+  function renderUndatedCards() {
+    return renderImportantCardList(importantUndatedTasks(), '미지정 항목이 없어요.');
+  }
+
+  function renderDateImportantCards(dateStr) {
+    return renderImportantCardList(importantTasksForDate(dateStr), '이 날짜의 중요 업무가 없어요.');
+  }
+
+  function boardDateTitle(dateStr) {
+    const date = boardDateObj(dateStr);
+    if (!date) return dateStr || '';
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${BOARD_WEEKDAY_LABELS[date.getDay()]}`;
+  }
+
   window.openBoardUndatedPopover = function(anchorEl) {
     closeBoardPopover();
     if (!anchorEl) return;
@@ -1640,6 +1651,33 @@
     boardOpenPopover = { type: 'undated', el: pop };
     attachBoardPopoverGlobalListeners();
   };
+
+  window.openBoardDateTasksPopover = function(dateStr, anchorEl) {
+    closeBoardPopover();
+    if (!anchorEl) return;
+    const pop = document.createElement('div');
+    pop.className = 'daily-popover board-undated-popover';
+    pop.innerHTML = `
+      <div class="board-editor-head">
+        <span>${escapeHtml(boardDateTitle(dateStr))}</span>
+        <button type="button" class="board-editor-close" onclick="closeBoardPopover()" aria-label="닫기">✕</button>
+      </div>
+      <div class="board-undated-list">${renderDateImportantCards(dateStr)}</div>
+      <div class="board-editor-actions">
+        <span></span>
+        <button type="button" class="btn primary sm" onclick="addImportantTaskForDate('${dateStr}')">+ 이 날짜에 추가</button>
+      </div>
+    `;
+    document.body.appendChild(pop);
+    positionPopoverBelow(anchorEl, pop, { centered: true });
+    boardOpenPopover = { type: 'date-important-list', el: pop };
+    attachBoardPopoverGlobalListeners();
+  };
+
+  function openBoardDateTasksAtCell(dateStr) {
+    const anchor = document.querySelector(`[data-cal-date="${dateStr}"]`);
+    if (anchor) openBoardDateTasksPopover(dateStr, anchor);
+  }
 
   window.onBoardCalMove = function(delta) {
     setBoardMonthAnchor(new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth() + delta, 1), false);
@@ -1659,14 +1697,53 @@
     }, 900);
   };
 
-  window.onBoardDayClick = function(event, dateStr, count) {
+  function clearBoardDayClickTimer() {
+    if (!boardDayClickTimer) return;
+    clearTimeout(boardDayClickTimer);
+    boardDayClickTimer = null;
+  }
+
+  function selectBoardCalendarDate(dateStr) {
+    const date = boardDateObj(dateStr);
+    if (!date) return false;
+    const inCurrentMonth = boardIsSameMonth(dateStr, boardMonthAnchor);
+    boardSelectedDate = dateStr;
+    if (!inCurrentMonth) setBoardMonthAnchor(date, true);
+    renderImportantTasks();
+    return true;
+  }
+
+  window.onBoardDayClick = function(event, dateStr) {
     if (event) event.stopPropagation();
+    clearBoardDayClickTimer();
+    boardDayClickTimer = setTimeout(() => {
+      boardDayClickTimer = null;
+      selectBoardCalendarDate(dateStr);
+    }, 180);
+  };
+
+  window.onBoardDayDblClick = function(event, dateStr) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    clearBoardDayClickTimer();
     const date = boardDateObj(dateStr);
     if (!date) return;
     const inCurrentMonth = boardIsSameMonth(dateStr, boardMonthAnchor);
     boardSelectedDate = dateStr;
-    if (!inCurrentMonth) setBoardMonthAnchor(date, true);
-    render();
+    if (!inCurrentMonth) {
+      setBoardMonthAnchor(date, true);
+      renderImportantTasks();
+      setTimeout(() => {
+        openBoardDateTasksAtCell(dateStr);
+      }, 0);
+      return;
+    }
+    document.querySelectorAll('.board-cal-day.selected').forEach(el => el.classList.remove('selected'));
+    const anchor = event && event.currentTarget ? event.currentTarget : document.querySelector(`[data-cal-date="${dateStr}"]`);
+    if (anchor) anchor.classList.add('selected');
+    if (anchor) openBoardDateTasksPopover(dateStr, anchor);
   };
 
   window.onBoardDayKeydown = function(event, dateStr) {
@@ -1674,7 +1751,8 @@
     const key = event.key;
     if (key === 'Enter' || key === ' ') {
       event.preventDefault();
-      onBoardDayClick(event, dateStr, importantTasksForDate(dateStr).length);
+      clearBoardDayClickTimer();
+      selectBoardCalendarDate(dateStr);
       return;
     }
     const delta = key === 'ArrowLeft' ? -1 : key === 'ArrowRight' ? 1 : key === 'ArrowUp' ? -7 : key === 'ArrowDown' ? 7 : 0;
@@ -1875,6 +1953,7 @@
                   draggable="true"
                   ondragstart="onImportantDragStart(event, ${idx})"
                   ondragend="onImportantDragEnd(event)"
+                  ondblclick="event.stopPropagation()"
                   onclick="event.stopPropagation(); openImportantEditor(${idx}, this)"
                   title="${escapeHtml(boardTaskLabel(it))}">${escapeHtml(boardTaskLabel(it))}</button>`;
       }).join('');
@@ -1883,7 +1962,8 @@
         <div class="${classes}"
              data-cal-date="${key}"
              tabindex="0"
-             onclick="onBoardDayClick(event, '${key}', ${items.length})"
+             onclick="onBoardDayClick(event, '${key}')"
+             ondblclick="onBoardDayDblClick(event, '${key}')"
              onkeydown="onBoardDayKeydown(event, '${key}')"
              ondragover="onBoardDayDragOver(event)"
              ondragleave="onBoardDayDragLeave(event)"
@@ -1892,6 +1972,7 @@
           <button type="button"
                   class="board-cal-add"
                   onclick="event.stopPropagation(); addImportantTaskForDate('${key}')"
+                  ondblclick="event.stopPropagation()"
                   title="이 날짜에 중요 업무 추가"
                   aria-label="${key} 중요 업무 추가">+</button>
           ${chips}
