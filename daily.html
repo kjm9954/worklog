@@ -36,7 +36,7 @@
 
   /* #daily 모드 레이아웃 — 2컬럼 (사이드바 + 본문), 중앙 정렬 */
   main#mode-daily.daily-layout {
-    flex: 1; overflow-x: hidden; overflow-y: auto;
+    flex: 1; overflow-x: auto; overflow-y: auto;
     display: flex; flex-direction: row;
     gap: 16px; padding: 16px;
     box-sizing: border-box;
@@ -298,8 +298,8 @@
   }
   .week-rate-sub b { color: var(--text); font-weight: 600; }
 
-  /* 좁은 뷰포트(<1400px): 사이드바를 위로 스택, 컨텐츠 가로 폭 확보 */
-  @media (max-width: 1400px) {
+  /* 좁은 뷰포트(<1180px): PC 모드가 너무 일찍 접히지 않게 compact 기준을 낮춤 */
+  @media (max-width: 1180px) {
     main#mode-daily.daily-layout {
       flex-direction: column !important;
       align-items: stretch !important;
@@ -332,8 +332,9 @@
       margin: 0 !important;
       padding: 0 !important;
     }
-    .daily-card { min-width: 0; width: fit-content; max-width: 100%; }
-    .daily-table-wrap { overflow-x: auto; }
+    .daily-card { min-width: 0; width: 100% !important; max-width: 100%; }
+    .daily-table-wrap { width: 100% !important; overflow-x: auto; }
+    .daily-table { width: 100% !important; min-width: max-content; }
   }
   :root[data-device="mobile"] main#mode-daily.daily-layout {
     display: flex; flex-direction: column;
@@ -342,7 +343,7 @@
     max-width: none;
   }
   /* 모바일에서는 업무일지(테이블)에 집중 — 사이드바(메트릭 카드) 전체 숨김.
-     자동 1400px 미디어 쿼리의 row 재배치를 확실히 누르기 위해 !important 사용. */
+     자동 compact 미디어 쿼리의 row 재배치를 확실히 누르기 위해 !important 사용. */
   :root[data-device="mobile"] main#mode-daily > .daily-sidebar { display: none !important; }
   :root[data-device="mobile"] main#mode-daily > .daily-content {
     overflow: visible !important;
@@ -1684,6 +1685,29 @@
   }
   .daily-table tr:last-child td { border-bottom: none; }
   .daily-table tbody tr:hover td { background: var(--bg-2); }
+  .daily-proj-cell {
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .daily-proj-cell.daily-row-pressing,
+  body.daily-row-reordering .daily-proj-cell {
+    cursor: grabbing;
+  }
+  body.daily-row-reordering,
+  body.daily-row-reordering * {
+    user-select: none !important;
+  }
+  .daily-table tbody tr.daily-row-dragging td {
+    background: var(--accent-soft) !important;
+    opacity: 0.72;
+  }
+  .daily-table tbody tr.daily-row-drop-before td {
+    box-shadow: inset 0 2px 0 var(--q2);
+  }
+  .daily-table tbody tr.daily-row-drop-after td {
+    box-shadow: inset 0 -2px 0 var(--q2);
+  }
   .daily-date-input {
     width: 100%;
     padding: 0;
@@ -2897,6 +2921,11 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
   // ══════════════════════════════════════════════════════════════
   let dailyIdx = -1;   // 현재 선택 day 인덱스 (0~4)
   let dailyPrev = -1;  // 직전 인덱스 (애니메이션 방향용)
+  const DAILY_ROW_HOLD_MS = 280;
+  const DAILY_ROW_MOVE_TOLERANCE = 8;
+  let dailyRowDrag = null;
+  let dailyRowReorderReady = false;
+  let dailySuppressProjectClickUntil = 0;
 
   function todayDayIdx() {
     if (!state || !Array.isArray(state.days)) return 0;
@@ -3058,8 +3087,8 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     const targetHtml = targetDisplay ? escapeHtml(targetDisplay) : '<span class="daily-placeholder">' + DASH + '</span>';
     const noteHtml = t.note ? escapeHtml(t.note) : '<span class="daily-placeholder">-</span>';
     return `
-      <tr oncontextmenu="openDailyRowMenu(event, ${dailyIdx}, '${qKey}', ${ti})">
-        <td class="daily-editable daily-proj-cell" onclick="openDailyProjectPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="프로젝트 선택 / 추가 / 삭제">${t.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(t.project)}</span>` : '<span class="daily-placeholder">-</span>'}</td>
+      <tr data-daily-row="1" data-day-idx="${dailyIdx}" data-qkey="${qKey}" data-ti="${ti}" data-task-id="${escapeHtml(t.id || '')}" oncontextmenu="openDailyRowMenu(event, ${dailyIdx}, '${qKey}', ${ti})">
+        <td class="daily-editable daily-proj-cell" data-daily-row-drag="1" onclick="openDailyProjectPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="프로젝트 선택 / 추가 / 삭제 · 길게 누르면 행 이동">${t.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(t.project)}</span>` : '<span class="daily-placeholder">-</span>'}</td>
         <td class="daily-editable daily-quad-cell" onclick="openDailyQuadrantPopover(${dailyIdx}, '${qKey}', ${ti}, this)" title="분면 선택"><span class="daily-quad" data-q="${qKey}">${qKey.toUpperCase()}</span></td>
         <td class="daily-editable daily-name-cell" data-field="name" data-qkey="${qKey}" data-ti="${ti}" onclick="startDailyEdit(${dailyIdx}, '${qKey}', ${ti}, 'name')">${nameHtml}</td>
         <td class="daily-target-cell" data-qkey="${qKey}" data-ti="${ti}" title="목표 날짜 (클릭 시 달력)"><input type="text" class="daily-date-input date-picker-input" value="${escapeHtml(targetDisplay)}" placeholder="${DASH}" readonly onchange="onDailyTargetChange(${dailyIdx}, '${qKey}', ${ti}, this.value)"></td>
@@ -3073,6 +3102,196 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
         <td><button class="daily-del" onclick="askDeleteDailyTask(${dailyIdx}, '${qKey}', ${ti})" title="삭제" aria-label="업무 삭제">×</button></td>
       </tr>
     `;
+  }
+
+  function initDailyRowReorder() {
+    if (dailyRowReorderReady || !window.PointerEvent) return;
+    dailyRowReorderReady = true;
+    document.addEventListener('pointerdown', handleDailyRowPointerDown, true);
+    document.addEventListener('pointermove', handleDailyRowPointerMove, { passive: false });
+    document.addEventListener('pointerup', handleDailyRowPointerUp);
+    document.addEventListener('pointercancel', handleDailyRowPointerCancel);
+    document.addEventListener('contextmenu', handleDailyRowContextMenu, true);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && dailyRowDrag) {
+        e.preventDefault();
+        cancelDailyRowDrag(true);
+      }
+    });
+  }
+
+  function handleDailyRowPointerDown(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const cell = e.target.closest && e.target.closest('.daily-proj-cell[data-daily-row-drag="1"]');
+    if (!cell || cell.closest('.daily-popover')) return;
+    const row = cell.closest('tr[data-daily-row="1"]');
+    if (!row) return;
+    const dayIdxVal = parseInt(row.dataset.dayIdx, 10);
+    const qKey = row.dataset.qkey;
+    const ti = parseInt(row.dataset.ti, 10);
+    if (!_getTask(dayIdxVal, qKey, ti)) return;
+
+    cancelDailyRowDrag(false);
+    dailyRowDrag = {
+      pointerId: e.pointerId,
+      started: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      x: e.clientX,
+      y: e.clientY,
+      dayIdx: dayIdxVal,
+      qKey: qKey,
+      ti: ti,
+      cell: cell,
+      row: row,
+      dropRow: row,
+      dropAfter: false,
+      timer: null
+    };
+    cell.classList.add('daily-row-pressing');
+    try { cell.setPointerCapture(e.pointerId); } catch (err) {}
+    dailyRowDrag.timer = setTimeout(function() {
+      startDailyRowDrag(e.pointerId);
+    }, DAILY_ROW_HOLD_MS);
+  }
+
+  function handleDailyRowPointerMove(e) {
+    const drag = dailyRowDrag;
+    if (!drag || drag.pointerId !== e.pointerId) return;
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+
+    if (!drag.started) {
+      const dx = Math.abs(e.clientX - drag.startX);
+      const dy = Math.abs(e.clientY - drag.startY);
+      if (dx > DAILY_ROW_MOVE_TOLERANCE || dy > DAILY_ROW_MOVE_TOLERANCE) {
+        drag.cell.classList.remove('daily-row-pressing');
+      }
+      return;
+    }
+
+    e.preventDefault();
+    updateDailyRowDropTarget(e.clientX, e.clientY);
+    autoScrollDailyDuringRowDrag(e.clientY);
+  }
+
+  function handleDailyRowPointerUp(e) {
+    if (!dailyRowDrag || dailyRowDrag.pointerId !== e.pointerId) return;
+    finishDailyRowDrag();
+  }
+
+  function handleDailyRowPointerCancel(e) {
+    if (!dailyRowDrag || dailyRowDrag.pointerId !== e.pointerId) return;
+    cancelDailyRowDrag(true);
+  }
+
+  function handleDailyRowContextMenu(e) {
+    if (!dailyRowDrag) return;
+    const cell = e.target.closest && e.target.closest('.daily-proj-cell');
+    if (cell) e.preventDefault();
+  }
+
+  function startDailyRowDrag(pointerId) {
+    const drag = dailyRowDrag;
+    if (!drag || drag.pointerId !== pointerId || drag.started) return;
+    drag.started = true;
+    drag.timer = null;
+    dailySuppressProjectClickUntil = Date.now() + 700;
+    closeDailyPopover();
+    document.body.classList.add('daily-row-reordering');
+    drag.cell.classList.remove('daily-row-pressing');
+    drag.row.classList.add('daily-row-dragging');
+    updateDailyRowDropTarget(drag.x, drag.y);
+  }
+
+  function clearDailyRowDropMarker() {
+    if (!dailyRowDrag || !dailyRowDrag.dropRow) return;
+    dailyRowDrag.dropRow.classList.remove('daily-row-drop-before', 'daily-row-drop-after');
+  }
+
+  function setDailyRowDropTarget(row, after) {
+    const drag = dailyRowDrag;
+    if (!drag || !row) return;
+    if (drag.dropRow !== row) clearDailyRowDropMarker();
+    drag.dropRow = row;
+    drag.dropAfter = !!after;
+    row.classList.toggle('daily-row-drop-before', !after);
+    row.classList.toggle('daily-row-drop-after', !!after);
+  }
+
+  function updateDailyRowDropTarget(x, y) {
+    const drag = dailyRowDrag;
+    if (!drag) return;
+    const target = document.elementFromPoint(x, y);
+    const row = target && target.closest && target.closest('tr[data-daily-row="1"]');
+    if (!row || row.dataset.dayIdx !== String(drag.dayIdx)) return;
+    const rect = row.getBoundingClientRect();
+    setDailyRowDropTarget(row, y > rect.top + rect.height / 2);
+  }
+
+  function autoScrollDailyDuringRowDrag(y) {
+    const scroller = document.querySelector('main#mode-daily.daily-layout');
+    if (!scroller) return;
+    const rect = scroller.getBoundingClientRect();
+    if (y < rect.top + 48) scroller.scrollTop -= 14;
+    else if (y > rect.bottom - 48) scroller.scrollTop += 14;
+  }
+
+  function finishDailyRowDrag() {
+    const drag = dailyRowDrag;
+    if (!drag) return;
+    const started = drag.started;
+    const dropRow = drag.dropRow;
+    const dropAfter = drag.dropAfter;
+    cleanupDailyRowDrag();
+    if (!started) return;
+    dailySuppressProjectClickUntil = Date.now() + 700;
+    const moved = moveDailyRow(drag.dayIdx, drag.qKey, drag.ti, dropRow, dropAfter);
+    if (moved) {
+      saveState();
+      render();
+    }
+  }
+
+  function cancelDailyRowDrag(suppressClick) {
+    const wasStarted = dailyRowDrag && dailyRowDrag.started;
+    cleanupDailyRowDrag();
+    if (suppressClick || wasStarted) dailySuppressProjectClickUntil = Date.now() + 700;
+  }
+
+  function cleanupDailyRowDrag() {
+    const drag = dailyRowDrag;
+    if (!drag) return;
+    if (drag.timer) clearTimeout(drag.timer);
+    clearDailyRowDropMarker();
+    if (drag.cell) {
+      drag.cell.classList.remove('daily-row-pressing');
+      try { drag.cell.releasePointerCapture(drag.pointerId); } catch (err) {}
+    }
+    if (drag.row) drag.row.classList.remove('daily-row-dragging');
+    document.body.classList.remove('daily-row-reordering');
+    dailyRowDrag = null;
+  }
+
+  function moveDailyRow(dayIdxVal, fromQKey, fromTi, dropRow, dropAfter) {
+    if (!dropRow) return false;
+    const day = state.days[dayIdxVal];
+    if (!day || !day.quadrants || !Array.isArray(day.quadrants[fromQKey])) return false;
+    const toQKey = dropRow.dataset.qkey;
+    const toTi = parseInt(dropRow.dataset.ti, 10);
+    if (!toQKey || !Array.isArray(day.quadrants[toQKey]) || !isFinite(toTi)) return false;
+    let insertAt = toTi + (dropAfter ? 1 : 0);
+    if (fromQKey === toQKey && fromTi < insertAt) insertAt -= 1;
+    if (fromQKey === toQKey && insertAt === fromTi) return false;
+
+    const fromArr = day.quadrants[fromQKey];
+    const moved = fromArr.splice(fromTi, 1)[0];
+    if (!moved) return false;
+    const toArr = day.quadrants[toQKey];
+    insertAt = Math.max(0, Math.min(insertAt, toArr.length));
+    moved.quadrant = toQKey;
+    toArr.splice(insertAt, 0, moved);
+    return true;
   }
 
   window.dailyJump = function(i) {
@@ -3341,6 +3560,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
   }
 
   window.openDailyProjectPopover = function(dayIdx, qKey, ti, anchorEl) {
+    if (Date.now() < dailySuppressProjectClickUntil) return;
     closeDailyPopover();
     const task = state.days[dayIdx] && state.days[dayIdx].quadrants[qKey] && state.days[dayIdx].quadrants[qKey][ti];
     if (!task || !anchorEl) return;
@@ -5015,6 +5235,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     autoPinOnFirstLoad();
     initColResize();
     initSidebarResize();
+    initDailyRowReorder();
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
 
     // 클라우드(Notion) 동기화: 원격이 있으면 로컬 덮어쓰고 재렌더. 없으면 현재 state 업로드.
