@@ -429,6 +429,9 @@
   :root[data-theme="dark"] .board-cal-chip.cat-build { background: #3a2814; color: #ffb96e; }
   :root[data-theme="dark"] .board-cal-chip.cat-study { background: #2a2540; color: #b4a7f5; }
   :root[data-theme="dark"] .board-cal-chip:not(.cat-asset):not(.cat-build):not(.cat-study) { background: #1e2e42; color: #7fb6e8; }
+  .board-cal-chip[data-slot="p1"] { background: var(--proj-main-bg); color: var(--proj-main-fg); }
+  .board-cal-chip[data-slot="p2"] { background: var(--proj-sub-bg); color: var(--proj-sub-fg); }
+  .board-cal-chip[data-slot="p3"] { background: var(--proj-etc-bg); color: var(--proj-etc-fg); }
   .board-cal-more {
     padding: 0 4px;
     font-size: 0.625rem;
@@ -483,6 +486,12 @@
   .board-undated-card.cat-build { border-left-color: var(--q3); }
   .board-day-card.cat-study,
   .board-undated-card.cat-study { border-left-color: #6e5bd4; }
+  .board-day-card[data-slot="p1"],
+  .board-undated-card[data-slot="p1"] { border-left-color: var(--proj-main-fg); }
+  .board-day-card[data-slot="p2"],
+  .board-undated-card[data-slot="p2"] { border-left-color: var(--proj-sub-fg); }
+  .board-day-card[data-slot="p3"],
+  .board-undated-card[data-slot="p3"] { border-left-color: var(--proj-etc-fg); }
   .board-day-card.done,
   .board-undated-card.done { opacity: 0.72; }
   .board-day-card-title {
@@ -1316,11 +1325,13 @@
     if (!boardOpenPopover) return;
     const pop = boardOpenPopover.el;
     if (pop && pop.contains(e.target)) return;
+    if (datePicker.el && datePicker.el.contains(e.target)) return;
     closeBoardPopover();
   }
 
   function closeBoardPopover() {
     if (!boardOpenPopover) return;
+    closeDatePicker();
     const closeMeta = boardOpenPopover;
     if (typeof closeMeta.onClose === 'function') {
       try { closeMeta.onClose(); } catch (e) {}
@@ -1603,6 +1614,7 @@
       const statusKey = boardStatusKey(it.status);
       return `
         <div class="board-undated-card ${boardCategoryTone(it.category)} ${it.status === '완료' ? 'done' : ''}"
+             data-slot="${slot}"
              draggable="true"
              ondragstart="onImportantDragStart(event, ${idx})"
              ondragend="onImportantDragEnd(event)">
@@ -1843,10 +1855,11 @@
     const item = state.importantTasks[idx];
     if (!item) return;
     const name = boardTaskLabel(item);
+    const itemId = item.id || '';
+    closeBoardPopover();
     showModal('중요 업무 삭제', `"${name}" 항목을 삭제할까요?`, () => {
-      if (boardOpenPopover && boardOpenPopover.type === 'important-editor') boardOpenPopover.onClose = null;
-      state.importantTasks.splice(idx, 1);
-      closeBoardPopover();
+      const nextIdx = itemId ? state.importantTasks.findIndex(t => t && t.id === itemId) : idx;
+      if (nextIdx >= 0) state.importantTasks.splice(nextIdx, 1);
       saveState();
       render();
     });
@@ -1947,8 +1960,10 @@
       ].filter(Boolean).join(' ');
       const chips = items.slice(0, 1).map(it => {
         const idx = state.importantTasks.indexOf(it);
+        const slot = projectSlot(it.project) || '';
         return `<button type="button"
                   class="board-cal-chip ${boardCategoryTone(it.category)} ${it.status === '완료' ? 'done' : ''}"
+                  data-slot="${slot}"
                   data-imp-anchor="${idx}"
                   draggable="true"
                   ondragstart="onImportantDragStart(event, ${idx})"
@@ -2369,6 +2384,19 @@
     const el = datePicker.el;
     const width = 268;
     const height = 290;
+    const editor = input.closest && input.closest('.board-task-popover');
+    if (editor) {
+      const editorRect = editor.getBoundingClientRect();
+      let left = editorRect.left + (editorRect.width - width) / 2;
+      let top = editorRect.top + (editorRect.height - height) / 2;
+      if (left + width > window.innerWidth - 8) left = window.innerWidth - width - 8;
+      if (left < 8) left = 8;
+      if (top + height > window.innerHeight - 8) top = window.innerHeight - height - 8;
+      if (top < 8) top = 8;
+      el.style.left = left + 'px';
+      el.style.top = top + 'px';
+      return;
+    }
     let left = rect.left;
     if (left + width > window.innerWidth - 8) left = window.innerWidth - width - 8;
     if (left < 8) left = 8;

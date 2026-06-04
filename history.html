@@ -385,6 +385,9 @@
     padding: 1px 6px; background: var(--bg-2);
     border-radius: 8px;
   }
+  .h-day-modal-task .proj[data-slot="p1"] { background: var(--proj-main-bg); color: var(--proj-main-fg); }
+  .h-day-modal-task .proj[data-slot="p2"] { background: var(--proj-sub-bg); color: var(--proj-sub-fg); }
+  .h-day-modal-task .proj[data-slot="p3"] { background: var(--proj-etc-bg); color: var(--proj-etc-fg); }
   .h-day-modal-task .hrs {
     font-size: 11px; color: var(--text-muted);
     font-variant-numeric: tabular-nums;
@@ -664,7 +667,14 @@
   const DAY_LABELS = ['월', '화', '수', '목', '금'];
   // 프로젝트별 색상 — 순환 팔레트
   const PROJECT_PALETTE = ['#4a90e2', '#50c878', '#f5a623', '#d97a7a', '#9b59b6', '#e67e22', '#1abc9c', '#34495e'];
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
   function colorForProject(name) {
+    const slot = typeof projectSlot === 'function' ? projectSlot(name) : '';
+    if (slot === 'p1') return cssVar('--proj-main-fg') || '#a33';
+    if (slot === 'p2') return cssVar('--proj-sub-fg') || '#5a4db5';
+    if (slot === 'p3') return cssVar('--proj-etc-fg') || '#5b5b58';
     const key = (name || '(미지정)').trim();
     let h = 0;
     for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
@@ -839,7 +849,8 @@
       const rows = arr.map(t => {
         const hrs = taskHours(t);
         const time = (t.startTime && t.endTime) ? `${t.startTime}-${t.endTime}` : '';
-        const proj = t.project ? `<span class="proj">${escapeHtml(t.project)}</span>` : '<span></span>';
+        const slot = typeof projectSlot === 'function' ? projectSlot(t.project) : '';
+        const proj = t.project ? `<span class="proj" data-slot="${slot}">${escapeHtml(t.project)}</span>` : '<span></span>';
         const name = (t.name || '').trim() || '(이름 없음)';
         return `<div class="h-day-modal-task ${t.done ? 'done' : ''}">
           <span class="chk ${t.done ? 'on' : 'off'}"></span>

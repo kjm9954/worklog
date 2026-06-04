@@ -389,6 +389,9 @@ function autoCarryoverYesterdayTasks() {
 
 // 프로젝트 이름 → 슬롯 매핑 (색상 매핑용 — p1~p3 순환)
 function projectSlot(projectName) {
+  const key = String(projectName || '').trim().toLowerCase();
+  if (key.includes('팝콘') || key.includes('popcorn')) return 'p1';
+  if (key.includes('타운') || key.includes('town')) return 'p2';
   const labels = (state && state.projectLabels) || [];
   const idx = labels.indexOf(projectName);
   if (idx < 0) return '';
