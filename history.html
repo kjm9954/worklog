@@ -134,7 +134,13 @@
     font-size: 11px; color: var(--text);
     line-height: 1.35;
     min-width: 0;
+    border-left: 3px solid transparent;
+    border-radius: var(--radius-sm);
+    padding-left: 4px;
   }
+  .h-day-task[data-slot="p1"] { border-left-color: var(--proj-main-fg); background: color-mix(in srgb, var(--proj-main-bg) 52%, transparent); }
+  .h-day-task[data-slot="p2"] { border-left-color: var(--proj-sub-fg); background: color-mix(in srgb, var(--proj-sub-bg) 52%, transparent); }
+  .h-day-task[data-slot="p3"] { border-left-color: var(--proj-etc-fg); background: color-mix(in srgb, var(--proj-etc-bg) 52%, transparent); }
   .h-day-task .chk { width: 9px; height: 9px; flex-shrink: 0; border-radius: 50%; }
   .h-day-task .chk.on { background: var(--prog-ok, #3fa95a); }
   .h-day-task .chk.off { border: 1px solid var(--border-strong); }
@@ -916,7 +922,8 @@
             const hrs = taskHours(t);
             const name = (t.name || '').trim() || '(이름 없음)';
             const tooltip = name + (hrs > 0 ? ` · ${hrs.toFixed(1)}h` : '');
-            return `<div class="h-day-task ${t.done ? 'done' : ''}" title="${escapeHtml(tooltip)}">
+            const slot = typeof projectSlot === 'function' ? projectSlot(t.project) : '';
+            return `<div class="h-day-task ${t.done ? 'done' : ''}" data-slot="${slot}" title="${escapeHtml(tooltip)}">
               <span class="chk ${t.done ? 'on' : 'off'}"></span>
               <span class="name">${escapeHtml(name)}</span>
               <span class="hrs">${hrs > 0 ? hrs.toFixed(1) + 'h' : ''}</span>

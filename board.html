@@ -1321,6 +1321,20 @@
     });
   }
 
+  function positionPopoverCentered(popEl) {
+    requestAnimationFrame(() => {
+      const pr = popEl.getBoundingClientRect();
+      let left = (window.innerWidth - pr.width) / 2;
+      let top = (window.innerHeight - pr.height) / 2;
+      if (left < 8) left = 8;
+      if (top < 8) top = 8;
+      if (left + pr.width > window.innerWidth - 8) left = window.innerWidth - pr.width - 8;
+      if (top + pr.height > window.innerHeight - 8) top = window.innerHeight - pr.height - 8;
+      popEl.style.left = Math.max(8, left) + 'px';
+      popEl.style.top = Math.max(8, top) + 'px';
+    });
+  }
+
   function boardPopoverOutsideClick(e) {
     if (!boardOpenPopover) return;
     const pop = boardOpenPopover.el;
@@ -1915,7 +1929,7 @@
       </div>
     `;
     document.body.appendChild(pop);
-    positionPopoverBelow(anchorEl, pop, { centered: true });
+    positionPopoverCentered(pop);
     boardOpenPopover = {
       type: 'important-editor',
       idx: idx,
