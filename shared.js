@@ -7,12 +7,15 @@
 'use strict';
 
 /* ── 상수 ── */
-const STORAGE_KEY = 'worklog-widget-state-v1';
-const THEME_KEY = 'worklog-theme';
-const DEVICE_KEY = 'worklog-device';
-const SYNC_CHANNEL_NAME = 'worklog-sync';
-const LAST_ROLLOVER_KEY = 'worklog-last-rollover';
-const LAST_DAILY_CARRYOVER_KEY = 'worklog-last-daily-carryover';
+/* 저장 키 접두어 — 페이지에서 shared.js 로드 전에 window.WORKLOG_KEY_PREFIX 를
+   지정하면 그 접두어를 쓴다(공개본 분리용). 미지정 시 기존 'worklog' 유지. */
+const KEY_PREFIX = (typeof window !== 'undefined' && window.WORKLOG_KEY_PREFIX) || 'worklog';
+const STORAGE_KEY = KEY_PREFIX + '-widget-state-v1';
+const THEME_KEY = KEY_PREFIX + '-theme';
+const DEVICE_KEY = KEY_PREFIX + '-device';
+const SYNC_CHANNEL_NAME = KEY_PREFIX + '-sync';
+const LAST_ROLLOVER_KEY = KEY_PREFIX + '-last-rollover';
+const LAST_DAILY_CARRYOVER_KEY = KEY_PREFIX + '-last-daily-carryover';
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const DEFAULT_PROJECTS = ['메인', '서브', '기타'];
