@@ -1861,6 +1861,11 @@
   window.updateImportantDraft = function(idx, field, value) {
     if (!state.importantTasks[idx]) return;
     state.importantTasks[idx][field] = value;
+    if (field === 'project' || field === 'status') {
+      saveState();
+      renderBoardSummary();
+      renderImportantTasks();
+    }
   };
 
   window.onImportantEditorDateChange = function(idx, text) {
@@ -1872,6 +1877,9 @@
       const nextDate = boardDateObj(state.importantTasks[idx].targetDate);
       if (nextDate) setBoardMonthAnchor(nextDate, true);
     }
+    saveState();
+    renderBoardSummary();
+    renderImportantTasks();
   };
 
   window.deleteImportantFromEditor = function(idx) {
