@@ -251,6 +251,7 @@
     border: 1px solid var(--border); min-width: 0;
   }
   .dday-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .dday-item-side { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
   .dday-item-name {
     font-size: 0.8125rem; font-weight: 500; color: var(--text);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -265,9 +266,20 @@
     background: var(--bg-2); color: var(--text-muted);
     border: 1px solid var(--border);
   }
+  .dday-item-status {
+    font-size: 0.6875rem; padding: 2px 7px; border-radius: 10px;
+    font-weight: 700; white-space: nowrap;
+    background: #f1f1f0; color: #5b5b58;
+  }
+  .dday-item-status[data-status="진행중"] { background: #e7f1fb; color: #1b69b5; }
+  .dday-item-status[data-status="완료"] { background: #dff3e1; color: #1f6a2a; }
+  .dday-item-status[data-status="대기"] { background: #f1f1f0; color: #5b5b58; }
   .dday-item-chip.soon { background: #e7f1fb; color: #1b69b5; border-color: #c5ddf3; }
   .dday-item-chip.near { background: #fff4d9; color: #8a5a00; border-color: #f0d98f; }
   .dday-item-chip.near.critical { background: #ffe0e0; color: #a33; border-color: #f5b4b4; }
+  :root[data-theme="dark"] .dday-item-status[data-status="진행중"] { background: #1e2e42; color: #7fb6e8; }
+  :root[data-theme="dark"] .dday-item-status[data-status="완료"] { background: #19351d; color: #7bd685; }
+  :root[data-theme="dark"] .dday-item-status[data-status="대기"] { background: #2a2a28; color: #9a9a97; }
   :root[data-theme="dark"] .dday-item-chip.soon { background: #1e2e42; color: #7fb6e8; border-color: #2d4a6a; }
   :root[data-theme="dark"] .dday-item-chip.near { background: #3d3005; color: #ffd96a; border-color: #5a4b15; }
   :root[data-theme="dark"] .dday-item-chip.near.critical { background: #3a1a1a; color: #ff8a8a; border-color: #5a2525; }
@@ -2791,6 +2803,13 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
 
   let selectedDdayOffset = null; // 0~7 선택, null이면 가장 이른 건수>0 날짜 자동 선택
 
+  function normalizeBoardStatus(t) {
+    const status = String((t && t.status) || '').trim();
+    if (status === '진행중' || status === '완료' || status === '대기') return status;
+    if (t && t.done) return '완료';
+    return '대기';
+  }
+
   function renderSidebarDday() {
     const strip = document.getElementById('sidebarDdayStrip');
     const detail = document.getElementById('sidebarDdayDetail');
@@ -2801,12 +2820,16 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     const routines = (state && state.routines) || [];
     const all = important.map(t => ({ t, kind: '중요' })).concat(routines.map(t => ({ t, kind: '상시' })));
     const items = all
-      .map(x => { const o = {}; o.t = x.t; o.kind = x.kind; o.diff = calcDDay(x.t.targetDate); return o; })
-      .filter(x => x.diff != null && x.diff >= 0 && x.diff <= 7 && x.t.status !== '완료');
+      .map(x => {
+        const diff = calcDDay(x.t.targetDate);
+        return { t: x.t, kind: x.kind, diff, offset: diff < 0 ? 0 : diff };
+      })
+      .filter(x => x.diff != null && x.diff <= 7)
+      .sort((a, b) => a.offset - b.offset || a.diff - b.diff);
 
-    // 0~7일 버킷
+    // 0번 버킷은 오늘 마감과 지난 마감을 함께 보여준다.
     const buckets = [[], [], [], [], [], [], [], []];
-    items.forEach(x => buckets[x.diff].push(x));
+    items.forEach(x => buckets[x.offset].push(x));
 
     if (countEl) countEl.textContent = String(items.length);
 
@@ -2830,7 +2853,9 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
       if (bucket.length > 0) cls.push('has-items');
       if (offset === selectedDdayOffset) cls.push('is-active');
       const dots = bucket.length ? '●'.repeat(Math.min(bucket.length, 5)) : '';
-      const title = `${d.getMonth() + 1}/${d.getDate()} (${dayKor.charAt(d.getDay())}) · ${bucket.length}건`;
+      const overdueCount = bucket.filter(x => x.diff < 0).length;
+      const titleTail = overdueCount ? `${bucket.length}건 · 지난 마감 ${overdueCount}건` : `${bucket.length}건`;
+      const title = `${d.getMonth() + 1}/${d.getDate()} (${dayKor.charAt(d.getDay())}) · ${titleTail}`;
       return `
         <button type="button" class="dday-cell ${cls.join(' ')}" data-offset="${offset}" title="${title}">
           <span class="dday-cell-label">${label}</span>
@@ -2851,7 +2876,10 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     const bucket = buckets[selectedDdayOffset] || [];
     const dSel = new Date(today); dSel.setDate(today.getDate() + selectedDdayOffset);
     const dateStr = `${dSel.getMonth() + 1}/${dSel.getDate()}(${dayKor.charAt(dSel.getDay())})`;
-    const headLabel = selectedDdayOffset === 0 ? `오늘 · ${dateStr}` : `D-${selectedDdayOffset} · ${dateStr}`;
+    const overdueCount = bucket.filter(x => x.diff < 0).length;
+    const headLabel = selectedDdayOffset === 0 && overdueCount
+      ? `오늘 + 지난 마감 · ${dateStr}`
+      : selectedDdayOffset === 0 ? `오늘 · ${dateStr}` : `D-${selectedDdayOffset} · ${dateStr}`;
 
     let bodyHtml;
     if (items.length === 0) {
@@ -2863,6 +2891,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
         const t = x.t;
         const proj = t.project ? escapeHtml(t.project) : '';
         const name = t.name ? escapeHtml(t.name) : '<span class="daily-placeholder">(이름 없음)</span>';
+        const status = normalizeBoardStatus(t);
         const metaParts = [x.kind];
         if (proj) metaParts.push(proj);
         return `
@@ -2870,6 +2899,10 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
             <div class="dday-item-main">
               <div class="dday-item-name">${name}</div>
               <div class="dday-item-meta">${metaParts.join(' · ')}</div>
+            </div>
+            <div class="dday-item-side">
+              <span class="dday-item-status" data-status="${status}">${status}</span>
+              <span class="dday-item-chip ${x.diff <= 1 ? 'near critical' : x.diff <= 3 ? 'near' : 'soon'}">${formatDDay(x.diff)}</span>
             </div>
           </div>`;
       }).join('');

@@ -1343,6 +1343,15 @@
     closeBoardPopover();
   }
 
+  function boardPopoverScrollClose(e) {
+    const isUsingDatePicker = datePicker.el && !datePicker.el.classList.contains('hidden');
+    if (isUsingDatePicker && boardOpenPopover && boardOpenPopover.type === 'important-editor') {
+      if (datePicker.currentInput) positionDatePicker(datePicker.currentInput);
+      return;
+    }
+    closeBoardPopover();
+  }
+
   function closeBoardPopover() {
     if (!boardOpenPopover) return;
     closeDatePicker();
@@ -1354,7 +1363,7 @@
     if (el && el.parentNode) el.parentNode.removeChild(el);
     boardOpenPopover = null;
     document.removeEventListener('click', boardPopoverOutsideClick);
-    window.removeEventListener('scroll', closeBoardPopover, true);
+    window.removeEventListener('scroll', boardPopoverScrollClose, true);
     window.removeEventListener('resize', closeBoardPopover);
   }
   window.closeBoardPopover = closeBoardPopover;
@@ -1362,7 +1371,7 @@
   function attachBoardPopoverGlobalListeners() {
     setTimeout(() => {
       document.addEventListener('click', boardPopoverOutsideClick);
-      window.addEventListener('scroll', closeBoardPopover, true);
+      window.addEventListener('scroll', boardPopoverScrollClose, true);
       window.addEventListener('resize', closeBoardPopover);
     }, 0);
   }
@@ -2328,7 +2337,11 @@
     ].join('');
     document.body.appendChild(el);
 
-    el.addEventListener('mousedown', e => e.preventDefault());
+    el.addEventListener('mousedown', e => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    el.addEventListener('click', e => e.stopPropagation());
     el.querySelectorAll('.dp-nav').forEach(btn => {
       btn.addEventListener('click', () => {
         if (!datePicker.currentMonth) return;
@@ -2388,7 +2401,7 @@
       else if (!dateStr) displayValue = '';
       else displayValue = formatDateDisplay(dateStr);
       input.value = displayValue;
-      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new Event('change'));
     }
     closeDatePicker();
   }
@@ -2473,7 +2486,14 @@
       if (e.key === 'Escape' && datePicker.el && !datePicker.el.classList.contains('hidden')) closeDatePicker();
     });
     window.addEventListener('scroll', () => {
-      if (datePicker.el && !datePicker.el.classList.contains('hidden')) closeDatePicker();
+      if (!datePicker.el || datePicker.el.classList.contains('hidden')) return;
+      const input = datePicker.currentInput;
+      const editor = input && input.closest && input.closest('.board-task-popover');
+      if (editor && boardOpenPopover && boardOpenPopover.el === editor) {
+        positionDatePicker(input);
+        return;
+      }
+      closeDatePicker();
     }, true);
   }
 
