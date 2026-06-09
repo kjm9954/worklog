@@ -2822,9 +2822,10 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     const items = all
       .map(x => {
         const diff = calcDDay(x.t.targetDate);
-        return { t: x.t, kind: x.kind, diff, offset: diff < 0 ? 0 : diff };
+        const status = normalizeBoardStatus(x.t);
+        return { t: x.t, kind: x.kind, status, diff, offset: diff < 0 ? 0 : diff };
       })
-      .filter(x => x.diff != null && x.diff <= 7)
+      .filter(x => x.diff != null && x.diff <= 7 && x.status !== '완료')
       .sort((a, b) => a.offset - b.offset || a.diff - b.diff);
 
     // 0번 버킷은 오늘 마감과 지난 마감을 함께 보여준다.
@@ -2891,7 +2892,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
         const t = x.t;
         const proj = t.project ? escapeHtml(t.project) : '';
         const name = t.name ? escapeHtml(t.name) : '<span class="daily-placeholder">(이름 없음)</span>';
-        const status = normalizeBoardStatus(t);
+        const status = x.status;
         const metaParts = [x.kind];
         if (proj) metaParts.push(proj);
         return `
