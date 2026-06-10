@@ -2241,6 +2241,10 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
   function handleBulkMouseDown(e) {
     // 팝업 내부 클릭은 무시
     if (e.target.closest && e.target.closest('#bulkPopup')) return;
+    if (e.target.closest && e.target.closest('.date-picker-input')) {
+      if (bulkSel.cells.size > 0) clearBulkSelection();
+      return;
+    }
     const cell = e.target.closest && e.target.closest('.bulk-selectable');
     if (!cell) {
       // 바깥 클릭 시 선택 해제

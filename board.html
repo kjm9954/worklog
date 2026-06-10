@@ -1352,6 +1352,15 @@
     closeBoardPopover();
   }
 
+  function boardPopoverResizeClose(e) {
+    const isUsingDatePicker = datePicker.el && !datePicker.el.classList.contains('hidden');
+    if (isUsingDatePicker && boardOpenPopover && boardOpenPopover.type === 'important-editor') {
+      if (datePicker.currentInput) positionDatePicker(datePicker.currentInput);
+      return;
+    }
+    closeBoardPopover();
+  }
+
   function closeBoardPopover() {
     if (!boardOpenPopover) return;
     closeDatePicker();
@@ -1364,7 +1373,7 @@
     boardOpenPopover = null;
     document.removeEventListener('click', boardPopoverOutsideClick);
     window.removeEventListener('scroll', boardPopoverScrollClose, true);
-    window.removeEventListener('resize', closeBoardPopover);
+    window.removeEventListener('resize', boardPopoverResizeClose);
   }
   window.closeBoardPopover = closeBoardPopover;
 
@@ -1372,7 +1381,7 @@
     setTimeout(() => {
       document.addEventListener('click', boardPopoverOutsideClick);
       window.addEventListener('scroll', boardPopoverScrollClose, true);
-      window.addEventListener('resize', closeBoardPopover);
+      window.addEventListener('resize', boardPopoverResizeClose);
     }, 0);
   }
 
@@ -1863,8 +1872,6 @@
     state.importantTasks[idx][field] = value;
     if (field === 'project' || field === 'status') {
       saveState();
-      renderBoardSummary();
-      renderImportantTasks();
     }
   };
 
@@ -1878,8 +1885,6 @@
       if (nextDate) setBoardMonthAnchor(nextDate, true);
     }
     saveState();
-    renderBoardSummary();
-    renderImportantTasks();
   };
 
   window.deleteImportantFromEditor = function(idx) {
