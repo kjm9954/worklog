@@ -838,6 +838,29 @@ function exportJson() {
   });
 }
 
+function restoreImportedObject(imported, sourceLabel, renderAll) {
+  const sections = detectBackupSections(imported);
+  if (sections.length === 0) {
+    showModal('복원 실패', `${sourceLabel}에서 복원 가능한 데이터를 찾지 못했습니다.`, null);
+    return false;
+  }
+  const sectionLabels = sections.map(s => '· ' + s.label).join('\n');
+  showModal('JSON 부분 복원',
+    `${sourceLabel}에서 감지된 데이터:\n\n${sectionLabels}\n\n위 항목만 덮어씁니다. 없는 항목은 그대로 유지돼요.\n계속할까요?`,
+    () => {
+      try {
+        applyImportedSections(imported, sections);
+        saveState();
+        if (typeof renderAll === 'function') renderAll();
+        const summary = sections.map(s => s.label).join(', ');
+        showModal('복원 완료', `복원된 항목: ${summary}`, null);
+      } catch (err) {
+        showModal('복원 실패', '데이터를 적용하는 중 문제가 발생했습니다.\n' + (err.message || ''), null);
+      }
+    });
+  return true;
+}
+
 // 복원 완료 후 재렌더가 필요하므로 page-side renderAll 콜백을 인자로 받음
 function importJson(event, renderAll) {
   const file = event.target.files && event.target.files[0];
@@ -846,28 +869,118 @@ function importJson(event, renderAll) {
   reader.onload = function(e) {
     try {
       const imported = JSON.parse(e.target.result);
-      const sections = detectBackupSections(imported);
-      if (sections.length === 0) {
-        showModal('복원 실패', '이 파일에서 복원 가능한 데이터를 찾지 못했습니다.', null);
-        event.target.value = '';
-        return;
-      }
-      const sectionLabels = sections.map(s => '· ' + s.label).join('\n');
-      showModal('JSON 부분 복원',
-        `"${file.name}" 에서 감지된 데이터:\n\n${sectionLabels}\n\n위 항목만 덮어씁니다. 파일에 없는 항목은 그대로 유지돼요.\n계속할까요?`,
-        () => {
-          applyImportedSections(imported, sections);
-          saveState();
-          if (typeof renderAll === 'function') renderAll();
-          const summary = sections.map(s => s.label).join(', ');
-          showModal('복원 완료', `복원된 항목: ${summary}`, null);
-        });
+      restoreImportedObject(imported, `"${file.name}"`, renderAll);
     } catch (err) {
       showModal('복원 실패', '유효한 JSON 파일이 아닙니다.\n' + (err.message || ''), null);
     }
     event.target.value = '';
   };
   reader.readAsText(file, 'utf-8');
+}
+
+function importJsonText(renderAll) {
+  const titleEl = document.getElementById('modalTitle');
+  const msgEl = document.getElementById('modalMessage');
+  const bd = document.getElementById('modalBackdrop');
+  const confirmBtn = document.getElementById('modalConfirmBtn');
+  const cancelBtn = document.getElementById('modalCancelBtn');
+  if (!titleEl || !msgEl || !bd || !confirmBtn || !cancelBtn) return;
+
+  let pasted = '';
+  titleEl.textContent = 'JSON 텍스트 복원';
+  msgEl.innerHTML = '';
+
+  const help = document.createElement('div');
+  help.textContent = '새 탭에 텍스트로 열린 JSON 전체를 복사해서 아래에 붙여넣으세요.';
+  help.style.cssText = 'margin-bottom:8px; color:var(--text-muted); font-size:0.85rem;';
+  msgEl.appendChild(help);
+
+  const textarea = document.createElement('textarea');
+  textarea.placeholder = '{ "version": 4.0, ... }';
+  textarea.spellcheck = false;
+  textarea.style.cssText = [
+    'width:100%',
+    'min-height:180px',
+    'max-height:42vh',
+    'box-sizing:border-box',
+    'resize:vertical',
+    'font-family:ui-monospace,SFMono-Regular,Consolas,monospace',
+    'font-size:12px',
+    'line-height:1.45',
+    'border:1px solid var(--border)',
+    'border-radius:8px',
+    'padding:10px',
+    'background:var(--card)',
+    'color:var(--text)'
+  ].join(';');
+  textarea.addEventListener('input', function() { pasted = textarea.value; });
+  msgEl.appendChild(textarea);
+
+  modalCallback = function() {
+    const raw = (pasted || '').trim();
+    if (!raw) {
+      showModal('복원 실패', '붙여넣은 JSON 텍스트가 비어 있습니다.', null);
+      return;
+    }
+    try {
+      const imported = JSON.parse(raw);
+      restoreImportedObject(imported, '붙여넣은 JSON', renderAll);
+    } catch (err) {
+      showModal('복원 실패', '유효한 JSON 텍스트가 아닙니다.\n' + (err.message || ''), null);
+    }
+  };
+  confirmBtn.textContent = '복원';
+  confirmBtn.style.display = '';
+  cancelBtn.textContent = '취소';
+  cancelBtn.style.display = '';
+  bd.classList.remove('hidden');
+  setTimeout(() => textarea.focus(), 0);
+}
+
+function importLegacyLocalState(renderAll) {
+  const legacyKey = 'worklog-widget-state-v1';
+  if (STORAGE_KEY === legacyKey) {
+    showModal('가져오기 불가', '현재 페이지가 이미 기존 업무일지 저장소를 사용 중입니다.', null);
+    return;
+  }
+  let raw = '';
+  try {
+    raw = localStorage.getItem(legacyKey) || '';
+  } catch (err) {
+    showModal('가져오기 실패', '브라우저 저장소를 읽을 수 없습니다.\n' + (err.message || ''), null);
+    return;
+  }
+  if (!raw) {
+    showModal('가져올 데이터 없음', '이 브라우저와 주소에서는 기존 업무일지 로컬 데이터를 찾지 못했습니다.\n\n기존 페이지와 새 페이지가 서로 다른 주소라면 JSON 텍스트 복원을 사용해주세요.', null);
+    return;
+  }
+  try {
+    const imported = JSON.parse(raw);
+    restoreImportedObject(imported, '기존 업무일지 로컬 데이터', renderAll);
+  } catch (err) {
+    showModal('가져오기 실패', '기존 로컬 데이터가 유효한 JSON이 아닙니다.\n' + (err.message || ''), null);
+  }
+}
+
+function openRestoreMenu(renderAll) {
+  showChoiceModal(
+    '복원 방식 선택',
+    'JSON이 파일로 저장되지 않고 텍스트로 열렸다면 텍스트 복원을 선택하세요.',
+    [
+      { label: '📁 JSON 파일 선택', value: 'file' },
+      { label: '📝 JSON 텍스트 붙여넣기', value: 'text' },
+      { label: '↪ 기존 업무일지 데이터 가져오기', value: 'legacy' }
+    ]
+  ).then(function(choice) {
+    if (choice === 'file') {
+      const input = document.getElementById('importInput');
+      if (input) input.click();
+    } else if (choice === 'text') {
+      importJsonText(renderAll);
+    } else if (choice === 'legacy') {
+      importLegacyLocalState(renderAll);
+    }
+  });
 }
 
 function detectBackupSections(imported) {
@@ -1023,6 +1136,9 @@ window.toggleTheme = toggleTheme;
 window.toggleDevice = toggleDevice;
 window.exportJson = exportJson;
 window.importJson = importJson;
+window.importJsonText = importJsonText;
+window.importLegacyLocalState = importLegacyLocalState;
+window.openRestoreMenu = openRestoreMenu;
 window.showModal = showModal;
 
 // 백업 신선도 체크 — 마지막 백업이 7일 초과거나 한 번도 없으면 stale

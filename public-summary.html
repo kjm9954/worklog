@@ -312,14 +312,12 @@
     main#mode-daily > .daily-sidebar {
       flex: 0 0 auto !important;
       width: 100% !important;
-      flex-direction: row !important;
-      flex-wrap: wrap !important;
-      gap: 8px;
+      flex-direction: column !important;
+      gap: 12px;
       overflow-x: visible !important;
     }
     main#mode-daily > .daily-sidebar > .daily-metric {
-      min-width: 240px;
-      flex: 1 1 280px;
+      width: 100%;
     }
     main#mode-daily > .daily-content {
       flex: 1 1 auto !important;
@@ -2083,7 +2081,7 @@
         <span id="cloudStatus" class="cloud-status" data-tone="" title="클라우드 동기화 상태">⌂</span>
         <span id="backupReminder" class="backup-reminder" hidden></span>
         <button class="btn sm" onclick="exportJson()" title="JSON 백업"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg> 백업</button>
-        <button class="btn sm" onclick="document.getElementById('importInput').click()" title="JSON 복원"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> 복원</button>
+        <button class="btn sm" onclick="openRestoreMenu(render)" title="JSON 복원"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> 복원</button>
         <input type="file" id="importInput" accept="application/json,.json" style="display:none" onchange="importJson(event, render)">
         <button id="deviceToggle" class="theme-toggle" onclick="toggleDevice()" title="모바일 모드로">📱</button>
         <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="테마"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
@@ -2117,7 +2115,7 @@
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
 <script src="code-sync.js?v=2"></script>
-<script src="shared.js?v=2"></script>
+<script src="shared.js?v=3"></script>
 <script>
 'use strict';
 // daily.html 전용 스크립트. 공용(상수·유틸·상태·테마·모달·I/O·싱크)은 shared.js.
