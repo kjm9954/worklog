@@ -1087,13 +1087,31 @@
     flex-direction: column;
     gap: 4px;
   }
-  .board-routine-card-title {
+  .board-routine-card-title,
+  .board-routine-name-input {
     font-size: 0.875rem;
     font-weight: 700;
     color: var(--text);
+  }
+  .board-routine-card-title {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .board-routine-name-input {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    padding: 7px 8px;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .board-routine-name-input:focus {
+    outline: none;
+    border-color: var(--q2);
+    box-shadow: 0 0 0 2px var(--accent-soft);
   }
   .board-routine-card-meta {
     display: flex;
@@ -1108,6 +1126,29 @@
     align-items: center;
     justify-content: flex-end;
   }
+  .board-routine-card-tools {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .board-routine-delete {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1;
+  }
+  .board-routine-delete:hover {
+    border-color: var(--danger, #d93025);
+    color: var(--danger, #d93025);
+    background: var(--danger-soft, rgba(217, 48, 37, 0.08));
+  }
   .board-routine-empty {
     padding: 18px 10px;
     text-align: center;
@@ -1120,7 +1161,8 @@
     .board-routine-card {
       grid-template-columns: 1fr;
     }
-    .board-routine-card-date {
+    .board-routine-card-date,
+    .board-routine-card-tools {
       justify-content: flex-start;
     }
   }
@@ -1169,8 +1211,8 @@
   </div>
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
-<script src="code-sync.js?v=2"></script>
-<script src="shared.js?v=3"></script>
+<script src="code-sync.js?v=3"></script>
+<script src="shared.js?v=5"></script>
 <script>
   'use strict';
 
@@ -1387,15 +1429,22 @@
     if (el && el.parentNode) el.parentNode.removeChild(el);
     boardOpenPopover = null;
     document.removeEventListener('click', boardPopoverOutsideClick);
-    window.removeEventListener('scroll', closeBoardPopover, true);
+    window.removeEventListener('scroll', boardPopoverScrollHandler, true);
     window.removeEventListener('resize', closeBoardPopover);
   }
   window.closeBoardPopover = closeBoardPopover;
 
+  function boardPopoverScrollHandler(e) {
+    if (!boardOpenPopover) return;
+    const pop = boardOpenPopover.el;
+    if (pop && e && e.target && pop.contains(e.target)) return;
+    closeBoardPopover();
+  }
+
   function attachBoardPopoverGlobalListeners() {
     setTimeout(() => {
       document.addEventListener('click', boardPopoverOutsideClick);
-      window.addEventListener('scroll', closeBoardPopover, true);
+      window.addEventListener('scroll', boardPopoverScrollHandler, true);
       window.addEventListener('resize', closeBoardPopover);
     }, 0);
   }
@@ -1701,21 +1750,29 @@
       return `
         <div class="board-routine-card">
           <div class="board-routine-card-main">
-            <div class="board-routine-card-title" title="${escapeHtml(name)}">${escapeHtml(name)}</div>
+            <input type="text"
+                   class="board-routine-name-input"
+                   placeholder="상시 업무명"
+                   title="${escapeHtml(name)}"
+                   value="${escapeHtml(r.name || '')}"
+                   onchange="updateRoutineFromCalendar(${i}, 'name', this.value)">
             <div class="board-routine-card-meta">
               ${r.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(r.project)}</span>` : '<span class="daily-placeholder">프로젝트 없음</span>'}
               <span class="daily-status ${statusKey}">${statusLabel}</span>
               ${categoryText ? `<span>${escapeHtml(categoryText)}</span>` : ''}
             </div>
           </div>
-          <div class="board-routine-card-date">
-            <input type="text"
-                   class="side-date date-picker-input ${dateClass}"
-                   placeholder="미지정 📅"
-                   value="${escapeHtml(dateText)}"
-                   readonly
-                   onclick="this.focus()"
-                   onchange="onSideDateChange('routine', ${i}, this.value)">
+          <div class="board-routine-card-tools">
+            <div class="board-routine-card-date">
+              <input type="text"
+                     class="side-date date-picker-input ${dateClass}"
+                     placeholder="미지정 📅"
+                     value="${escapeHtml(dateText)}"
+                     readonly
+                     onclick="this.focus()"
+                     onchange="onSideDateChange('routine', ${i}, this.value)">
+            </div>
+            <button type="button" class="board-routine-delete" title="상시 업무 삭제" onclick="event.stopPropagation(); deleteRoutineFromCalendar(${i})">×</button>
           </div>
         </div>
       `;
@@ -2340,7 +2397,6 @@
     }
     saveState();
     render();
-    if (kind === 'routine') refreshBoardRoutinesPopover();
   };
 
   window.askDeleteImportant = function(idx) {
@@ -2357,7 +2413,7 @@
   window.addRoutine = function() {
     state.routines.push({
       id: uid(),
-      project: (state.projectLabels && state.projectLabels[0]) || '메인',
+      project: '',
       category: '',
       subCategory: '',
       name: '',
@@ -2374,11 +2430,24 @@
     refreshBoardRoutinesPopover();
   };
 
+  window.updateRoutineFromCalendar = function(idx, field, value) {
+    window.updateRoutine(idx, field, value);
+  };
+
+  window.deleteRoutineFromCalendar = function(idx) {
+    if (!state.routines[idx]) return;
+    state.routines.splice(idx, 1);
+    saveState();
+    render();
+    refreshBoardRoutinesPopover();
+  };
+
   window.updateRoutine = function(idx, field, value) {
     if (!state.routines[idx]) return;
     state.routines[idx][field] = value;
     saveState();
     render();
+    refreshBoardRoutinesPopover();
   };
 
   window.askDeleteRoutine = function(idx) {
@@ -2389,6 +2458,7 @@
       state.routines.splice(idx, 1);
       saveState();
       render();
+      refreshBoardRoutinesPopover();
     });
   };
 
@@ -2403,6 +2473,7 @@
     }
     saveState();
     render();
+    if (kind === 'routine') refreshBoardRoutinesPopover();
   };
 
   function ensureDatePickerEl() {

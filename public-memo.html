@@ -2134,8 +2134,8 @@
   </div>
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
-<script src="code-sync.js?v=2"></script>
-<script src="shared.js?v=3"></script>
+<script src="code-sync.js?v=3"></script>
+<script src="shared.js?v=5"></script>
 <script>
 'use strict';
 // daily.html 전용 스크립트. 공용(상수·유틸·상태·테마·모달·I/O·싱크)은 shared.js.
@@ -4561,7 +4561,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
   };
 
   window.addRoutine = function() {
-    state.routines.push({ id: uid(), project: (state.projectLabels && state.projectLabels[0]) || '메인', category: '', subCategory: '', name: '', status: '대기', targetDate: '', note: '' });
+    state.routines.push({ id: uid(), project: '', category: '', subCategory: '', name: '', status: '대기', targetDate: '', note: '' });
     saveState();
     renderRoutines();
   };

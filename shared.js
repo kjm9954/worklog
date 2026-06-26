@@ -488,8 +488,9 @@ function migrateState(s) {
   s.routines = Array.isArray(s.routines) ? s.routines : [];
   s.routines.forEach(r => {
     if (!r.id) r.id = uid();
-    if (r.project === '공용') r.project = s.projectLabels[2];
-    if (!s.projectLabels.includes(r.project)) r.project = s.projectLabels[0];
+    r.project = typeof r.project === 'string' ? r.project : '';
+    if (r.project === '공용') r.project = s.projectLabels[2] || '';
+    if (r.project && !s.projectLabels.includes(r.project)) r.project = s.projectLabels[0] || '';
     r.category = typeof r.category === 'string' ? r.category : '';
     r.subCategory = typeof r.subCategory === 'string' ? r.subCategory : '';
     if (!STATUSES.includes(r.status)) r.status = '대기';
@@ -1123,6 +1124,16 @@ function initHeaderCollapse() {
 function initModalBase() {
   const modalBd = document.getElementById('modalBackdrop');
   if (modalBd) modalBd.addEventListener('click', function(e) { if (e.target === this) hideModal(); });
+  const confirmBtn = document.getElementById('modalConfirmBtn');
+  const cancelBtn = document.getElementById('modalCancelBtn');
+  if (confirmBtn && !confirmBtn.dataset.modalBound) {
+    confirmBtn.dataset.modalBound = '1';
+    confirmBtn.onclick = confirmModal;
+  }
+  if (cancelBtn && !cancelBtn.dataset.modalBound) {
+    cancelBtn.dataset.modalBound = '1';
+    cancelBtn.onclick = hideModal;
+  }
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       const bd = document.getElementById('modalBackdrop');
@@ -1140,6 +1151,8 @@ window.importJsonText = importJsonText;
 window.importLegacyLocalState = importLegacyLocalState;
 window.openRestoreMenu = openRestoreMenu;
 window.showModal = showModal;
+window.hideModal = hideModal;
+window.confirmModal = confirmModal;
 
 // 백업 신선도 체크 — 마지막 백업이 7일 초과거나 한 번도 없으면 stale
 function getBackupStaleness() {
