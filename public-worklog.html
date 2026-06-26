@@ -1332,36 +1332,36 @@
   .daily-row-menu .item.disabled:hover { background: transparent; }
   .daily-row-menu .hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
-  /* Phase 1 모바일 축약 뷰: 좁은 화면에서 daily-table을 업무명+완료 2컬럼으로 */
-  @media (max-width: 768px) {
-    .daily-wrap { padding: 0 10px; margin: 10px auto; }
-    .daily-table-wrap { width: 100%; overflow-x: hidden; }
-    .daily-table { width: 100%; min-width: 0; table-layout: auto; }
-    .daily-card { min-width: 0; width: 100%; }
+  /* 모바일 축약 뷰: device=mobile 일 때만 적용 (pc 모드면 좁은 노션 폭에서도
+     full 테이블 + 컬럼 리사이즈 + 가로 스크롤 유지) */
+  :root[data-device="mobile"] .daily-wrap { padding: 0 10px; margin: 10px auto; }
+  :root[data-device="mobile"] .daily-table-wrap { width: 100%; overflow-x: hidden; }
+  :root[data-device="mobile"] .daily-table { width: 100%; min-width: 0; table-layout: auto; }
+  :root[data-device="mobile"] .daily-card { min-width: 0; width: 100%; }
 
-    .daily-table col.dcol-project,
-    .daily-table col.dcol-quad,
-    .daily-table col.dcol-target,
-    .daily-table col.dcol-start,
-    .daily-table col.dcol-end,
-    .daily-table col.dcol-progress,
-    .daily-table col.dcol-est,
-    .daily-table col.dcol-status,
-    .daily-table col.dcol-note,
-    .daily-table col.dcol-delete { display: none; }
-    .daily-table col.dcol-name { width: auto; }
-    .daily-table col.dcol-done { width: 56px; }
+  :root[data-device="mobile"] .daily-table col.dcol-project,
+  :root[data-device="mobile"] .daily-table col.dcol-quad,
+  :root[data-device="mobile"] .daily-table col.dcol-target,
+  :root[data-device="mobile"] .daily-table col.dcol-start,
+  :root[data-device="mobile"] .daily-table col.dcol-end,
+  :root[data-device="mobile"] .daily-table col.dcol-progress,
+  :root[data-device="mobile"] .daily-table col.dcol-est,
+  :root[data-device="mobile"] .daily-table col.dcol-status,
+  :root[data-device="mobile"] .daily-table col.dcol-note,
+  :root[data-device="mobile"] .daily-table col.dcol-delete { display: none; }
+  :root[data-device="mobile"] .daily-table col.dcol-name { width: auto; }
+  :root[data-device="mobile"] .daily-table col.dcol-done { width: 56px; }
 
-    .daily-table thead th:not(:nth-child(3)):not(:nth-child(10)),
-    .daily-table tbody td:not(:nth-child(3)):not(:nth-child(10)):not(.daily-empty) {
-      display: none;
-    }
-    .daily-table th, .daily-table td { padding: 8px 10px; font-size: 13px; }
-    .daily-table td.daily-name-cell { white-space: normal; word-break: break-word; }
-    .daily-table .daily-col-resize { display: none; }
-
-    .daily-hint-wrap { display: none; }
+  :root[data-device="mobile"] .daily-table thead th:not(:nth-child(3)):not(:nth-child(10)),
+  :root[data-device="mobile"] .daily-table tbody td:not(:nth-child(3)):not(:nth-child(10)):not(.daily-empty) {
+    display: none;
   }
+  :root[data-device="mobile"] .daily-table th,
+  :root[data-device="mobile"] .daily-table td { padding: 8px 10px; font-size: 13px; }
+  :root[data-device="mobile"] .daily-table td.daily-name-cell { white-space: normal; word-break: break-word; }
+  :root[data-device="mobile"] .daily-table .daily-col-resize { display: none; }
+
+  :root[data-device="mobile"] .daily-hint-wrap { display: none; }
 
   /* Phase 7a: 상호작용 힌트 강화 (hover) */
   .task-row:not(.task-head) { transition: background 0.15s; }
@@ -2135,7 +2135,7 @@
         <span id="cloudStatus" class="cloud-status" data-tone="" title="클라우드 동기화 상태">⌂</span>
         <span id="backupReminder" class="backup-reminder" hidden></span>
         <button class="btn sm" onclick="exportJson()" title="JSON 백업"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg> 백업</button>
-        <button class="btn sm" onclick="document.getElementById('importInput').click()" title="JSON 복원"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> 복원</button>
+        <button class="btn sm" onclick="openRestoreMenu(render)" title="JSON 복원"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> 복원</button>
         <input type="file" id="importInput" accept="application/json,.json" style="display:none" onchange="importJson(event, render)">
         <button id="deviceToggle" class="theme-toggle" onclick="toggleDevice()" title="모바일 모드로">📱</button>
         <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="테마"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
@@ -2189,7 +2189,7 @@
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
 <script src="code-sync.js?v=2"></script>
-<script src="shared.js?v=2"></script>
+<script src="shared.js?v=3"></script>
 <script>
 'use strict';
 // daily.html 전용 스크립트. 공용(상수·유틸·상태·테마·모달·I/O·싱크)은 shared.js.
@@ -5087,8 +5087,10 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     initDevice();
     initModalBase();
     initHeaderCollapse();
+    loadDcolWidths();
     subscribeStateChanges(render);
     render();
+    initColResize();
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
     if (typeof initCloudSync === 'function') {
       await initCloudSync(function(remote) {
