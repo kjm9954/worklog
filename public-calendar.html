@@ -1,0 +1,2720 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>업무일지 — 보드</title>
+<link rel="stylesheet" href="shared.css">
+<link rel="icon" href="data:,">
+<style>
+  :root[data-theme="dark"] .cat-chip[data-v="에셋"] { background: #3a1e1e; color: #ff9a9a; }
+  :root[data-theme="dark"] .cat-chip[data-v="빌드"] { background: #3a2814; color: #ffb96e; }
+  :root[data-theme="dark"] .cat-chip[data-v="스터디"] { background: #2a2540; color: #b4a7f5; }
+  :root[data-theme="dark"] .cat-chip[data-v="버전"] { background: #1e2e42; color: #7fb6e8; }
+  :root[data-theme="dark"] .cat-chip[data-v="월별"] { background: #1e3020; color: #8cdb97; }
+  :root[data-theme="dark"] .cat-chip[data-v="상시"] { background: #3a2e10; color: #e0c266; }
+  :root[data-theme="dark"] .cat-chip[data-v="기믹"] { background: #3a2e10; color: #e0c266; }
+  :root[data-theme="dark"] .cat-chip[data-v="테이블"] { background: #3a2814; color: #ffb96e; }
+  :root[data-theme="dark"] .cat-chip[data-v="QA"] { background: #2a2540; color: #b4a7f5; }
+  :root[data-theme="dark"] .cat-chip[data-v="아트"] { background: #3a1f28; color: #f096a8; }
+  :root[data-theme="dark"] .cat-chip[data-v="운영"] { background: #3a2410; color: #e0a060; }
+  :root[data-theme="dark"] .cat-chip[data-v="기타"] { background: #323230; color: #a8a8a5; }
+  :root[data-theme="dark"] .status-chip[data-v="진행중"] { background: #1e2e42; color: #7fb6e8; }
+  :root[data-theme="dark"] .status-chip[data-v="완료"] { background: #1e3020; color: #8cdb97; }
+  :root[data-theme="dark"] .status-chip[data-v="대기"] { background: #2a2a28; color: #9a9a97; }
+  :root[data-theme="dark"] .st-cell.st-row-first[data-cat="스터디"] { border-left-color: #b4a7f5; }
+  :root[data-theme="dark"] .st-cell.st-row-first[data-cat="월별"] { border-left-color: #8cdb97; }
+  :root[data-theme="dark"] .st-cell.st-row-first[data-cat="상시"] { border-left-color: #e0c266; }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  input[type="number"],
+  select,
+  textarea {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px 6px;
+    background: var(--card);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    outline: none;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--q2);
+  }
+
+  .board-main {
+    flex: 1;
+    overflow-y: auto;
+    width: min(100%, var(--board-page-max, 1800px));
+    margin: 0 auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .board-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .board-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .board-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .tabs-toggle-btn {
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+  .widget-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: fit-content;
+  }
+  .widget-tabs[hidden] { display: none !important; }
+  .widget-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: background 0.15s, color 0.15s;
+  }
+  .widget-tab:hover { background: var(--card); color: var(--text); }
+  .widget-tab.active {
+    background: var(--card);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+  .widget-tab.disabled {
+    opacity: 0.55;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .board-hero {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    width: min(100%, var(--board-grid-w, 100%));
+    margin: 0 auto;
+  }
+  .board-stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--border-strong);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .board-stat.is-important { border-left-color: var(--q1); }
+  .board-stat.is-routine { border-left-color: var(--q3); }
+  .board-stat.is-soon { border-left-color: var(--q2); }
+  .board-stat.is-done { border-left-color: var(--accent-start); }
+  .board-stat-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .board-stat-value {
+    font-size: 1.625rem;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .board-grid {
+    display: grid;
+    grid-template-columns: minmax(320px, var(--board-calendar-panel-w, 1fr)) 10px minmax(0, var(--board-routine-panel-w, 636px));
+    width: min(100%, var(--board-grid-w, 100%));
+    margin: 0 auto;
+    gap: 10px;
+    align-items: start;
+  }
+  .board-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    min-width: 0;
+  }
+  .board-routine-section {
+    width: var(--board-routine-panel-w, 636px);
+    max-width: 100%;
+    justify-self: end;
+  }
+  .board-grid-resizer {
+    width: 10px;
+    align-self: stretch;
+    min-height: 160px;
+    border: 0;
+    background: transparent;
+    cursor: col-resize;
+    position: relative;
+    border-radius: var(--radius-sm);
+  }
+  .board-grid-resizer::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: 4px;
+    width: 2px;
+    border-radius: 999px;
+    background: transparent;
+    transition: background 0.15s;
+  }
+  .board-grid-resizer:hover::before,
+  .board-grid-resizer.dragging::before {
+    background: var(--q2);
+  }
+  body.resizing-board-grid {
+    cursor: col-resize;
+    user-select: none;
+  }
+  body.resizing-board-grid * {
+    cursor: col-resize !important;
+  }
+  .board-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(to bottom, var(--bg-2), var(--card));
+  }
+  .board-section-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .board-section-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .board-section-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .board-section-sub {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+  .board-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .board-table-wrap {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  .board-important-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .board-cal-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .board-cal-title-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .board-cal-title {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .board-cal-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .board-cal-nav-btn {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--text-muted);
+    font: inherit;
+    cursor: pointer;
+  }
+  .board-cal-nav-btn:hover {
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .board-cal-shell {
+    display: block;
+  }
+  .board-cal-panel {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px;
+  }
+  .board-cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px 0 8px;
+  }
+  .board-cal-weekday {
+    text-align: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--text-subtle);
+  }
+  .board-cal-weekday.sun { color: var(--q1); }
+  .board-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .board-cal-day {
+    position: relative;
+    min-height: 68px;
+    padding: 5px 6px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: default;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    outline: none;
+  }
+  .board-cal-day:hover,
+  .board-cal-day:focus-visible {
+    border-color: var(--border-strong);
+  }
+  .board-cal-day.muted { opacity: 0.35; }
+  .board-cal-day.today {
+    border-color: var(--q2);
+    background: var(--q2-soft);
+  }
+  .board-cal-day.selected {
+    border-color: var(--q2);
+    background: var(--q2-bg);
+    box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.15);
+  }
+  .board-cal-day.drag-over {
+    box-shadow: inset 0 0 0 2px rgba(35, 131, 226, 0.45);
+  }
+  .board-cal-day.pulse {
+    animation: board-today-pulse 0.8s ease-out;
+  }
+  .board-cal-date {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    padding-right: 20px;
+  }
+  .board-cal-day.today .board-cal-date { color: var(--q2); }
+  .board-cal-day.sun .board-cal-date { color: var(--q1); }
+  .board-cal-add {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 16px;
+    cursor: pointer;
+    opacity: 0.18;
+    transition: opacity 0.12s, border-color 0.12s, background 0.12s, color 0.12s, transform 0.08s;
+  }
+  .board-cal-day:hover .board-cal-add,
+  .board-cal-day:focus-within .board-cal-add,
+  .board-cal-add:focus-visible {
+    opacity: 1;
+  }
+  .board-cal-add:hover,
+  .board-cal-add:focus-visible {
+    border-color: var(--q2);
+    background: var(--q2);
+    color: #fff;
+    transform: translateY(-1px);
+    outline: none;
+  }
+  .board-cal-chip {
+    display: block;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.625rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 0;
+    width: 100%;
+    text-align: left;
+    background: var(--q2-bg);
+    color: var(--q2);
+    cursor: pointer;
+  }
+  .board-cal-chip.cat-asset { background: var(--q1-bg); color: var(--q1); }
+  .board-cal-chip.cat-build { background: var(--q3-bg); color: var(--q3); }
+  .board-cal-chip.cat-study { background: #efe9fb; color: #6e5bd4; }
+  .board-cal-chip.done {
+    opacity: 0.55;
+    text-decoration: line-through;
+  }
+  :root[data-theme="dark"] .board-cal-chip.cat-asset { background: #3a1e1e; color: #ff9a9a; }
+  :root[data-theme="dark"] .board-cal-chip.cat-build { background: #3a2814; color: #ffb96e; }
+  :root[data-theme="dark"] .board-cal-chip.cat-study { background: #2a2540; color: #b4a7f5; }
+  :root[data-theme="dark"] .board-cal-chip:not(.cat-asset):not(.cat-build):not(.cat-study) { background: #1e2e42; color: #7fb6e8; }
+  .board-cal-more {
+    padding: 0 4px;
+    font-size: 0.625rem;
+    color: var(--text-subtle);
+  }
+  .board-day-detail {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 100%;
+  }
+  .board-day-detail-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .board-day-detail-date {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .board-day-detail-date .weekday {
+    margin-left: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .board-day-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .board-day-card,
+  .board-undated-card {
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    border-left: 3px solid var(--q2);
+    cursor: grab;
+  }
+  .board-day-card.cat-asset,
+  .board-undated-card.cat-asset { border-left-color: var(--q1); }
+  .board-day-card.cat-build,
+  .board-undated-card.cat-build { border-left-color: var(--q3); }
+  .board-day-card.cat-study,
+  .board-undated-card.cat-study { border-left-color: #6e5bd4; }
+  .board-day-card.done,
+  .board-undated-card.done { opacity: 0.72; }
+  .board-day-card-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    min-width: 0;
+  }
+  .board-day-card-title-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .board-day-card.done .board-day-card-title-text { text-decoration: line-through; }
+  .board-day-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+  }
+  .board-day-dday {
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--text-muted);
+  }
+  .board-day-empty {
+    padding: 24px 10px;
+    text-align: center;
+    color: var(--text-subtle);
+    font-size: 0.75rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+  }
+  .board-undated-popover {
+    width: min(360px, calc(100vw - 16px));
+    max-height: min(520px, calc(100vh - 24px));
+    overflow-y: auto;
+    padding: 10px;
+  }
+  .board-undated-popover .board-undated-list {
+    padding: 10px 0 0;
+    border-top: 1px solid var(--border);
+    background: transparent;
+  }
+  .board-undated-list {
+    padding: 0 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-2);
+  }
+  .board-undated-list[hidden] { display: none; }
+  .board-task-popover {
+    width: min(320px, calc(100vw - 16px));
+    padding: 10px;
+  }
+  .board-editor-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .board-editor-close {
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .board-editor-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .board-editor-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .board-editor-field > span {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .board-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .board-editor-note {
+    min-height: 72px;
+    resize: vertical;
+  }
+  .board-editor-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .board-editor-delete {
+    border: 1px solid var(--q1);
+    background: var(--q1-bg);
+    color: var(--q1);
+  }
+  .board-editor-delete:hover {
+    background: var(--q1);
+    color: #fff;
+  }
+  @keyframes board-today-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(35, 131, 226, 0.38); }
+    100% { box-shadow: 0 0 0 12px rgba(35, 131, 226, 0); }
+  }
+
+  .side-table {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    overflow: hidden;
+  }
+  :root {
+    --board-page-max: 1800px;
+    --b-imp-proj: 48px; --b-imp-cat: 52px; --b-imp-status: 62px;
+    --b-imp-date: 84px; --b-imp-dday: 60px; --b-imp-del: 40px;
+    --b-rt-proj: 48px; --b-rt-cat: 52px; --b-rt-detail: 56px;
+    --b-rt-status: 62px; --b-rt-date: 84px; --b-rt-dday: 60px; --b-rt-del: 40px;
+  }
+  .side-table.important-grid {
+    display: grid;
+    grid-template-columns: 22px var(--b-imp-proj) var(--b-imp-cat) var(--b-imp-name, minmax(120px, 1fr)) var(--b-imp-status) var(--b-imp-date) var(--b-imp-dday) var(--b-imp-del);
+    gap: 1px;
+    background: var(--border);
+    padding: 0;
+    width: 100%;
+    min-width: 512px;
+  }
+  .side-table.routine-grid {
+    display: grid;
+    grid-template-columns: 22px var(--b-rt-proj) var(--b-rt-cat) var(--b-rt-detail) var(--b-rt-name, minmax(120px, 1fr)) var(--b-rt-status) var(--b-rt-date) var(--b-rt-dday) var(--b-rt-del);
+    gap: 1px;
+    background: var(--border);
+    padding: 0;
+    width: 100%;
+    min-width: var(--board-routine-table-w, 602px);
+  }
+  .st-cell.st-head { position: relative; }
+  .b-col-resize {
+    position: absolute; top: 0; right: -4px; bottom: 0;
+    width: 8px; cursor: col-resize; z-index: 3;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .b-col-resize::before {
+    content: ''; width: 2px; height: 60%;
+    background: transparent; border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .b-col-resize:hover::before,
+  .b-col-resize.dragging::before { background: var(--q2, #4a90e2); }
+  body.resizing-col { cursor: col-resize; user-select: none; }
+  body.resizing-col * { cursor: col-resize !important; }
+  .st-cell.st-drag {
+    padding: 0;
+    cursor: grab;
+    background: var(--card);
+    color: transparent;
+    user-select: none;
+    font-size: 0.9rem;
+    line-height: 1;
+    transition: color 0.12s, background 0.12s;
+  }
+  .routine-grid .st-cell.st-drag.st-row-hover,
+  .routine-grid .st-cell.st-drag:focus,
+  .routine-grid .st-cell.st-drag:hover,
+  .routine-grid .st-cell.st-drag.st-row-dragging {
+    opacity: 1;
+    color: var(--text-subtle);
+  }
+  .st-cell.st-drag:hover { color: var(--text); background: var(--bg); }
+  .st-cell.st-drag:active { cursor: grabbing; }
+  .routine-grid .st-cell.st-drag:not(.st-row-hover):not(:hover):not(.st-row-dragging) {
+    background: var(--card);
+    color: transparent;
+  }
+  .side-table .st-row-dragging { opacity: 0.35; }
+  .side-table .st-row-drop-before { box-shadow: inset 0 2px 0 var(--q2); }
+  .side-table .st-row-drop-after { box-shadow: inset 0 -2px 0 var(--q2); }
+  .st-cell {
+    background: var(--card);
+    padding: 3px 5px;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    min-height: 32px;
+    min-width: 0;
+    font-size: 0.6875rem;
+  }
+  .st-cell > .cat-chip,
+  .st-cell > .project-tag,
+  .st-cell > .status-chip {
+    height: 100%;
+    min-height: 24px;
+  }
+  .st-cell.st-head {
+    background: var(--bg);
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 7px 6px;
+    white-space: nowrap;
+  }
+  .st-cell.st-row-first { border-left: 3px solid var(--q4); }
+  .st-cell.st-row-first[data-cat="에셋"] { border-left-color: var(--q1); }
+  .st-cell.st-row-first[data-cat="빌드"] { border-left-color: var(--q3); }
+  .st-cell.st-row-first[data-cat="스터디"] { border-left-color: #5a4db5; }
+  .st-cell.st-row-first[data-cat="버전"] { border-left-color: var(--q2); }
+  .st-cell.st-row-first[data-cat="월별"] { border-left-color: #1f6a2a; }
+  .st-cell.st-row-first[data-cat="상시"] { border-left-color: #8a6d00; }
+  .st-cell.empty-row {
+    grid-column: 1 / -1;
+    padding: 16px 12px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.6;
+    background: var(--bg-2);
+  }
+  .st-cell.done { opacity: 0.5; }
+  .st-cell.done .side-name { text-decoration: line-through; }
+  .st-cell:not(.st-head):not(.empty-row):hover { background: var(--bg); }
+  .st-cell .side-name,
+  .st-cell .side-date {
+    width: 100%;
+    font-size: 0.6875rem;
+    padding: 3px 4px;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 3px;
+    color: var(--text);
+    text-align: center;
+  }
+  .st-cell .side-name {
+    text-align: left;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .st-cell .side-name:focus,
+  .st-cell .side-date:focus {
+    background: var(--card);
+    border-color: var(--q2);
+    outline: none;
+  }
+  .st-cell .side-del {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-subtle);
+    padding: 0;
+    font-size: 0.875rem;
+    line-height: 1;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+  }
+  .st-cell .side-del:hover {
+    color: var(--q1);
+    background: var(--q1-bg);
+  }
+  .st-cell > .dday-chip {
+    width: 100%;
+    display: block;
+    text-align: center;
+    padding: 3px 4px;
+    box-sizing: border-box;
+  }
+
+  .project-tag {
+    width: 100%;
+    padding: 3px 4px !important;
+    font-weight: 600;
+    font-size: 0.625rem !important;
+    border-radius: 10px !important;
+    border: 0 !important;
+    text-align: center;
+    text-align-last: center;
+    background: var(--proj-etc-bg);
+    color: var(--proj-etc-fg);
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+  .project-tag[data-slot="p1"] { background: var(--proj-main-bg); color: var(--proj-main-fg); }
+  .project-tag[data-slot="p2"] { background: var(--proj-sub-bg); color: var(--proj-sub-fg); }
+  .project-tag[data-slot="p3"] { background: var(--proj-etc-bg); color: var(--proj-etc-fg); }
+  .board-pop-anchor {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .daily-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .daily-chip[data-slot="p1"] { background: var(--proj-main-bg); color: var(--proj-main-fg); }
+  .daily-chip[data-slot="p2"] { background: var(--proj-sub-bg); color: var(--proj-sub-fg); }
+  .daily-chip[data-slot="p3"] { background: var(--proj-etc-bg); color: var(--proj-etc-fg); }
+  .daily-chip[data-slot=""] { background: var(--wait-bg); color: var(--wait-fg); }
+  .daily-placeholder { color: var(--text-subtle); font-style: italic; }
+
+  .cat-chip {
+    width: 100%;
+    padding: 3px 4px !important;
+    font-weight: 500;
+    font-size: 0.625rem !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--border) !important;
+    background: var(--card) !important;
+    color: var(--text-muted) !important;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    text-align: center;
+    text-align-last: center;
+  }
+  .cat-chip:hover {
+    border-color: var(--text-muted) !important;
+    color: var(--text) !important;
+  }
+  input.cat-chip {
+    cursor: text;
+    font-family: inherit;
+    outline: none;
+  }
+  input.cat-chip:focus {
+    background: var(--card) !important;
+    border-color: var(--q2) !important;
+    color: var(--text) !important;
+  }
+  input.cat-chip::-webkit-calendar-picker-indicator { display: none; }
+
+  .status-chip {
+    width: 100%;
+    padding: 3px 4px !important;
+    font-weight: 600;
+    font-size: 0.625rem !important;
+    border-radius: 10px !important;
+    border: 0 !important;
+    background: var(--bg);
+    color: var(--text-muted);
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    text-align: center;
+    text-align-last: center;
+  }
+  .status-chip[data-v="진행중"] { background: #e7f1fb; color: #1b69b5; }
+  .status-chip[data-v="완료"] { background: #dff3e1; color: #1f6a2a; }
+  .status-chip[data-v="대기"] { background: #f1f1f0; color: #5b5b58; }
+  .st-cell .status-chip {
+    text-align: left !important;
+    text-align-last: left !important;
+    padding-left: 7px !important;
+    padding-right: 4px !important;
+  }
+  .daily-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.1s, box-shadow 0.1s;
+  }
+  .daily-status:hover { filter: brightness(0.95); box-shadow: 0 0 0 1px currentColor inset; }
+  .daily-status.done { background: var(--done-bg); color: var(--done-fg); }
+  .daily-status.doing { background: var(--doing-bg); color: var(--doing-fg); }
+  .daily-status.wait { background: var(--wait-bg); color: var(--wait-fg); }
+
+  .daily-popover {
+    position: fixed;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 16px rgba(15, 15, 15, 0.12);
+    padding: 6px;
+    min-width: 120px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .daily-pop-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    color: var(--text);
+    font-size: 13px;
+    gap: 8px;
+  }
+  .daily-pop-item:hover { background: var(--bg-2); }
+  .daily-pop-item.active { background: var(--accent-soft); }
+  .project-popover { min-width: 200px; }
+  .project-popover .daily-pop-list { display: flex; flex-direction: column; gap: 1px; }
+  .project-popover .daily-pop-row {
+    display: flex;
+    align-items: center;
+    border-radius: var(--radius-sm);
+    padding-right: 4px;
+  }
+  .project-popover .daily-pop-row:hover { background: var(--bg-2); }
+  .project-popover .daily-pop-row.active { background: var(--accent-soft); }
+  .project-popover .daily-pop-row .daily-pop-item { flex: 1; }
+  .project-popover .daily-pop-row:hover .daily-pop-item,
+  .project-popover .daily-pop-row.active .daily-pop-item { background: transparent; }
+  .daily-pop-mini {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--text-subtle);
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.1s, background 0.1s, color 0.1s;
+    font-family: inherit;
+  }
+  .project-popover .daily-pop-row:hover .daily-pop-mini,
+  .project-popover .daily-pop-row:focus-within .daily-pop-mini { opacity: 1; }
+  .daily-pop-mini:hover { background: var(--bg); color: var(--text); }
+  .daily-pop-mini[data-act="del"]:hover { color: #c73a3a; }
+  .daily-pop-add-label { color: var(--text-subtle); }
+  .daily-pop-input {
+    flex: 1;
+    margin: 2px 4px;
+    padding: 6px 10px;
+    border: 1px solid var(--q2);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+  .daily-pop-orphan {
+    font-style: italic;
+    font-size: 11px;
+    color: var(--text-subtle);
+    margin-left: 4px;
+  }
+  .daily-pop-check {
+    width: 14px;
+    display: inline-block;
+    text-align: center;
+    color: var(--q2);
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .dday-chip {
+    font-size: 0.6875rem;
+    padding: 2px 5px;
+    border-radius: 10px;
+    background: var(--q4-bg);
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center;
+    display: inline-block;
+  }
+  .dday-chip.over { background: var(--q1); color: #fff; }
+  .dday-chip.near { background: var(--q1-bg); color: var(--q1); }
+  .dday-chip.soon { background: var(--q3-bg); color: var(--q3); }
+  @keyframes dday-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+  .dday-chip.critical { animation: dday-pulse 1.8s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .dday-chip.critical { animation: none; }
+  }
+
+  @media (max-width: 1280px) {
+    .board-hero { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .board-grid { grid-template-columns: 1fr; width: 100%; }
+    .board-grid-resizer { display: none; }
+    .board-routine-section { width: 100%; justify-self: stretch; }
+    .board-cal-shell { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .board-main { padding: 14px; gap: 14px; }
+    .board-top { flex-direction: column; align-items: stretch; }
+    .header-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+    .board-hero { grid-template-columns: 1fr; }
+    .board-section-head { padding: 12px 14px; }
+    .board-table-wrap { padding: 12px; }
+    .board-title-row { justify-content: space-between; }
+    .widget-tabs { width: 100%; }
+    .widget-tab { flex: 1; min-width: 0; }
+    .board-cal-day { min-height: 62px; }
+    .board-cal-grid { gap: 3px; }
+    .board-cal-add { opacity: 0.42; }
+    .board-day-detail { padding: 10px; }
+    .board-editor-grid { grid-template-columns: 1fr; }
+  }
+
+  body.public-calendar-widget main.board-main { min-height: 640px; }
+  body.public-calendar-widget .board-grid {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+  body.public-calendar-widget .board-important-section { min-width: 0; }
+  body.public-calendar-widget .board-cal-grid { min-height: 430px; }
+</style>
+</head>
+<body class="public-calendar-widget">
+  <div class="app">
+    <header class="app-header">
+      <div class="board-title-block">
+        <div class="board-title-row">
+          <h1 class="app-title">업무일지 <span class="app-title-sub" id="appTitleSub">중요 업무 캘린더</span></h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="header-toggle-btn" id="headerToggleBtn" aria-expanded="true" title="헤더 접기" onclick="toggleHeader()"></button>
+        <span id="cloudStatus" class="cloud-status" data-tone="" title="클라우드 동기화 상태">⌂</span>
+        <span id="backupReminder" class="backup-reminder" hidden></span>
+        <button class="btn sm" onclick="exportJson()" title="JSON 백업"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg> 백업</button>
+        <button class="btn sm" onclick="document.getElementById('importInput').click()" title="JSON 복원"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> 복원</button>
+        <input type="file" id="importInput" accept="application/json,.json" style="display:none" onchange="importJson(event, render)">
+        <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="테마"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
+      </div>
+    </header>
+    <main class="board-main">
+      <div class="board-grid" id="boardGrid">
+        <section class="board-section board-important-section">
+          <div class="board-section-head">
+            <div class="board-section-title-wrap"><h2 class="board-section-title">중요 업무 <span class="board-section-count" id="importantCount">0</span></h2></div>
+          </div>
+          <div class="board-table-wrap"><div id="importantList" class="side-table important-grid"></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div id="boardRowMenu" class="board-row-menu" hidden></div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3 class="modal-title" id="modalTitle">확인</h3>
+      <p class="modal-message" id="modalMessage"></p>
+      <div class="modal-actions">
+        <button class="btn" id="modalCancelBtn" onclick="hideModal()">취소</button>
+        <button class="btn primary" id="modalConfirmBtn" onclick="confirmModal()">확인</button>
+      </div>
+    </div>
+  </div>
+
+<script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
+<script src="code-sync.js?v=2"></script>
+<script src="shared.js?v=2"></script>
+<script>
+  'use strict';
+
+  const STATUS_PREFIX = s => '● ' + s;
+  let boardOpenPopover = null;
+  let pageTabsOpen = false;
+  const datePicker = {
+    el: null,
+    currentInput: null,
+    currentMonth: null
+  };
+  const BOARD_CAL_STORAGE_KEY = 'worklog-board-cal-anchor';
+  const BOARD_WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+  let boardMonthAnchor = loadBoardMonthAnchor();
+  let boardSelectedDate = formatDate(new Date());
+  let boardTodayPulse = false;
+  let boardDayClickTimer = null;
+
+  function loadBoardMonthAnchor() {
+    try {
+      const raw = sessionStorage.getItem(BOARD_CAL_STORAGE_KEY) || '';
+      const match = raw.match(/^(\d{4})-(\d{2})$/);
+      if (match) return new Date(Number(match[1]), Number(match[2]) - 1, 1);
+    } catch (e) {}
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  }
+
+  function saveBoardMonthAnchor() {
+    try {
+      sessionStorage.setItem(BOARD_CAL_STORAGE_KEY, `${boardMonthAnchor.getFullYear()}-${String(boardMonthAnchor.getMonth() + 1).padStart(2, '0')}`);
+    } catch (e) {}
+  }
+
+  function boardDateObj(dateStr) {
+    if (!dateStr) return null;
+    const parts = String(dateStr).split('-').map(Number);
+    if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+
+  function boardDateKey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function setBoardMonthAnchor(date, keepSelection) {
+    const next = new Date(date.getFullYear(), date.getMonth(), 1);
+    boardMonthAnchor = next;
+    saveBoardMonthAnchor();
+    if (!keepSelection || !boardSelectedDate || !boardIsSameMonth(boardSelectedDate, next)) {
+      boardSelectedDate = boardDateKey(new Date(next.getFullYear(), next.getMonth(), 1));
+    }
+  }
+
+  function boardIsSameMonth(dateStr, anchor) {
+    const date = boardDateObj(dateStr);
+    if (!date) return false;
+    return date.getFullYear() === anchor.getFullYear() && date.getMonth() === anchor.getMonth();
+  }
+
+  function ensureBoardSelectedDate() {
+    if (!boardSelectedDate || !boardIsSameMonth(boardSelectedDate, boardMonthAnchor)) {
+      const today = formatDate(new Date());
+      if (boardIsSameMonth(today, boardMonthAnchor)) boardSelectedDate = today;
+      else boardSelectedDate = boardDateKey(new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth(), 1));
+    }
+  }
+
+  function importantTasksForDate(dateStr) {
+    return (state.importantTasks || []).filter(item => item.targetDate === dateStr);
+  }
+
+  function importantUndatedTasks() {
+    return (state.importantTasks || []).filter(item => !item.targetDate);
+  }
+
+  function boardCategoryTone(category) {
+    const key = (category || '').trim();
+    if (['에셋', '아트'].includes(key)) return 'cat-asset';
+    if (['빌드', '테이블', '운영'].includes(key)) return 'cat-build';
+    if (['스터디', 'QA'].includes(key)) return 'cat-study';
+    return '';
+  }
+
+  function boardTaskLabel(task) {
+    return (task && task.name && String(task.name).trim()) || '(이름 없음)';
+  }
+
+  function boardDateLabel(dateStr) {
+    const date = boardDateObj(dateStr);
+    if (!date) return '날짜 미지정';
+    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
+  }
+
+  function syncPageTabs() {
+    const nav = document.getElementById('pageTabs');
+    const btn = document.getElementById('pageTabsToggleBtn');
+    if (!nav || !btn) return;
+    nav.hidden = !pageTabsOpen;
+    btn.setAttribute('aria-expanded', pageTabsOpen ? 'true' : 'false');
+    btn.textContent = pageTabsOpen ? '탭 숨기기' : '탭 펼치기';
+  }
+
+  window.togglePageTabs = function() {
+    pageTabsOpen = !pageTabsOpen;
+    syncPageTabs();
+  };
+
+  function buildSelect(cls, value, options, onchange, formatter) {
+    const fmt = typeof formatter === 'function' ? formatter : (o => o);
+    const opts = options.map(o => `<option value="${escapeHtml(o)}"${o === value ? ' selected' : ''}>${escapeHtml(fmt(o))}</option>`).join('');
+    return `<select class="${cls}" data-v="${escapeHtml(value)}" onchange="${onchange}; this.dataset.v=this.value;">${opts}</select>`;
+  }
+
+  function buildCatInput(cls, value, suggestions, onchange, placeholder) {
+    const listId = 'dl_' + Math.random().toString(36).slice(2, 8);
+    const opts = (suggestions || []).map(o => `<option value="${escapeHtml(o)}">`).join('');
+    const ph = placeholder || '구분';
+    return `<input type="text" class="${cls}" list="${listId}" placeholder="${escapeHtml(ph)}" value="${escapeHtml(value || '')}" data-v="${escapeHtml(value || '')}" onchange="${onchange}; this.dataset.v=this.value;"><datalist id="${listId}">${opts}</datalist>`;
+  }
+
+  function getCategorySuggestions(kind) {
+    const set = new Set();
+    if (kind === 'important') {
+      (state.importantTasks || []).forEach(t => { if (t.category) set.add(t.category); });
+    } else if (kind === 'routineCat') {
+      (state.routines || []).forEach(t => { if (t.category) set.add(t.category); });
+    } else if (kind === 'routineSub') {
+      (state.routines || []).forEach(t => { if (t.subCategory) set.add(t.subCategory); });
+    }
+    return Array.from(set).sort();
+  }
+
+  function getBoardItem(kind, idx) {
+    const list = kind === 'important' ? state.importantTasks : state.routines;
+    return list && list[idx] ? list[idx] : null;
+  }
+
+  function boardStatusKey(status) {
+    if (status === '완료') return 'done';
+    if (status === '진행중') return 'doing';
+    return 'wait';
+  }
+
+  function boardStatusLabel(key) {
+    if (key === 'done') return '완료';
+    if (key === 'doing') return '진행중';
+    return '대기';
+  }
+
+  function boardStatusValue(key) {
+    if (key === 'done') return '완료';
+    if (key === 'doing') return '진행중';
+    return '대기';
+  }
+
+  function buildProjectSelect(value, onchange) {
+    const labels = (state && state.projectLabels) || DEFAULT_PROJECTS;
+    const slot = projectSlot(value);
+    const opts = labels.map(o => `<option value="${escapeHtml(o)}"${o === value ? ' selected' : ''}>${escapeHtml(o)}</option>`).join('');
+    return `<select class="project-tag" data-v="${escapeHtml(value)}" data-slot="${slot}" onchange="${onchange}; this.dataset.v=this.value;">${opts}</select>`;
+  }
+
+  function fridayOfWeek(weekStart) {
+    if (!weekStart) return '';
+    const parts = String(weekStart).split('-').map(Number);
+    if (parts.length < 3 || parts.some(n => isNaN(n))) return '';
+    const base = new Date(parts[0], parts[1] - 1, parts[2]);
+    base.setDate(base.getDate() + 4);
+    return formatDate(base);
+  }
+
+  function positionPopoverBelow(anchor, popEl, opts) {
+    const rect = anchor.getBoundingClientRect();
+    const centered = opts && opts.centered;
+    popEl.style.top = (rect.bottom + 4) + 'px';
+    if (centered) {
+      requestAnimationFrame(() => {
+        const pr = popEl.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        let left = cx - pr.width / 2;
+        if (left < 8) left = 8;
+        else if (left + pr.width > window.innerWidth - 8) left = window.innerWidth - pr.width - 8;
+        popEl.style.left = left + 'px';
+      });
+    } else {
+      popEl.style.left = rect.left + 'px';
+    }
+    requestAnimationFrame(() => {
+      const pr = popEl.getBoundingClientRect();
+      if (!centered && pr.right > window.innerWidth - 8) {
+        popEl.style.left = Math.max(8, window.innerWidth - pr.width - 8) + 'px';
+      }
+      if (pr.bottom > window.innerHeight - 8) {
+        popEl.style.top = Math.max(8, rect.top - pr.height - 4) + 'px';
+      }
+    });
+  }
+
+  function boardPopoverOutsideClick(e) {
+    if (!boardOpenPopover) return;
+    const pop = boardOpenPopover.el;
+    if (pop && pop.contains(e.target)) return;
+    closeBoardPopover();
+  }
+
+  function closeBoardPopover() {
+    if (!boardOpenPopover) return;
+    const closeMeta = boardOpenPopover;
+    if (typeof closeMeta.onClose === 'function') {
+      try { closeMeta.onClose(); } catch (e) {}
+    }
+    const el = boardOpenPopover.el;
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+    boardOpenPopover = null;
+    document.removeEventListener('click', boardPopoverOutsideClick);
+    window.removeEventListener('scroll', closeBoardPopover, true);
+    window.removeEventListener('resize', closeBoardPopover);
+  }
+  window.closeBoardPopover = closeBoardPopover;
+
+  function attachBoardPopoverGlobalListeners() {
+    setTimeout(() => {
+      document.addEventListener('click', boardPopoverOutsideClick);
+      window.addEventListener('scroll', closeBoardPopover, true);
+      window.addEventListener('resize', closeBoardPopover);
+    }, 0);
+  }
+
+  function removeProjectLabel(name) {
+    const labels = state.projectLabels || [];
+    const idx = labels.indexOf(name);
+    if (idx >= 0) {
+      labels.splice(idx, 1);
+      saveState();
+    }
+  }
+
+  function startAddProjectLabel(pop, rebuild, anchorEl) {
+    const addRow = pop.querySelector('.daily-pop-row.add-row');
+    if (!addRow) return;
+    addRow.innerHTML = '<input class="daily-pop-input" type="text" maxlength="20" placeholder="새 구분 이름">';
+    const input = addRow.querySelector('input');
+    input.focus();
+    let done = false;
+    function commit(save) {
+      if (done) return;
+      done = true;
+      if (!pop.isConnected) return;
+      if (save) {
+        const value = (input.value || '').trim();
+        if (value) {
+          state.projectLabels = state.projectLabels || [];
+          if (!state.projectLabels.includes(value)) state.projectLabels.push(value);
+          saveState();
+        }
+      }
+      rebuild();
+      positionPopoverBelow(anchorEl, pop);
+    }
+    input.addEventListener('keydown', e => {
+      e.stopPropagation();
+      if (e.key === 'Enter') { e.preventDefault(); commit(true); }
+      else if (e.key === 'Escape') { e.preventDefault(); commit(false); }
+    });
+    input.addEventListener('blur', () => commit(true));
+  }
+
+  function startRenameProjectLabel(pop, oldName, rebuild, anchorEl) {
+    const row = Array.from(pop.querySelectorAll('.daily-pop-row')).find(el => {
+      const pickBtn = el.querySelector('.daily-pop-item[data-act="pick"]');
+      return pickBtn && pickBtn.dataset.label === oldName;
+    });
+    if (!row) return;
+    row.innerHTML = `<span class="daily-pop-check">✎</span><input class="daily-pop-input" type="text" maxlength="20" value="${escapeHtml(oldName)}">`;
+    const input = row.querySelector('input');
+    input.focus();
+    input.select();
+    let done = false;
+    function commit(save) {
+      if (done) return;
+      done = true;
+      if (!pop.isConnected) return;
+      if (save) {
+        const value = (input.value || '').trim();
+        if (value && value !== oldName) {
+          const labels = state.projectLabels || [];
+          const idx = labels.indexOf(oldName);
+          if (idx >= 0 && !labels.includes(value)) labels[idx] = value;
+          saveState();
+        }
+      }
+      rebuild();
+      positionPopoverBelow(anchorEl, pop);
+    }
+    input.addEventListener('keydown', e => {
+      e.stopPropagation();
+      if (e.key === 'Enter') { e.preventDefault(); commit(true); }
+      else if (e.key === 'Escape') { e.preventDefault(); commit(false); }
+    });
+    input.addEventListener('blur', () => commit(true));
+  }
+
+  function setBoardStatus(kind, idx, next) {
+    const item = getBoardItem(kind, idx);
+    if (!item) return;
+    if (!['wait', 'doing', 'done'].includes(next)) return;
+    item.status = boardStatusValue(next);
+    saveState();
+    render();
+  }
+
+  window.openBoardStatusPopover = function(kind, idx, anchorEl) {
+    closeBoardPopover();
+    const item = getBoardItem(kind, idx);
+    if (!item || !anchorEl) return;
+    const current = boardStatusKey(item.status);
+    const options = [
+      { key: 'wait', label: '대기' },
+      { key: 'doing', label: '진행중' },
+      { key: 'done', label: '완료' }
+    ];
+    const pop = document.createElement('div');
+    pop.className = 'daily-popover status-popover';
+    pop.innerHTML = options.map(option => `
+      <button class="daily-pop-item ${option.key === current ? 'active' : ''}" data-status="${option.key}">
+        <span class="daily-pop-check">${option.key === current ? '✓' : ''}</span>
+        <span class="daily-status ${option.key}">${option.label}</span>
+      </button>
+    `).join('');
+    document.body.appendChild(pop);
+    positionPopoverBelow(anchorEl, pop);
+    pop.addEventListener('click', e => {
+      const btn = e.target.closest('.daily-pop-item');
+      if (!btn) return;
+      e.stopPropagation();
+      closeBoardPopover();
+      setBoardStatus(kind, idx, btn.dataset.status);
+    });
+    boardOpenPopover = { type: 'status', kind: kind, idx: idx, el: pop };
+    attachBoardPopoverGlobalListeners();
+  };
+
+  window.openBoardProjectPopover = function(kind, idx, anchorEl) {
+    closeBoardPopover();
+    const item = getBoardItem(kind, idx);
+    if (!item || !anchorEl) return;
+
+    const pop = document.createElement('div');
+    pop.className = 'daily-popover project-popover';
+    document.body.appendChild(pop);
+
+    function rebuild() {
+      const labels = (state.projectLabels || []).slice();
+      const current = item.project || '';
+      const isOrphan = current && !labels.includes(current);
+      if (isOrphan) labels.push(current);
+
+      const rows = labels.map(label => {
+        const slot = projectSlot(label);
+        const orphan = label === current && isOrphan;
+        const actions = orphan ? '' : `
+          <button class="daily-pop-mini" data-act="edit" data-label="${escapeHtml(label)}" title="이름 수정">✎</button>
+          <button class="daily-pop-mini" data-act="del" data-label="${escapeHtml(label)}" title="삭제">×</button>
+        `;
+        return `
+          <div class="daily-pop-row ${label === current ? 'active' : ''}">
+            <button class="daily-pop-item" data-act="pick" data-label="${escapeHtml(label)}">
+              <span class="daily-pop-check">${label === current ? '✓' : ''}</span>
+              <span class="daily-chip" data-slot="${slot}">${escapeHtml(label)}${orphan ? ' <em class="daily-pop-orphan">(삭제됨)</em>' : ''}</span>
+            </button>
+            ${actions}
+          </div>
+        `;
+      }).join('');
+
+      const addRow = `
+        <div class="daily-pop-row add-row">
+          <button class="daily-pop-item daily-pop-add" data-act="add-open">
+            <span class="daily-pop-check">+</span>
+            <span class="daily-pop-add-label">새 구분 추가</span>
+          </button>
+        </div>
+      `;
+      pop.innerHTML = `<div class="daily-pop-list">${rows}${addRow}</div>`;
+    }
+
+    rebuild();
+    positionPopoverBelow(anchorEl, pop);
+
+    pop.addEventListener('click', e => {
+      const miniBtn = e.target.closest('.daily-pop-mini');
+      if (miniBtn) {
+        e.stopPropagation();
+        const label = miniBtn.dataset.label;
+        if (miniBtn.dataset.act === 'del') {
+          removeProjectLabel(label);
+          rebuild();
+          positionPopoverBelow(anchorEl, pop);
+        } else if (miniBtn.dataset.act === 'edit') {
+          startRenameProjectLabel(pop, label, rebuild, anchorEl);
+        }
+        return;
+      }
+      const pickBtn = e.target.closest('.daily-pop-item[data-act="pick"]');
+      if (pickBtn) {
+        e.stopPropagation();
+        item.project = pickBtn.dataset.label;
+        saveState();
+        closeBoardPopover();
+        render();
+        return;
+      }
+      const addBtn = e.target.closest('.daily-pop-item[data-act="add-open"]');
+      if (addBtn) {
+        e.stopPropagation();
+        startAddProjectLabel(pop, rebuild, anchorEl);
+      }
+    });
+
+    boardOpenPopover = { type: 'project', kind: kind, idx: idx, el: pop };
+    attachBoardPopoverGlobalListeners();
+  };
+
+  function statCardHtml(label, value, tone) {
+    return `
+      <article class="board-stat ${tone ? 'is-' + tone : ''}">
+        <div class="board-stat-label">${escapeHtml(label)}</div>
+        <div class="board-stat-value">${escapeHtml(String(value))}</div>
+      </article>`;
+  }
+
+  function renderBoardSummary() {
+    const container = document.getElementById('boardStats');
+    if (!container) return;
+    const important = state.importantTasks || [];
+    const routines = state.routines || [];
+    const all = important.concat(routines);
+    const active = all.filter(item => item.status !== '완료');
+    const dueSoon = active.filter(item => {
+      const diff = calcDDay(item.targetDate);
+      return diff != null && diff >= 0 && diff <= 7;
+    }).length;
+    const completed = all.filter(item => item.status === '완료').length;
+
+    container.innerHTML = [
+      statCardHtml('중요 업무', important.length, 'important'),
+      statCardHtml('상시 업무', routines.length, 'routine'),
+      statCardHtml('7일 이내 마감', dueSoon, 'soon'),
+      statCardHtml('완료 항목', completed, 'done')
+    ].join('');
+  }
+
+  function importantTaskOptionsHtml(current) {
+    const labels = (state.projectLabels || []).slice();
+    if (current && !labels.includes(current)) labels.push(current);
+    const options = ['<option value="">-</option>'].concat(labels.map(label => `<option value="${escapeHtml(label)}"${label === current ? ' selected' : ''}>${escapeHtml(label)}</option>`));
+    return options.join('');
+  }
+
+  function openImportantEditorAfterRender(idx) {
+    setTimeout(() => {
+      const anchor = document.querySelector(`[data-imp-anchor="${idx}"]`) || document.querySelector(`[data-cal-date="${boardSelectedDate}"]`) || document.getElementById('importantList');
+      if (anchor) openImportantEditor(idx, anchor);
+    }, 0);
+  }
+
+  function createImportantTask(targetDate) {
+    const labels = (state.projectLabels && state.projectLabels.length) ? state.projectLabels : DEFAULT_PROJECTS;
+    const item = {
+      id: uid(),
+      project: labels[0] || '',
+      category: '',
+      name: '',
+      status: '대기',
+      targetDate: targetDate || '',
+      note: ''
+    };
+    state.importantTasks.push(item);
+    return state.importantTasks.length - 1;
+  }
+
+  function renderImportantCardList(items, emptyText) {
+    if (!items.length) return `<div class="board-day-empty">${escapeHtml(emptyText)}</div>`;
+    return items.map(it => {
+      const idx = state.importantTasks.indexOf(it);
+      const slot = projectSlot(it.project) || '';
+      const statusKey = boardStatusKey(it.status);
+      return `
+        <div class="board-undated-card ${boardCategoryTone(it.category)} ${it.status === '완료' ? 'done' : ''}"
+             draggable="true"
+             ondragstart="onImportantDragStart(event, ${idx})"
+             ondragend="onImportantDragEnd(event)">
+          <div class="board-day-card-title">
+            <span class="board-day-card-title-text">${escapeHtml(boardTaskLabel(it))}</span>
+            <button type="button" class="btn sm" data-imp-anchor="${idx}" onclick="openImportantEditor(${idx}, this)">편집</button>
+          </div>
+          <div class="board-day-card-meta">
+            ${it.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(it.project)}</span>` : '<span class="daily-placeholder">-</span>'}
+            ${it.category ? `<span>${escapeHtml(it.category)}</span>` : '<span>구분 없음</span>'}
+            <span class="daily-status ${statusKey}">${boardStatusLabel(statusKey)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderUndatedCards() {
+    return renderImportantCardList(importantUndatedTasks(), '미지정 항목이 없어요.');
+  }
+
+  function renderDateImportantCards(dateStr) {
+    return renderImportantCardList(importantTasksForDate(dateStr), '이 날짜의 중요 업무가 없어요.');
+  }
+
+  function boardDateTitle(dateStr) {
+    const date = boardDateObj(dateStr);
+    if (!date) return dateStr || '';
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${BOARD_WEEKDAY_LABELS[date.getDay()]}`;
+  }
+
+  window.openBoardUndatedPopover = function(anchorEl) {
+    closeBoardPopover();
+    if (!anchorEl) return;
+    const pop = document.createElement('div');
+    pop.className = 'daily-popover board-undated-popover';
+    pop.innerHTML = `
+      <div class="board-editor-head">
+        <span>날짜 미지정</span>
+        <button type="button" class="board-editor-close" onclick="closeBoardPopover()" aria-label="닫기">✕</button>
+      </div>
+      <div class="board-undated-list" ondragover="onBoardUndatedDragOver(event)" ondrop="onBoardUndatedDrop(event)">${renderUndatedCards()}</div>
+    `;
+    document.body.appendChild(pop);
+    positionPopoverBelow(anchorEl, pop, { centered: true });
+    boardOpenPopover = { type: 'undated', el: pop };
+    attachBoardPopoverGlobalListeners();
+  };
+
+  window.openBoardDateTasksPopover = function(dateStr, anchorEl) {
+    closeBoardPopover();
+    if (!anchorEl) return;
+    const pop = document.createElement('div');
+    pop.className = 'daily-popover board-undated-popover';
+    pop.innerHTML = `
+      <div class="board-editor-head">
+        <span>${escapeHtml(boardDateTitle(dateStr))}</span>
+        <button type="button" class="board-editor-close" onclick="closeBoardPopover()" aria-label="닫기">✕</button>
+      </div>
+      <div class="board-undated-list">${renderDateImportantCards(dateStr)}</div>
+      <div class="board-editor-actions">
+        <span></span>
+        <button type="button" class="btn primary sm" onclick="addImportantTaskForDate('${dateStr}')">+ 이 날짜에 추가</button>
+      </div>
+    `;
+    document.body.appendChild(pop);
+    positionPopoverBelow(anchorEl, pop, { centered: true });
+    boardOpenPopover = { type: 'date-important-list', el: pop };
+    attachBoardPopoverGlobalListeners();
+  };
+
+  function openBoardDateTasksAtCell(dateStr) {
+    const anchor = document.querySelector(`[data-cal-date="${dateStr}"]`);
+    if (anchor) openBoardDateTasksPopover(dateStr, anchor);
+  }
+
+  window.onBoardCalMove = function(delta) {
+    setBoardMonthAnchor(new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth() + delta, 1), false);
+    render();
+  };
+
+  window.onBoardCalToday = function() {
+    const today = new Date();
+    setBoardMonthAnchor(today, true);
+    boardSelectedDate = formatDate(today);
+    boardTodayPulse = true;
+    render();
+    setTimeout(() => {
+      boardTodayPulse = false;
+      const cell = document.querySelector('.board-cal-day.today');
+      if (cell) cell.classList.remove('pulse');
+    }, 900);
+  };
+
+  function clearBoardDayClickTimer() {
+    if (!boardDayClickTimer) return;
+    clearTimeout(boardDayClickTimer);
+    boardDayClickTimer = null;
+  }
+
+  function selectBoardCalendarDate(dateStr) {
+    const date = boardDateObj(dateStr);
+    if (!date) return false;
+    const inCurrentMonth = boardIsSameMonth(dateStr, boardMonthAnchor);
+    boardSelectedDate = dateStr;
+    if (!inCurrentMonth) setBoardMonthAnchor(date, true);
+    renderImportantTasks();
+    return true;
+  }
+
+  window.onBoardDayClick = function(event, dateStr) {
+    if (event) event.stopPropagation();
+    clearBoardDayClickTimer();
+    boardDayClickTimer = setTimeout(() => {
+      boardDayClickTimer = null;
+      selectBoardCalendarDate(dateStr);
+    }, 180);
+  };
+
+  window.onBoardDayDblClick = function(event, dateStr) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    clearBoardDayClickTimer();
+    const date = boardDateObj(dateStr);
+    if (!date) return;
+    const inCurrentMonth = boardIsSameMonth(dateStr, boardMonthAnchor);
+    boardSelectedDate = dateStr;
+    if (!inCurrentMonth) {
+      setBoardMonthAnchor(date, true);
+      renderImportantTasks();
+      setTimeout(() => {
+        openBoardDateTasksAtCell(dateStr);
+      }, 0);
+      return;
+    }
+    document.querySelectorAll('.board-cal-day.selected').forEach(el => el.classList.remove('selected'));
+    const anchor = event && event.currentTarget ? event.currentTarget : document.querySelector(`[data-cal-date="${dateStr}"]`);
+    if (anchor) anchor.classList.add('selected');
+    if (anchor) openBoardDateTasksPopover(dateStr, anchor);
+  };
+
+  window.onBoardDayKeydown = function(event, dateStr) {
+    if (!event) return;
+    const key = event.key;
+    if (key === 'Enter' || key === ' ') {
+      event.preventDefault();
+      clearBoardDayClickTimer();
+      selectBoardCalendarDate(dateStr);
+      return;
+    }
+    const delta = key === 'ArrowLeft' ? -1 : key === 'ArrowRight' ? 1 : key === 'ArrowUp' ? -7 : key === 'ArrowDown' ? 7 : 0;
+    if (!delta) return;
+    event.preventDefault();
+    const date = boardDateObj(dateStr);
+    if (!date) return;
+    date.setDate(date.getDate() + delta);
+    const nextKey = boardDateKey(date);
+    boardSelectedDate = nextKey;
+    if (!boardIsSameMonth(nextKey, boardMonthAnchor)) {
+      setBoardMonthAnchor(date, true);
+      render();
+      setTimeout(() => {
+        const nextCell = document.querySelector(`[data-cal-date="${nextKey}"]`);
+        if (nextCell) nextCell.focus();
+      }, 0);
+      return;
+    }
+    renderImportantTasks();
+    const nextCell = document.querySelector(`[data-cal-date="${nextKey}"]`);
+    if (nextCell) nextCell.focus();
+  };
+
+  let boardDraggedImportantIdx = -1;
+  window.onImportantDragStart = function(event, idx) {
+    boardDraggedImportantIdx = idx;
+    if (event && event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      try { event.dataTransfer.setData('text/plain', String(idx)); } catch (e) {}
+    }
+  };
+  window.onImportantDragEnd = function() {
+    boardDraggedImportantIdx = -1;
+    document.querySelectorAll('.board-cal-day.drag-over').forEach(el => el.classList.remove('drag-over'));
+  };
+  window.onBoardDayDragOver = function(event) {
+    if (boardDraggedImportantIdx < 0) return;
+    event.preventDefault();
+    const cell = event.currentTarget;
+    if (cell) cell.classList.add('drag-over');
+  };
+  window.onBoardDayDragLeave = function(event) {
+    const cell = event.currentTarget;
+    if (cell) cell.classList.remove('drag-over');
+  };
+  window.onBoardDayDrop = function(event, dateStr) {
+    event.preventDefault();
+    const cell = event.currentTarget;
+    if (cell) cell.classList.remove('drag-over');
+    if (boardDraggedImportantIdx < 0 || !state.importantTasks[boardDraggedImportantIdx]) return;
+    state.importantTasks[boardDraggedImportantIdx].targetDate = dateStr;
+    boardSelectedDate = dateStr;
+    saveState();
+    render();
+    boardDraggedImportantIdx = -1;
+  };
+  window.onBoardUndatedDrop = function(event) {
+    event.preventDefault();
+    if (boardDraggedImportantIdx < 0 || !state.importantTasks[boardDraggedImportantIdx]) return;
+    state.importantTasks[boardDraggedImportantIdx].targetDate = '';
+    saveState();
+    render();
+    boardDraggedImportantIdx = -1;
+  };
+  window.onBoardUndatedDragOver = function(event) {
+    if (boardDraggedImportantIdx < 0) return;
+    event.preventDefault();
+  };
+
+  window.updateImportantDraft = function(idx, field, value) {
+    if (!state.importantTasks[idx]) return;
+    state.importantTasks[idx][field] = value;
+  };
+
+  window.onImportantEditorDateChange = function(idx, text) {
+    if (!state.importantTasks[idx]) return;
+    const parsed = parseDateInput(text, boardMonthAnchor.getFullYear());
+    state.importantTasks[idx].targetDate = parsed && parsed !== DASH ? parsed : '';
+    if (state.importantTasks[idx].targetDate) {
+      boardSelectedDate = state.importantTasks[idx].targetDate;
+      const nextDate = boardDateObj(state.importantTasks[idx].targetDate);
+      if (nextDate) setBoardMonthAnchor(nextDate, true);
+    }
+  };
+
+  window.deleteImportantFromEditor = function(idx) {
+    const item = state.importantTasks[idx];
+    if (!item) return;
+    const name = boardTaskLabel(item);
+    showModal('중요 업무 삭제', `"${name}" 항목을 삭제할까요?`, () => {
+      if (boardOpenPopover && boardOpenPopover.type === 'important-editor') boardOpenPopover.onClose = null;
+      state.importantTasks.splice(idx, 1);
+      closeBoardPopover();
+      saveState();
+      render();
+    });
+  };
+
+  window.openImportantEditor = function(idx, anchorEl) {
+    closeBoardPopover();
+    const item = state.importantTasks[idx];
+    if (!item || !anchorEl) return;
+    const pop = document.createElement('div');
+    pop.className = 'daily-popover board-task-popover';
+    const current = state.importantTasks[idx];
+    pop.innerHTML = `
+      <div class="board-editor-head">
+        <span>중요 업무 편집</span>
+        <button type="button" class="board-editor-close" onclick="closeBoardPopover()" aria-label="닫기">✕</button>
+      </div>
+      <div class="board-editor-stack">
+        <label class="board-editor-field">
+          <span>업무명</span>
+          <input type="text" value="${escapeHtml(boardTaskLabel(current) === '(이름 없음)' ? '' : current.name || '')}" oninput="updateImportantDraft(${idx}, 'name', this.value)">
+        </label>
+        <div class="board-editor-grid">
+          <label class="board-editor-field">
+            <span>프로젝트</span>
+            <select onchange="updateImportantDraft(${idx}, 'project', this.value)">${importantTaskOptionsHtml(current.project || '')}</select>
+          </label>
+          <label class="board-editor-field">
+            <span>상태</span>
+            <select onchange="updateImportantDraft(${idx}, 'status', this.value)">
+              <option value="대기"${current.status === '대기' ? ' selected' : ''}>대기</option>
+              <option value="진행중"${current.status === '진행중' ? ' selected' : ''}>진행중</option>
+              <option value="완료"${current.status === '완료' ? ' selected' : ''}>완료</option>
+            </select>
+          </label>
+          <label class="board-editor-field">
+            <span>마감일</span>
+            <input type="text" class="date-picker-input" value="${escapeHtml(formatDateDisplay(current.targetDate || ''))}" placeholder="4/13" onchange="onImportantEditorDateChange(${idx}, this.value)">
+          </label>
+          <label class="board-editor-field">
+            <span>구분</span>
+            <input type="text" value="${escapeHtml(current.category || '')}" placeholder="구분" oninput="updateImportantDraft(${idx}, 'category', this.value)">
+          </label>
+        </div>
+        <label class="board-editor-field">
+          <span>메모</span>
+          <textarea class="board-editor-note" oninput="updateImportantDraft(${idx}, 'note', this.value)">${escapeHtml(current.note || '')}</textarea>
+        </label>
+        <div class="board-editor-actions">
+          <button type="button" class="btn sm board-editor-delete" onclick="deleteImportantFromEditor(${idx})">삭제</button>
+          <button type="button" class="btn primary sm" onclick="closeBoardPopover()">저장</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(pop);
+    positionPopoverBelow(anchorEl, pop, { centered: true });
+    boardOpenPopover = {
+      type: 'important-editor',
+      idx: idx,
+      el: pop,
+      onClose: function() {
+        saveState();
+        render();
+      }
+    };
+    attachBoardPopoverGlobalListeners();
+  };
+
+  function renderImportantTasks() {
+    const list = document.getElementById('importantList');
+    if (!list) return;
+    list.className = 'board-important-panel';
+    ensureBoardSelectedDate();
+    const counter = document.getElementById('importantCount');
+    if (counter) counter.textContent = state.importantTasks.length;
+
+    const monthTitle = `${boardMonthAnchor.getFullYear()}년 ${boardMonthAnchor.getMonth() + 1}월`;
+    const first = new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth(), 1);
+    const offset = first.getDay();
+    const lastDate = new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth() + 1, 0).getDate();
+    const start = new Date(boardMonthAnchor.getFullYear(), boardMonthAnchor.getMonth(), 1 - offset);
+    const todayKey = formatDate(new Date());
+    const dayCells = [];
+    const visibleWeeks = Math.ceil((offset + lastDate) / 7);
+    const totalCells = Math.max(35, visibleWeeks * 7);
+    for (let i = 0; i < totalCells; i++) {
+      const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      const key = boardDateKey(date);
+      const inMonth = date.getMonth() === boardMonthAnchor.getMonth();
+      const items = importantTasksForDate(key);
+      const classes = [
+        'board-cal-day',
+        inMonth ? '' : 'muted',
+        key === todayKey ? 'today' : '',
+        key === boardSelectedDate ? 'selected' : '',
+        date.getDay() === 0 ? 'sun' : '',
+        boardTodayPulse && key === todayKey ? 'pulse' : ''
+      ].filter(Boolean).join(' ');
+      const chips = items.slice(0, 1).map(it => {
+        const idx = state.importantTasks.indexOf(it);
+        return `<button type="button"
+                  class="board-cal-chip ${boardCategoryTone(it.category)} ${it.status === '완료' ? 'done' : ''}"
+                  data-imp-anchor="${idx}"
+                  draggable="true"
+                  ondragstart="onImportantDragStart(event, ${idx})"
+                  ondragend="onImportantDragEnd(event)"
+                  ondblclick="event.stopPropagation()"
+                  onclick="event.stopPropagation(); openImportantEditor(${idx}, this)"
+                  title="${escapeHtml(boardTaskLabel(it))}">${escapeHtml(boardTaskLabel(it))}</button>`;
+      }).join('');
+      const more = items.length > 1 ? `<div class="board-cal-more">+${items.length - 1}</div>` : '';
+      dayCells.push(`
+        <div class="${classes}"
+             data-cal-date="${key}"
+             tabindex="0"
+             onclick="onBoardDayClick(event, '${key}')"
+             ondblclick="onBoardDayDblClick(event, '${key}')"
+             onkeydown="onBoardDayKeydown(event, '${key}')"
+             ondragover="onBoardDayDragOver(event)"
+             ondragleave="onBoardDayDragLeave(event)"
+             ondrop="onBoardDayDrop(event, '${key}')">
+          <div class="board-cal-date">${date.getDate()}</div>
+          <button type="button"
+                  class="board-cal-add"
+                  onclick="event.stopPropagation(); addImportantTaskForDate('${key}')"
+                  ondblclick="event.stopPropagation()"
+                  title="이 날짜에 중요 업무 추가"
+                  aria-label="${key} 중요 업무 추가">+</button>
+          ${chips}
+          ${more}
+        </div>
+      `);
+    }
+
+    const undatedItems = importantUndatedTasks();
+
+    list.innerHTML = `
+      <div class="board-cal-toolbar">
+        <div class="board-cal-title-block">
+          <div class="board-cal-title">${monthTitle}</div>
+        </div>
+        <div class="board-cal-nav">
+          <button type="button" class="board-cal-nav-btn" onclick="onBoardCalMove(-1)">◀</button>
+          <button type="button" class="board-cal-nav-btn" onclick="onBoardCalToday()">오늘</button>
+          <button type="button" class="board-cal-nav-btn" onclick="onBoardCalMove(1)">▶</button>
+          <button type="button" class="board-cal-nav-btn" onclick="openBoardUndatedPopover(this)">📥 미지정 ${undatedItems.length}</button>
+        </div>
+      </div>
+      <div class="board-cal-shell">
+        <div class="board-cal-panel">
+          <div class="board-cal-weekdays">
+            <div class="board-cal-weekday sun">일</div>
+            <div class="board-cal-weekday">월</div>
+            <div class="board-cal-weekday">화</div>
+            <div class="board-cal-weekday">수</div>
+            <div class="board-cal-weekday">목</div>
+            <div class="board-cal-weekday">금</div>
+            <div class="board-cal-weekday">토</div>
+          </div>
+          <div class="board-cal-grid">${dayCells.join('')}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderRoutines() {
+    const list = document.getElementById('routineList');
+    if (!list) return;
+    list.className = 'side-table routine-grid';
+    const counter = document.getElementById('routineCount');
+    if (counter) counter.textContent = state.routines.length;
+
+    const cells = [];
+    const rh = k => `<div class="b-col-resize" data-bcol="${k}" title="드래그하여 너비 조절"></div>`;
+    cells.push('<div class="st-cell st-head"></div>');
+    cells.push(`<div class="st-cell st-head">프로${rh('rt-proj')}</div>`);
+    cells.push(`<div class="st-cell st-head">구분${rh('rt-cat')}</div>`);
+    cells.push(`<div class="st-cell st-head">상세${rh('rt-detail')}</div>`);
+    cells.push(`<div class="st-cell st-head">업무명${rh('rt-name')}</div>`);
+    cells.push(`<div class="st-cell st-head">상태${rh('rt-status')}</div>`);
+    cells.push(`<div class="st-cell st-head">마감일${rh('rt-date')}</div>`);
+    cells.push(`<div class="st-cell st-head">디데이${rh('rt-dday')}</div>`);
+    cells.push('<div class="st-cell st-head">삭제</div>');
+
+    const items = state.routines;
+    if (items.length === 0) {
+      cells.push('<div class="st-cell empty-row">반복적으로 하는 업무를 등록해주세요.</div>');
+    } else {
+      for (let i = 0; i < items.length; i++) {
+        const r = items[i];
+        const cat = r.category || '';
+        const catAttr = `data-cat="${escapeHtml(cat)}"`;
+        const doneCls = r.status === '완료' ? 'done' : '';
+        const dday = calcDDay(r.targetDate);
+        const ddayCls = ddayClass(dday);
+        const ddayText = formatDDay(dday);
+        const slot = projectSlot(r.project) || '';
+        const statusKey = boardStatusKey(r.status);
+        const statusLabel = boardStatusLabel(statusKey);
+
+        cells.push(`<div class="st-cell st-drag" draggable="true" data-row="${i}" data-kind="routine" title="드래그로 행 순서 변경">≡</div>`);
+        cells.push(`<div class="st-cell st-row-first ${doneCls}" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardProjectPopover('routine', ${i}, this)" title="프로젝트 선택 / 추가 / 삭제">${r.project ? `<span class="daily-chip" data-slot="${slot}">${escapeHtml(r.project)}</span>` : '<span class="daily-placeholder">-</span>'}</button></div>`);
+
+        const catKey = r.project + '|' + r.category;
+        const isCatStart = (i === 0) || (catKey !== items[i - 1].project + '|' + items[i - 1].category);
+        if (isCatStart) {
+          let size = 1;
+          for (let j = i + 1; j < items.length; j++) {
+            if (items[j].project + '|' + items[j].category === catKey) size++;
+            else break;
+          }
+          const catSuggestions = getCategorySuggestions('routineCat');
+          const catSel = buildCatInput('cat-chip', r.category, catSuggestions, `updateRoutine(${i}, 'category', this.value)`, '구분');
+          const spanStyle = size > 1 ? ` style="grid-row: span ${size}"` : '';
+          cells.push(`<div class="st-cell" ${catAttr}${spanStyle} data-row="${i}">${catSel}</div>`);
+        }
+
+        const subKey = catKey + '|' + r.subCategory;
+        const prevSubKey = i > 0 ? (items[i - 1].project + '|' + items[i - 1].category + '|' + items[i - 1].subCategory) : null;
+        const isSubStart = (i === 0) || (subKey !== prevSubKey);
+        if (isSubStart) {
+          let size = 1;
+          for (let j = i + 1; j < items.length; j++) {
+            const nextKey = items[j].project + '|' + items[j].category + '|' + items[j].subCategory;
+            if (nextKey === subKey) size++;
+            else break;
+          }
+          const subSuggestions = getCategorySuggestions('routineSub');
+          const subSel = buildCatInput('cat-chip', r.subCategory, subSuggestions, `updateRoutine(${i}, 'subCategory', this.value)`, '상세');
+          const spanStyle = size > 1 ? ` style="grid-row: span ${size}"` : '';
+          cells.push(`<div class="st-cell" ${catAttr}${spanStyle} data-row="${i}">${subSel}</div>`);
+        }
+
+        cells.push(`<div class="st-cell ${doneCls}" ${catAttr} data-row="${i}"><input type="text" class="side-name" placeholder="업무명" title="${escapeHtml(r.name || '')}" value="${escapeHtml(r.name)}" onchange="updateRoutine(${i}, 'name', this.value)"></div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button type="button" class="board-pop-anchor" onclick="openBoardStatusPopover('routine', ${i}, this)" title="클릭하여 상태 선택"><span class="daily-status ${statusKey}">${statusLabel}</span></button></div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><input type="text" class="side-date date-picker-input" placeholder="4/13" value="${escapeHtml(formatDateDisplay(r.targetDate))}" onchange="onSideDateChange('routine', ${i}, this.value)"></div>`);
+        // 완료 처리된 행은 디데이 칩 숨김 — 마감 추적 대상에서 빠진 것을 시각적으로 알림
+        const showDday = ddayText && r.status !== '완료';
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}">${showDday ? `<span class="dday-chip ${ddayCls}">${ddayText}</span>` : '<span style="color:var(--text-subtle)">-</span>'}</div>`);
+        cells.push(`<div class="st-cell" ${catAttr} data-row="${i}"><button class="side-del" title="삭제" onclick="askDeleteRoutine(${i})">×</button></div>`);
+      }
+    }
+    list.innerHTML = cells.join('');
+    setupRowDnD(list, 'routine');
+  }
+
+  function setupRowDnD(list, kind) {
+    let dragFrom = -1;
+    let lastTarget = null;
+    let hoverRow = null;
+    let insertAfter = false;
+    const setHoverRow = row => {
+      if (hoverRow === row) return;
+      list.querySelectorAll('.st-row-hover').forEach(el => el.classList.remove('st-row-hover'));
+      hoverRow = row;
+      if (row !== null && row !== undefined) {
+        list.querySelectorAll(`[data-row="${row}"]`).forEach(el => el.classList.add('st-row-hover'));
+      }
+    };
+    const clearMarks = () => {
+      list.querySelectorAll('.st-row-drop-before, .st-row-drop-after, .st-row-dragging').forEach(el => {
+        el.classList.remove('st-row-drop-before', 'st-row-drop-after', 'st-row-dragging');
+      });
+      lastTarget = null;
+    };
+    list.addEventListener('mouseover', function(e) {
+      const cell = e.target.closest('[data-row]');
+      if (!cell || !list.contains(cell)) return;
+      setHoverRow(cell.dataset.row);
+    });
+    list.addEventListener('mouseleave', function() {
+      setHoverRow(null);
+    });
+    list.addEventListener('dragstart', function(e) {
+      const handle = e.target.closest('.st-drag');
+      if (!handle) { e.preventDefault(); return; }
+      dragFrom = Number(handle.dataset.row);
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', String(dragFrom)); } catch (err) {}
+      }
+      list.querySelectorAll(`[data-row="${dragFrom}"]`).forEach(el => el.classList.add('st-row-dragging'));
+    });
+    list.addEventListener('dragover', function(e) {
+      if (dragFrom < 0) return;
+      const cell = e.target.closest('[data-row]');
+      if (!cell) return;
+      const targetRow = Number(cell.dataset.row);
+      if (targetRow === dragFrom) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      const rect = cell.getBoundingClientRect();
+      insertAfter = (e.clientY - rect.top) > rect.height / 2;
+      if (lastTarget !== targetRow) {
+        list.querySelectorAll('.st-row-drop-before, .st-row-drop-after').forEach(el => {
+          el.classList.remove('st-row-drop-before', 'st-row-drop-after');
+        });
+        list.querySelectorAll(`[data-row="${targetRow}"]`).forEach(el => {
+          el.classList.add(insertAfter ? 'st-row-drop-after' : 'st-row-drop-before');
+        });
+        lastTarget = targetRow;
+      }
+    });
+    list.addEventListener('dragleave', function(e) {
+      if (!list.contains(e.relatedTarget)) clearMarks();
+    });
+    list.addEventListener('drop', function(e) {
+      e.preventDefault();
+      if (dragFrom < 0 || lastTarget === null) { clearMarks(); dragFrom = -1; return; }
+      const arr = kind === 'important' ? state.importantTasks : state.routines;
+      const from = dragFrom;
+      let to = lastTarget + (insertAfter ? 1 : 0);
+      if (from < to) to -= 1;
+      if (from !== to && from >= 0 && from < arr.length && to >= 0 && to < arr.length) {
+        const moved = arr.splice(from, 1)[0];
+        arr.splice(to, 0, moved);
+        saveState();
+        render();
+      } else {
+        clearMarks();
+      }
+      dragFrom = -1;
+    });
+    list.addEventListener('dragend', function() {
+      clearMarks();
+      dragFrom = -1;
+    });
+  }
+
+  function renderHeaderSub() {
+    const sub = document.getElementById('appTitleSub');
+    if (!sub) return;
+    if (!state.weekStart) {
+      sub.textContent = '중요·상시 업무 보드';
+      return;
+    }
+    const weekEnd = fridayOfWeek(state.weekStart);
+    sub.textContent = `${formatDateDisplay(state.weekStart)} ~ ${formatDateDisplay(weekEnd)} 주간과 분리된 장기 업무`;
+  }
+
+  function render() {
+    renderImportantTasks();
+    if (typeof refreshBackupReminder === 'function') refreshBackupReminder();
+  }
+
+  window.addImportantTaskForDate = function(dateStr) {
+    const targetDate = dateStr || formatDate(new Date());
+    const targetObj = boardDateObj(targetDate) || new Date();
+    setBoardMonthAnchor(targetObj, true);
+    boardSelectedDate = targetDate;
+    const idx = createImportantTask(targetDate);
+    saveState();
+    render();
+    openImportantEditorAfterRender(idx);
+  };
+
+  window.addImportantTask = function() {
+    addImportantTaskForDate(formatDate(new Date()));
+  };
+
+  window.updateImportant = function(idx, field, value) {
+    if (!state.importantTasks[idx]) return;
+    state.importantTasks[idx][field] = value;
+    if (field === 'targetDate' && value) {
+      boardSelectedDate = value;
+      const nextDate = boardDateObj(value);
+      if (nextDate) setBoardMonthAnchor(nextDate, true);
+    }
+    saveState();
+    render();
+  };
+
+  window.askDeleteImportant = function(idx) {
+    const item = state.importantTasks[idx];
+    if (!item) return;
+    const name = item.name || '(이름 없음)';
+    showModal('중요 업무 삭제', `"${name}" 항목을 삭제할까요?`, () => {
+      state.importantTasks.splice(idx, 1);
+      saveState();
+      render();
+    });
+  };
+
+  window.addRoutine = function() {
+    state.routines.push({
+      id: uid(),
+      project: (state.projectLabels && state.projectLabels[0]) || '메인',
+      category: '',
+      subCategory: '',
+      name: '',
+      status: '대기',
+      targetDate: '',
+      note: ''
+    });
+    saveState();
+    render();
+  };
+
+  window.updateRoutine = function(idx, field, value) {
+    if (!state.routines[idx]) return;
+    state.routines[idx][field] = value;
+    saveState();
+    render();
+  };
+
+  window.askDeleteRoutine = function(idx) {
+    const item = state.routines[idx];
+    if (!item) return;
+    const name = item.name || '(이름 없음)';
+    showModal('상시 업무 삭제', `"${name}" 항목을 삭제할까요?`, () => {
+      state.routines.splice(idx, 1);
+      saveState();
+      render();
+    });
+  };
+
+  window.onSideDateChange = function(kind, idx, text) {
+    const list = kind === 'important' ? state.importantTasks : state.routines;
+    if (!list[idx]) return;
+    list[idx].targetDate = parseDateInput(text, new Date().getFullYear());
+    if (kind === 'important' && list[idx].targetDate) {
+      boardSelectedDate = list[idx].targetDate;
+      const nextDate = boardDateObj(list[idx].targetDate);
+      if (nextDate) setBoardMonthAnchor(nextDate, true);
+    }
+    saveState();
+    render();
+  };
+
+  function ensureDatePickerEl() {
+    if (datePicker.el) return datePicker.el;
+    const el = document.createElement('div');
+    el.className = 'date-picker hidden';
+    el.innerHTML = [
+      '<div class="dp-header">',
+      '  <button class="dp-nav" data-dir="-1" title="이전 달">◀</button>',
+      '  <span class="dp-title"></span>',
+      '  <button class="dp-nav" data-dir="1" title="다음 달">▶</button>',
+      '</div>',
+      '<div class="dp-weekdays"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>',
+      '<div class="dp-grid"></div>',
+      '<div class="dp-actions">',
+      '  <button class="dp-action dp-today-btn" data-act="today">오늘</button>',
+      '  <button class="dp-action dp-unset-btn" data-act="unset">미설정 -</button>',
+      '  <button class="dp-action dp-clear-btn" data-act="clear">지우기</button>',
+      '</div>'
+    ].join('');
+    document.body.appendChild(el);
+
+    el.addEventListener('mousedown', e => e.preventDefault());
+    el.querySelectorAll('.dp-nav').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!datePicker.currentMonth) return;
+        const dir = parseInt(btn.dataset.dir, 10);
+        datePicker.currentMonth.setMonth(datePicker.currentMonth.getMonth() + dir);
+        renderDatePickerGrid();
+      });
+    });
+    el.querySelector('.dp-grid').addEventListener('click', e => {
+      const cell = e.target.closest('.dp-cell');
+      if (!cell || cell.classList.contains('dp-empty')) return;
+      const date = cell.dataset.date;
+      if (date) commitDatePick(date);
+    });
+    el.querySelectorAll('.dp-action').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const act = btn.dataset.act;
+        if (act === 'today') commitDatePick(formatDate(new Date()));
+        else if (act === 'unset') commitDatePick(DASH);
+        else if (act === 'clear') commitDatePick('');
+      });
+    });
+
+    datePicker.el = el;
+    return el;
+  }
+
+  function openDatePickerFor(input) {
+    ensureDatePickerEl();
+    datePicker.currentInput = input;
+    const year = new Date().getFullYear();
+    const parsed = parseDateInput(input.value || '', year);
+    let base;
+    if (parsed && parsed !== DASH) {
+      base = new Date(parsed);
+      if (isNaN(base.getTime())) base = new Date();
+    } else {
+      base = new Date();
+    }
+    datePicker.currentMonth = new Date(base.getFullYear(), base.getMonth(), 1);
+    positionDatePicker(input);
+    renderDatePickerGrid();
+    datePicker.el.classList.remove('hidden');
+  }
+
+  function closeDatePicker() {
+    if (datePicker.el) datePicker.el.classList.add('hidden');
+    datePicker.currentInput = null;
+    datePicker.currentMonth = null;
+  }
+
+  function commitDatePick(dateStr) {
+    const input = datePicker.currentInput;
+    if (input) {
+      let displayValue;
+      if (dateStr === DASH) displayValue = DASH;
+      else if (!dateStr) displayValue = '';
+      else displayValue = formatDateDisplay(dateStr);
+      input.value = displayValue;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    closeDatePicker();
+  }
+
+  function positionDatePicker(input) {
+    const rect = input.getBoundingClientRect();
+    const el = datePicker.el;
+    const width = 268;
+    const height = 290;
+    let left = rect.left;
+    if (left + width > window.innerWidth - 8) left = window.innerWidth - width - 8;
+    if (left < 8) left = 8;
+    let top = rect.bottom + 4;
+    if (top + height > window.innerHeight - 8) top = rect.top - height - 4;
+    if (top < 8) top = 8;
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
+  }
+
+  function renderDatePickerGrid() {
+    const el = datePicker.el;
+    if (!el || !datePicker.currentMonth) return;
+    const month = datePicker.currentMonth;
+    const year = month.getFullYear();
+    const monthIndex = month.getMonth();
+
+    el.querySelector('.dp-title').textContent = `${year}년 ${monthIndex + 1}월`;
+
+    const firstDow = new Date(year, monthIndex, 1).getDay();
+    const lastDate = new Date(year, monthIndex + 1, 0).getDate();
+    const today = formatDate(new Date());
+    const input = datePicker.currentInput;
+    const selectedYmd = input ? parseDateInput(input.value || '', year) : '';
+
+    const cells = [];
+    for (let i = 0; i < firstDow; i++) {
+      cells.push('<span class="dp-cell dp-empty"></span>');
+    }
+    for (let day = 1; day <= lastDate; day++) {
+      const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dow = new Date(year, monthIndex, day).getDay();
+      const classes = ['dp-cell'];
+      if (dateStr === today) classes.push('dp-today');
+      if (dateStr === selectedYmd) classes.push('dp-selected');
+      if (dow === 0) classes.push('dp-sun');
+      if (dow === 6) classes.push('dp-sat');
+      cells.push(`<button type="button" class="${classes.join(' ')}" data-date="${dateStr}">${day}</button>`);
+    }
+    el.querySelector('.dp-grid').innerHTML = cells.join('');
+  }
+
+  function initDatePicker() {
+    document.addEventListener('focusin', e => {
+      const input = e.target.closest && e.target.closest('.date-picker-input');
+      if (input) {
+        openDatePickerFor(input);
+        return;
+      }
+      if (datePicker.el && datePicker.el.contains(e.target)) return;
+      if (datePicker.el && !datePicker.el.classList.contains('hidden')) closeDatePicker();
+    });
+    document.addEventListener('mousedown', e => {
+      if (!datePicker.el || datePicker.el.classList.contains('hidden')) return;
+      if (datePicker.el.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('.date-picker-input')) return;
+      closeDatePicker();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && datePicker.el && !datePicker.el.classList.contains('hidden')) closeDatePicker();
+    });
+    window.addEventListener('scroll', () => {
+      if (datePicker.el && !datePicker.el.classList.contains('hidden')) closeDatePicker();
+    }, true);
+  }
+
+  function closeBoardRowMenu() {
+    const m = document.getElementById('boardRowMenu');
+    if (m) { m.hidden = true; m.innerHTML = ''; }
+  }
+
+  // 오늘 카드(daily.html)의 state.days 인덱스를 계산. 주말이면 -1 반환(금요일에 편입).
+  function todayDailyIdx() {
+    const dow = new Date().getDay(); // Sun=0..Sat=6
+    const monIdx = (dow + 6) % 7;    // Mon=0..Sun=6
+    return monIdx < 5 ? monIdx : -1;
+  }
+
+  function sendImportantToToday(i) {
+    const it = state.importantTasks && state.importantTasks[i];
+    if (!it) return;
+    const name = (it.name || '').trim();
+    if (!name) { showModal('이동 불가', '업무명이 비어 있어요. 먼저 이름을 입력해주세요.', null); return; }
+    const task = {
+      project: it.project || '',
+      name: name,
+      note: it.category ? `[${it.category}]` : '',
+      targetDate: it.targetDate || '',
+      startTime: '', endTime: '',
+      estimatedHours: '', adjustHours: 0,
+      done: false
+    };
+    const tIdx = todayDailyIdx();
+    if (tIdx === -1) {
+      if (!Array.isArray(state.carryover)) state.carryover = [];
+      state.carryover.push({ qKey: 'q1', task });
+      saveState();
+      showModal('이동 예약됨', `"${name}" 은(는) 다음 주 월요일 오늘 카드에 추가됩니다.`, null);
+      return;
+    }
+    const day = state.days[tIdx];
+    if (!day.quadrants) day.quadrants = { q1: [], q2: [], q3: [], q4: [] };
+    if (!Array.isArray(day.quadrants.q1)) day.quadrants.q1 = [];
+    day.quadrants.q1.push(task);
+    saveState();
+    const ch = (typeof getBroadcastChannel === 'function') ? getBroadcastChannel() : null;
+    if (ch) { try { ch.postMessage({ type: 'worklog:task-sent-to-today', name }); } catch (e) {} }
+    showModal('오늘 카드로 이동', `"${name}" 을(를) 오늘의 Q1(중요·긴급)에 추가했어요.`, null);
+  }
+
+  window.openImportantRowMenu = function(ev, i) {
+    ev.preventDefault();
+    const it = state.importantTasks && state.importantTasks[i];
+    if (!it) return;
+    const menu = document.getElementById('boardRowMenu');
+    if (!menu) return;
+    const tIdx = todayDailyIdx();
+    const label = tIdx === -1 ? '오늘 카드로 보내기(다음 월요일 예약)' : '오늘 카드로 보내기 (Q1)';
+    const done = it.status === '완료';
+    menu.innerHTML = done
+      ? '<div class="item disabled">완료된 업무는 이동할 수 없어요</div>'
+      : `<div class="item" data-action="send">${label}</div>`;
+    menu.hidden = false;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const x = Math.min(ev.clientX, vw - menu.offsetWidth - 8);
+    const y = Math.min(ev.clientY, vh - menu.offsetHeight - 8);
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    const item = menu.querySelector('.item[data-action="send"]');
+    if (item) item.onclick = function() { closeBoardRowMenu(); sendImportantToToday(i); };
+  };
+
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('boardRowMenu');
+    if (menu && !menu.hidden && !menu.contains(e.target)) closeBoardRowMenu();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBoardRowMenu();
+  });
+  window.addEventListener('scroll', closeBoardRowMenu, true);
+
+  // ── 보드 컬럼 리사이즈 ───────────────────────────────────────
+  const B_COL_DEFAULTS = {
+    'imp-proj': 48, 'imp-cat': 52, 'imp-status': 62, 'imp-date': 84, 'imp-dday': 60, 'imp-del': 40,
+    'rt-proj': 48, 'rt-cat': 52, 'rt-detail': 56, 'rt-status': 62, 'rt-date': 84, 'rt-dday': 60, 'rt-del': 40
+  };
+  // name은 기본값 없음(1fr). 드래그 시 고정 폭으로 전환, 더블클릭으로 다시 1fr 복원.
+  const B_FLEX_COLS = new Set(['imp-name', 'rt-name']);
+  const B_ROUTINE_COLS = ['rt-proj', 'rt-cat', 'rt-detail', 'rt-name', 'rt-status', 'rt-date', 'rt-dday', 'rt-del'];
+  const B_ROUTINE_NAME_DEFAULT = 170;
+  const B_ROUTINE_DRAG_COL = 22;
+  const B_ROUTINE_GRID_GAPS = 8;
+  const B_ROUTINE_PANEL_EXTRA = 34;
+  const B_COL_MIN = 36;
+  const B_COL_MAX = 600;
+  const B_COL_STORAGE_KEY = 'worklog-board-col-widths';
+  const B_LAYOUT_STORAGE_KEY = 'worklog-board-layout-widths';
+  const B_CALENDAR_PANEL_MIN = 320;
+  const B_GRID_RESIZER_W = 10;
+  const B_GRID_GAPS = 20;
+  let boardCalendarPanelManualWidth = loadBoardLayoutWidth();
+
+  function applyBCol(key, w) {
+    document.documentElement.style.setProperty(`--b-${key}`, w + 'px');
+    if (isRoutineBCol(key)) syncRoutinePanelWidth();
+  }
+  function isKnownBCol(key) {
+    return !!key && (key in B_COL_DEFAULTS || B_FLEX_COLS.has(key));
+  }
+  function clearBCol(key) {
+    document.documentElement.style.removeProperty(`--b-${key}`);
+    if (isRoutineBCol(key)) syncRoutinePanelWidth();
+  }
+  function isRoutineBCol(key) {
+    return B_ROUTINE_COLS.includes(key);
+  }
+  function routineBColWidth(key) {
+    const inline = document.documentElement.style.getPropertyValue(`--b-${key}`).trim();
+    const inlinePx = parseInt(inline, 10);
+    if (inlinePx) return inlinePx;
+    if (key in B_COL_DEFAULTS) return B_COL_DEFAULTS[key];
+    return B_ROUTINE_NAME_DEFAULT;
+  }
+  function loadBoardLayoutWidth() {
+    try {
+      const raw = localStorage.getItem(B_LAYOUT_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const width = Number(parsed && parsed.calendarPanelWidth);
+      return width > 0 ? width : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function saveBoardLayoutWidth() {
+    try {
+      if (!boardCalendarPanelManualWidth) {
+        localStorage.removeItem(B_LAYOUT_STORAGE_KEY);
+        return;
+      }
+      localStorage.setItem(B_LAYOUT_STORAGE_KEY, JSON.stringify({ calendarPanelWidth: boardCalendarPanelManualWidth }));
+    } catch (e) {}
+  }
+  function routinePanelWidth() {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--board-routine-panel-w').trim();
+    const px = parseInt(raw, 10);
+    return px || 636;
+  }
+  function boardGridAvailableWidth() {
+    const grid = document.getElementById('boardGrid');
+    const parent = grid && grid.parentElement;
+    const rect = parent ? parent.getBoundingClientRect() : null;
+    const fallback = 1800;
+    if (!rect) return fallback;
+    const appWidth = Math.max(rect.width, window.innerWidth - 28);
+    return Math.min(appWidth, 1800);
+  }
+  function calendarPanelBounds() {
+    const max = Math.max(B_CALENDAR_PANEL_MIN, Math.floor(boardGridAvailableWidth() - routinePanelWidth() - B_GRID_RESIZER_W - B_GRID_GAPS));
+    return { min: B_CALENDAR_PANEL_MIN, max: max };
+  }
+  function clampCalendarPanelWidth(width) {
+    const bounds = calendarPanelBounds();
+    return Math.max(bounds.min, Math.min(bounds.max, Math.round(width)));
+  }
+  function syncBoardGridWidth() {
+    if (!boardCalendarPanelManualWidth) {
+      document.documentElement.style.removeProperty('--board-calendar-panel-w');
+      document.documentElement.style.removeProperty('--board-grid-w');
+      return;
+    }
+    boardCalendarPanelManualWidth = clampCalendarPanelWidth(boardCalendarPanelManualWidth);
+    const gridW = boardCalendarPanelManualWidth + routinePanelWidth() + B_GRID_RESIZER_W + B_GRID_GAPS;
+    document.documentElement.style.setProperty('--board-calendar-panel-w', boardCalendarPanelManualWidth + 'px');
+    document.documentElement.style.setProperty('--board-grid-w', gridW + 'px');
+  }
+  function syncRoutinePanelWidth() {
+    const colTotal = B_ROUTINE_DRAG_COL + B_ROUTINE_GRID_GAPS + B_ROUTINE_COLS.reduce((sum, key) => sum + routineBColWidth(key), 0);
+    const tableW = Math.max(360, Math.ceil(colTotal));
+    const autoPanelW = tableW + B_ROUTINE_PANEL_EXTRA;
+    document.documentElement.style.setProperty('--board-routine-table-w', tableW + 'px');
+    document.documentElement.style.setProperty('--board-routine-panel-w', autoPanelW + 'px');
+    syncBoardGridWidth();
+  }
+  function loadBoardColWidths() {
+    try {
+      const raw = localStorage.getItem(B_COL_STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      Object.keys(B_COL_DEFAULTS).forEach(k => {
+        const w = Number(saved[k]);
+        if (w && w >= B_COL_MIN && w <= B_COL_MAX) applyBCol(k, w);
+      });
+      B_FLEX_COLS.forEach(k => {
+        const w = Number(saved[k]);
+        if (w && w >= B_COL_MIN && w <= B_COL_MAX) applyBCol(k, w);
+      });
+    } catch (e) {}
+    syncRoutinePanelWidth();
+  }
+  function saveBoardColWidths() {
+    try {
+      const cs = getComputedStyle(document.documentElement);
+      const inline = document.documentElement.style;
+      const out = {};
+      Object.keys(B_COL_DEFAULTS).forEach(k => {
+        const raw = cs.getPropertyValue(`--b-${k}`).trim();
+        out[k] = parseInt(raw, 10) || B_COL_DEFAULTS[k];
+      });
+      // name: 저장은 인라인 스타일이 설정돼 있을 때만 — 기본(1fr) 상태는 저장 안 함
+      B_FLEX_COLS.forEach(k => {
+        const raw = inline.getPropertyValue(`--b-${k}`).trim();
+        const px = parseInt(raw, 10);
+        if (raw && px) out[k] = px;
+      });
+      localStorage.setItem(B_COL_STORAGE_KEY, JSON.stringify(out));
+    } catch (e) {}
+  }
+  function currentBColWidth(key, handle) {
+    const inline = document.documentElement.style.getPropertyValue(`--b-${key}`).trim();
+    const px = parseInt(inline, 10);
+    if (px) return px;
+    if (key in B_COL_DEFAULTS) return B_COL_DEFAULTS[key];
+    // flex 컬럼(name): 현재 렌더된 헤더 셀의 실측 폭 사용
+    const headCell = handle && handle.closest('.st-cell');
+    return headCell ? Math.round(headCell.getBoundingClientRect().width) : 200;
+  }
+  function initBoardColResize() {
+    let drag = null;
+    document.addEventListener('mousedown', function(e) {
+      const h = e.target.closest && e.target.closest('.b-col-resize');
+      if (!h) return;
+      const key = h.dataset.bcol;
+      if (!isKnownBCol(key)) return;
+      drag = { key, startX: e.clientX, startW: currentBColWidth(key, h), handle: h };
+      h.classList.add('dragging');
+      document.body.classList.add('resizing-col');
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!drag) return;
+      const delta = e.clientX - drag.startX;
+      const newW = Math.max(B_COL_MIN, Math.min(B_COL_MAX, drag.startW + delta));
+      applyBCol(drag.key, newW);
+    });
+    document.addEventListener('mouseup', function() {
+      if (!drag) return;
+      drag.handle.classList.remove('dragging');
+      document.body.classList.remove('resizing-col');
+      drag = null;
+      saveBoardColWidths();
+    });
+    // 더블클릭으로 기본값 복원 (name은 1fr 플렉스로 되돌림)
+    document.addEventListener('dblclick', function(e) {
+      const h = e.target.closest && e.target.closest('.b-col-resize');
+      if (!h) return;
+      const key = h.dataset.bcol;
+      if (!isKnownBCol(key)) return;
+      if (B_FLEX_COLS.has(key)) clearBCol(key);
+      else applyBCol(key, B_COL_DEFAULTS[key]);
+      saveBoardColWidths();
+    });
+  }
+
+  function initBoardGridResize() {
+    const handle = document.getElementById('boardGridResizer');
+    if (!handle) return;
+    let drag = null;
+    handle.addEventListener('mousedown', function(e) {
+      const important = document.querySelector('.board-important-section');
+      const current = boardCalendarPanelManualWidth || (important ? important.getBoundingClientRect().width : B_CALENDAR_PANEL_MIN);
+      drag = { startX: e.clientX, startW: current };
+      handle.classList.add('dragging');
+      document.body.classList.add('resizing-board-grid');
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!drag) return;
+      const delta = e.clientX - drag.startX;
+      boardCalendarPanelManualWidth = clampCalendarPanelWidth(drag.startW + delta);
+      syncBoardGridWidth();
+    });
+    document.addEventListener('mouseup', function() {
+      if (!drag) return;
+      handle.classList.remove('dragging');
+      document.body.classList.remove('resizing-board-grid');
+      drag = null;
+      saveBoardLayoutWidth();
+    });
+    handle.addEventListener('dblclick', function() {
+      boardCalendarPanelManualWidth = null;
+      saveBoardLayoutWidth();
+      syncBoardGridWidth();
+    });
+    window.addEventListener('resize', function() {
+      syncBoardGridWidth();
+      if (boardCalendarPanelManualWidth) saveBoardLayoutWidth();
+    });
+  }
+
+  (async function boardInit() {
+    state = loadState();
+    initTheme();
+    initModalBase();
+    initHeaderCollapse();
+    initDatePicker();
+    subscribeStateChanges(render);
+    render();
+    if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
+    if (typeof initCloudSync === 'function') {
+      await initCloudSync(function(remote) {
+        if (window.applyRemoteState && window.applyRemoteState(remote)) render();
+      });
+    }
+  })();
+  </script>
+</body>
+</html>
