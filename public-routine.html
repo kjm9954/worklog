@@ -1108,8 +1108,8 @@
   </div>
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
-<script src="code-sync.js?v=2"></script>
-<script src="shared.js?v=3"></script>
+<script src="code-sync.js?v=3"></script>
+<script src="shared.js?v=5"></script>
 <script>
   'use strict';
 
@@ -1326,15 +1326,22 @@
     if (el && el.parentNode) el.parentNode.removeChild(el);
     boardOpenPopover = null;
     document.removeEventListener('click', boardPopoverOutsideClick);
-    window.removeEventListener('scroll', closeBoardPopover, true);
+    window.removeEventListener('scroll', boardPopoverScrollHandler, true);
     window.removeEventListener('resize', closeBoardPopover);
   }
   window.closeBoardPopover = closeBoardPopover;
 
+  function boardPopoverScrollHandler(e) {
+    if (!boardOpenPopover) return;
+    const pop = boardOpenPopover.el;
+    if (pop && e && e.target && pop.contains(e.target)) return;
+    closeBoardPopover();
+  }
+
   function attachBoardPopoverGlobalListeners() {
     setTimeout(() => {
       document.addEventListener('click', boardPopoverOutsideClick);
-      window.addEventListener('scroll', closeBoardPopover, true);
+      window.addEventListener('scroll', boardPopoverScrollHandler, true);
       window.addEventListener('resize', closeBoardPopover);
     }, 0);
   }
@@ -2232,7 +2239,7 @@
   window.addRoutine = function() {
     state.routines.push({
       id: uid(),
-      project: (state.projectLabels && state.projectLabels[0]) || '메인',
+      project: '',
       category: '',
       subCategory: '',
       name: '',

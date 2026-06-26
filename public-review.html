@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>업무일지 — 히스토리</title>
+<title>업무일지 — 업무 복기</title>
 <link rel="stylesheet" href="shared.css">
-<link rel="icon" href="data:,">
 <style>
   /* history.html 전용 */
   .widget-tabs {
@@ -558,6 +557,8 @@
   :root[data-theme="dark"] .h-signal-badge.warn { background: #3d3005; color: #ffd96a; border-color: #5a4b15; }
   :root[data-theme="dark"] .h-signal-badge.info { background: #1e2e42; color: #7fb6e8; border-color: #2d4a6a; }
   .h-summary-actions { display: flex; gap: 6px; margin-left: auto; }
+  body.public-review-widget main.history-main { min-height: 430px; }
+  body.public-review-widget .h-report-card { min-height: 300px; }
 
   @media (max-width: 900px) {
     .h-week-grid { grid-template-columns: repeat(2, 1fr); }
@@ -567,16 +568,13 @@
     .h-week-grid { grid-template-columns: 1fr; }
     main.history-main { padding: 10px; }
   }
-
-  body.public-distribution-widget main.history-main { min-height: 420px; }
-  body.public-distribution-widget .h-card { min-height: 260px; }
 </style>
 </head>
-<body class="public-distribution-widget">
+<body class="public-review-widget">
   <div class="app">
     <header class="app-header">
       <div class="board-title-block">
-        <h1 class="app-title">업무일지 <span class="app-title-sub">프로젝트 시간 분포</span></h1>
+        <h1 class="app-title">업무복기 <span class="app-title-sub">자동 리포트</span></h1>
       </div>
       <div class="header-actions">
         <button type="button" class="header-toggle-btn" id="headerToggleBtn" aria-expanded="true" title="헤더 접기" onclick="toggleHeader()"></button>
@@ -588,6 +586,7 @@
         <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="테마">🌙</button>
       </div>
     </header>
+
     <main class="history-main">
       <div class="h-nav">
         <button class="h-nav-btn" id="hPrevBtn" onclick="hMove(-1)" title="이전" aria-label="이전">◀</button>
@@ -595,11 +594,28 @@
         <button class="h-nav-btn" id="hNextBtn" onclick="hMove(1)" title="다음" aria-label="다음">▶</button>
         <button class="h-this-week-btn" onclick="hGoThis()" id="hThisBtn">📅 이번 주</button>
       </div>
-      <section class="h-card" style="margin-top:12px">
-        <h3 class="h-section-title">프로젝트 시간 분포 <div class="h-donut-toggle" id="hDonutToggle"><button data-scope="week" class="on" onclick="hSetDonutScope('week')">이번 주</button><button data-scope="month" onclick="hSetDonutScope('month')">이번 달</button></div></h3>
-        <div class="h-dist-wrap" id="hDonutWrap"></div>
-      </section>
+
+      <div class="h-summary-chips" id="hSummaryChips"></div>
+
+      <div id="hWeekView">
+        <section class="h-card h-report-card">
+          <div class="h-report-head">
+            <h3 class="h-section-title" style="margin:0">업무 복기 <span class="muted">선택한 주 기준 병목·위험·패턴</span></h3>
+            <div class="h-summary-actions">
+              <button class="btn sm" onclick="hGenerateSummary()">↻ 생성</button>
+              <button class="btn sm" onclick="hCopySummary()">📋 복사</button>
+            </div>
+          </div>
+          <div class="h-auto-summary" id="hAutoSummary"></div>
+        </section>
+      </div>
     </main>
+  </div>
+
+  <div class="h-heat-tooltip" id="hHeatTooltip" hidden></div>
+
+  <div class="h-day-modal-backdrop" id="hDayModalBd" hidden>
+    <div class="h-day-modal" role="dialog" aria-modal="true" id="hDayModal"></div>
   </div>
 
   <div class="modal-backdrop hidden" id="modalBackdrop">
@@ -613,10 +629,10 @@
     </div>
   </div>
 
-<script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
-<script src="code-sync.js?v=3"></script>
-<script src="shared.js?v=5"></script>
-<script>
+  <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
+  <script src="code-sync.js?v=3"></script>
+  <script src="shared.js?v=5"></script>
+  <script>
   'use strict';
 
   // 선택된 주(주 월요일 날짜 문자열). 진입 시 지난 주로 초기화(historyInit에서).
@@ -1370,17 +1386,20 @@
 
   function render() {
     renderNav();
-    renderDonut();
+    renderSummaryChips();
+    renderAutoSummary();
     if (typeof refreshBackupReminder === 'function') refreshBackupReminder();
   }
   window.render = render;
 
   (async function historyInit() {
     state = loadState();
+    autoRolloverWeek();
     initTheme();
     initModalBase();
     initHeaderCollapse();
     subscribeStateChanges(render);
+    // 진입 시 지난 주로 초기화 (요청)
     if (state.weekStart) hWeekStart = previousWeekStart(state.weekStart);
     render();
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
@@ -1389,17 +1408,26 @@
         if (window.applyRemoteState && window.applyRemoteState(remote)) render();
       });
     }
+    maybeAutoSummary();
+
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         const bd = document.getElementById('modalBackdrop');
         if (bd && !bd.classList.contains('hidden')) { hideModal(); return; }
+        const dayBd = document.getElementById('hDayModalBd');
+        if (dayBd && !dayBd.hidden) { closeDayModal(); return; }
+        hideHeatTip();
       }
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         const tag = (document.activeElement && document.activeElement.tagName) || '';
         if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+        const dayBd = document.getElementById('hDayModalBd');
+        if (dayBd && !dayBd.hidden) return;
         hMove(e.key === 'ArrowLeft' ? -1 : 1);
       }
     });
+    const dayBd = document.getElementById('hDayModalBd');
+    if (dayBd) dayBd.addEventListener('click', e => { if (e.target === dayBd) closeDayModal(); });
   })();
   </script>
 </body>

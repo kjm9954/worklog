@@ -584,7 +584,7 @@
         <span id="cloudStatus" class="cloud-status" data-tone="" title="클라우드 동기화 상태">⌂</span>
         <span id="backupReminder" class="backup-reminder" hidden></span>
         <button class="btn sm" onclick="exportJson()" title="JSON 백업">💾 백업</button>
-        <button class="btn sm" onclick="document.getElementById('importInput').click()" title="JSON 복원">📥 복원</button>
+        <button class="btn sm" onclick="openRestoreMenu(render)" title="JSON 복원">📥 복원</button>
         <input type="file" id="importInput" accept="application/json,.json" style="display:none" onchange="importJson(event, render)">
         <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="테마">🌙</button>
       </div>
@@ -637,13 +637,16 @@
     <div class="modal" role="dialog" aria-modal="true">
       <h3 class="modal-title" id="modalTitle">확인</h3>
       <p class="modal-message" id="modalMessage"></p>
-      <div class="modal-actions" id="modalActions"></div>
+      <div class="modal-actions" id="modalActions">
+        <button class="btn" id="modalCancelBtn" onclick="hideModal()">취소</button>
+        <button class="btn primary" id="modalConfirmBtn" onclick="confirmModal()">확인</button>
+      </div>
     </div>
   </div>
 
   <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
-<script src="shared.js?v=1"></script>
-  <script src="code-sync.js?v=1"></script>
+  <script src="code-sync.js?v=3"></script>
+  <script src="shared.js?v=5"></script>
   <script>
   'use strict';
 

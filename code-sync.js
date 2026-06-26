@@ -20,6 +20,7 @@
 const WORKER_URL = 'https://worklog-public.wldnjsdkk.workers.dev';
 const SAVE_DEBOUNCE_MS = 1500;
 const CODE_KEY = 'worklog-public-code-v1';
+const INTRO_SEEN_KEY = 'worklog-public-sync-intro-seen-v1';
 const CODE_RE = /^[A-Za-z0-9_-]{8,64}$/;
 
 let myCode = null;
@@ -47,6 +48,28 @@ function writeMyCode(code) {
 function clearMyCode() {
   try { localStorage.removeItem(CODE_KEY); } catch (e) {}
   myCode = null;
+}
+function safeStorageGet(key) {
+  try { return localStorage.getItem(key); } catch (e) {}
+  try { return sessionStorage.getItem(key); } catch (e) {}
+  return null;
+}
+function safeStorageSet(key, value) {
+  try { localStorage.setItem(key, value); return; } catch (e) {}
+  try { sessionStorage.setItem(key, value); } catch (e) {}
+}
+function markIntroSeen() {
+  safeStorageSet(INTRO_SEEN_KEY, '1');
+}
+function shouldSkipIntroPrompt() {
+  try {
+    const params = new URLSearchParams(window.location.search || '');
+    if (params.get('syncPrompt') === '0') {
+      markIntroSeen();
+      return true;
+    }
+  } catch (e) {}
+  return safeStorageGet(INTRO_SEEN_KEY) === '1';
 }
 function workerOk() {
   return typeof WORKER_URL === 'string' && WORKER_URL && !WORKER_URL.includes('REPLACE-ME');
@@ -204,7 +227,11 @@ function openIntroModal() {
   `);
   document.getElementById('csNew').onclick = () => openCreatedModal(genCode());
   document.getElementById('csEnter').onclick = openEnterModal;
-  document.getElementById('csLater').onclick = () => { closeModal(); cloudStatus('⌂', '', '내 코드 없음 — 아이콘을 눌러 시작'); };
+  document.getElementById('csLater').onclick = () => {
+    markIntroSeen();
+    closeModal();
+    cloudStatus('⌂', '', '내 코드 없음 — 아이콘을 눌러 시작');
+  };
 }
 
 /* 코드 생성 직후(백업 안내) */
@@ -289,6 +316,8 @@ async function initCloudSync(onRemoteApplied) {
   }
   if (!cloudEnabled) {
     cloudStatus('⌂', '', '내 코드 없음 — 눌러서 시작');
+    if (shouldSkipIntroPrompt()) return false;
+    markIntroSeen();
     openIntroModal();
     return false;
   }
