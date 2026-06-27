@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>실수 기록 위젯</title>
+  <script>
+    const params = new URLSearchParams(window.location.search || "");
+    params.set("widget", "check");
+    window.location.replace("notion-retro-widget.html?" + params.toString() + (window.location.hash || ""));
+  </script>
+</head>
+<body>
+  <a href="notion-retro-widget.html?widget=check">실수 기록 위젯 열기</a>
+</body>
+</html>

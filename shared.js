@@ -1182,6 +1182,62 @@ function initModalBase() {
   });
 }
 
+function initWidgetWidthResizer(options) {
+  const cfg = options || {};
+  const target = document.querySelector(cfg.targetSelector || 'main');
+  const handle = document.querySelector(cfg.handleSelector || '[data-widget-width-resizer]');
+  if (!target || !handle) return;
+  const storageKey = cfg.storageKey || ('worklog.widgetWidth.' + ((location.pathname || '').split('/').pop() || 'widget'));
+  const minWidth = cfg.minWidth || 360;
+  const maxWidth = cfg.maxWidth || 1400;
+  const defaultWidth = cfg.defaultWidth || Math.min(maxWidth, 960);
+  const ratio = cfg.ratio || 0.62;
+
+  function availableWidth() {
+    return Math.max(minWidth, Math.min(maxWidth, window.innerWidth - 24));
+  }
+  function applyWidth(value) {
+    const width = Math.max(minWidth, Math.min(Math.round(value || defaultWidth), availableWidth()));
+    target.style.setProperty('--widget-content-w', width + 'px');
+    target.style.setProperty('--widget-ratio-h', Math.max(280, Math.round(width * ratio)) + 'px');
+    return width;
+  }
+
+  let saved = defaultWidth;
+  try {
+    const raw = parseInt(localStorage.getItem(storageKey), 10);
+    if (!isNaN(raw)) saved = raw;
+  } catch (e) {}
+  applyWidth(saved);
+
+  handle.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    handle.setPointerCapture(e.pointerId);
+    document.body.classList.add('resizing-widget');
+    const startX = e.clientX;
+    const startWidth = target.getBoundingClientRect().width || saved;
+    function move(ev) {
+      const next = applyWidth(startWidth + (ev.clientX - startX) * 2);
+      try { localStorage.setItem(storageKey, String(next)); } catch (err) {}
+    }
+    function up(ev) {
+      document.body.classList.remove('resizing-widget');
+      try { handle.releasePointerCapture(ev.pointerId); } catch (err) {}
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+    }
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  });
+
+  window.addEventListener('resize', function() {
+    const current = parseInt(target.style.getPropertyValue('--widget-content-w'), 10) || defaultWidth;
+    applyWidth(current);
+  });
+}
+
 // onclick 속성에서 쓰이므로 window에도 노출
 window.toggleTheme = toggleTheme;
 window.toggleDevice = toggleDevice;
@@ -1193,6 +1249,7 @@ window.openRestoreMenu = openRestoreMenu;
 window.showModal = showModal;
 window.hideModal = hideModal;
 window.confirmModal = confirmModal;
+window.initWidgetWidthResizer = initWidgetWidthResizer;
 
 // 백업 신선도 체크 — 마지막 백업이 7일 초과거나 한 번도 없으면 stale
 function getBackupStaleness() {
