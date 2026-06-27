@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>지난 실수 상세 히스토리</title>
+  <script>
+    const params = new URLSearchParams(window.location.search || "");
+    params.set("widget", "detail-history");
+    window.location.replace("notion-retro-widget.html?" + params.toString() + (window.location.hash || ""));
+  </script>
+</head>
+<body>
+  <a href="notion-retro-widget.html?widget=detail-history">지난 실수 상세 히스토리 열기</a>
+</body>
+</html>

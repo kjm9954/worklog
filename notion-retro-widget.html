@@ -237,18 +237,21 @@
     }
 
     .main {
-      width: min(1280px, calc(100vw - 24px));
+      width: min(var(--retro-widget-width, 1280px), calc(100vw - 24px));
       margin: 0 auto;
       padding: 10px 0 18px;
       flex: 1;
       display: flex;
       flex-direction: column;
       min-height: 0;
+      position: relative;
     }
 
     .page { display: none; }
     .page.active { display: block; }
-    #page-check.active {
+    #page-check.active,
+    #page-history.active,
+    #page-detail-history.active {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -558,6 +561,11 @@
 
     .history-grid { display: grid; gap: 12px; }
     #page-history .history-grid { gap: 10px; }
+    #page-history .history-grid,
+    #page-detail-history .history-grid {
+      flex: 1;
+      min-height: 0;
+    }
     .history-overview {
       display: grid;
       grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.9fr);
@@ -682,6 +690,65 @@
       min-width: 760px;
       min-height: 100%;
       width: 100%;
+    }
+
+    body[data-single-widget="true"] .page-tabs { display: none; }
+    body[data-single-widget="true"] .main {
+      padding-top: 12px;
+    }
+    body[data-single-widget="true"] .check-layout,
+    body[data-single-widget="true"] .record-layout,
+    body[data-single-widget="true"] .history-overview,
+    body[data-single-widget="true"] #page-detail-history .history-grid > .panel {
+      min-height: var(--retro-widget-ratio-height, 680px);
+    }
+    body[data-single-widget="true"] .history-overview {
+      grid-auto-rows: 1fr;
+    }
+    body[data-single-widget="true"] #page-detail-history .history-grid > .panel {
+      display: flex;
+      flex-direction: column;
+    }
+    body[data-single-widget="true"] #page-detail-history .history-grid > .panel .panel-body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+    }
+    .widget-width-resizer {
+      display: none;
+      position: absolute;
+      top: 12px;
+      right: -9px;
+      width: 14px;
+      min-width: 14px;
+      height: calc(100% - 30px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--card);
+      cursor: ew-resize;
+      z-index: 25;
+      padding: 0;
+      box-shadow: var(--shadow-sm);
+    }
+    body[data-single-widget="true"] .widget-width-resizer {
+      display: block;
+    }
+    .widget-width-resizer::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 2px;
+      height: 34px;
+      border-radius: 999px;
+      background: var(--border-strong);
+      transform: translate(-50%, -50%);
+      box-shadow: 4px 0 0 var(--border-strong), -4px 0 0 var(--border-strong);
+    }
+    body.resizing-widget,
+    body.resizing-widget * {
+      cursor: ew-resize !important;
+      user-select: none;
     }
 
     .weekday {
@@ -1508,6 +1575,7 @@
           <button class="page-tab active" data-page="check" type="button">체크</button>
           <button class="page-tab" data-page="trend" type="button">실수기록</button>
           <button class="page-tab" data-page="history" type="button">히스토리</button>
+          <button class="page-tab" data-page="detail-history" type="button">상세히스토리</button>
         </nav>
         <div class="header-actions">
           <span class="sync-badge" id="saveState">로컬 저장됨</span>
@@ -1553,6 +1621,7 @@
     </div>
 
     <main class="main">
+      <button class="widget-width-resizer" id="retroWidgetResizer" type="button" aria-label="위젯 가로폭 조절"></button>
       <section class="page active" id="page-check">
         <div class="check-layout">
           <article class="panel">
@@ -1737,7 +1806,12 @@
             </article>
           </section>
 
-          <article class="panel">
+        </div>
+      </section>
+
+      <section class="page" id="page-detail-history">
+        <div class="history-grid">
+          <article class="panel detail-history-panel">
             <div class="panel-head">
               <div>
                 <h2 class="panel-title">지난 실수 상세 히스토리</h2>
@@ -1784,9 +1858,23 @@
     const storeKey = "retro-calendar-widget-v8";
     const categoryStoreKey = "retro-calendar-widget-categories-v2";
     const historyColumnStoreKey = "retro-calendar-widget-history-columns-v1";
+    const widgetWidthStoreKey = "retro-calendar-widget-width-v1";
     const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
     const offFridayBase = "2026-05-22";
     let activeHistoryFilter = "";
+    const singleWidgetPage = (() => {
+      const params = new URLSearchParams(window.location.search || "");
+      const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
+      const raw = params.get("widget") || params.get("view") || params.get("page") || hashParams.get("widget") || "";
+      const aliases = { check: "check", calendar: "check", record: "trend", trend: "trend", history: "history", detail: "detail-history", "detail-history": "detail-history" };
+      return aliases[raw] || "";
+    })();
+    const widgetPageTitles = {
+      check: "실수 기록 위젯",
+      trend: "실수기록",
+      history: "실수 히스토리",
+      "detail-history": "지난 실수 상세 히스토리"
+    };
     const seedPayload = window.__WORK_RETRO_DATA__ || {};
 
     const fallbackSeedRecords = {
@@ -1826,6 +1914,67 @@
 
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+    function applySingleWidgetMode() {
+      if (!singleWidgetPage) return;
+      document.body.dataset.singleWidget = "true";
+      document.body.dataset.widgetPage = singleWidgetPage;
+      const title = widgetPageTitles[singleWidgetPage] || "업무 복기";
+      document.title = title;
+      const heading = document.querySelector(".app-header h1");
+      if (heading) heading.textContent = title;
+    }
+
+    function applyRetroWidgetWidth(value) {
+      const main = $(".main");
+      if (!main) return 0;
+      const minWidth = 360;
+      const maxWidth = 1280;
+      const available = Math.max(minWidth, Math.min(maxWidth, window.innerWidth - 24));
+      const width = Math.max(minWidth, Math.min(Math.round(value || 980), available));
+      main.style.setProperty("--retro-widget-width", `${width}px`);
+      main.style.setProperty("--retro-widget-ratio-height", `${Math.max(430, Math.round(width * 0.64))}px`);
+      return width;
+    }
+
+    function initRetroWidgetWidthResizer() {
+      const main = $(".main");
+      const handle = $("#retroWidgetResizer");
+      if (!main || !handle) return;
+      let saved = 980;
+      try {
+        const raw = parseInt(localStorage.getItem(widgetWidthStoreKey), 10);
+        if (!Number.isNaN(raw)) saved = raw;
+      } catch {}
+      applyRetroWidgetWidth(saved);
+
+      handle.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        handle.setPointerCapture(event.pointerId);
+        document.body.classList.add("resizing-widget");
+        const startX = event.clientX;
+        const startWidth = main.getBoundingClientRect().width || saved;
+        const resize = (moveEvent) => {
+          const next = applyRetroWidgetWidth(startWidth + (moveEvent.clientX - startX) * 2);
+          try { localStorage.setItem(widgetWidthStoreKey, String(next)); } catch {}
+        };
+        const stop = (upEvent) => {
+          document.body.classList.remove("resizing-widget");
+          try { handle.releasePointerCapture(upEvent.pointerId); } catch {}
+          window.removeEventListener("pointermove", resize);
+          window.removeEventListener("pointerup", stop);
+          window.removeEventListener("pointercancel", stop);
+        };
+        window.addEventListener("pointermove", resize);
+        window.addEventListener("pointerup", stop);
+        window.addEventListener("pointercancel", stop);
+      });
+
+      window.addEventListener("resize", () => {
+        const current = parseInt(main.style.getPropertyValue("--retro-widget-width"), 10) || saved;
+        applyRetroWidgetWidth(current);
+      });
+    }
 
     function cloneSeed() {
       return JSON.parse(JSON.stringify(seedRecords));
@@ -2694,10 +2843,11 @@
       return { category, count };
     }
 
-    function setPage(page) {
-      $$(".page").forEach((item) => item.classList.toggle("active", item.id === `page-${page}`));
-      $$(".page-tab").forEach((item) => item.classList.toggle("active", item.dataset.page === page));
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    function setPage(page, options = {}) {
+      const activePage = singleWidgetPage || page;
+      $$(".page").forEach((item) => item.classList.toggle("active", item.id === `page-${activePage}`));
+      $$(".page-tab").forEach((item) => item.classList.toggle("active", item.dataset.page === activePage));
+      if (!options.skipScroll) window.scrollTo({ top: 0, behavior: options.instant ? "auto" : "smooth" });
       renderAll();
     }
 
@@ -3207,10 +3357,11 @@
       setPage("trend");
     }
 
-    function setPage(page) {
-      $$(".page").forEach((item) => item.classList.toggle("active", item.id === `page-${page}`));
-      $$(".page-tab").forEach((item) => item.classList.toggle("active", item.dataset.page === page));
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    function setPage(page, options = {}) {
+      const activePage = singleWidgetPage || page;
+      $$(".page").forEach((item) => item.classList.toggle("active", item.id === `page-${activePage}`));
+      $$(".page-tab").forEach((item) => item.classList.toggle("active", item.dataset.page === activePage));
+      if (!options.skipScroll) window.scrollTo({ top: 0, behavior: options.instant ? "auto" : "smooth" });
       renderAll();
     }
 
@@ -3393,7 +3544,10 @@
 
     selectedDate = todayKey();
     $("#monthInput").value = selectedDate.slice(0, 7);
-    renderAll();
+    applySingleWidgetMode();
+    initRetroWidgetWidthResizer();
+    if (singleWidgetPage) setPage(singleWidgetPage, { instant: true });
+    else renderAll();
     initCloudSync();
   </script>
 </body>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>업무일지 — 히스토리</title>
-<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="shared.css?v=2">
 <link rel="icon" href="data:,">
 <style>
   /* history.html 전용 */
@@ -568,7 +568,27 @@
     main.history-main { padding: 10px; }
   }
 
-  body.public-weekly-widget main.history-main { min-height: 560px; }
+  body.public-weekly-widget main.history-main {
+    width: min(var(--widget-content-w, 980px), calc(100vw - 24px));
+    min-height: max(560px, var(--widget-ratio-h, 608px));
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body.public-weekly-widget #hWeekView {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  body.public-weekly-widget #hWeekView .h-card {
+    flex: 1;
+  }
+  body.public-weekly-widget .h-week-grid {
+    min-height: clamp(260px, calc(var(--widget-ratio-h, 608px) - 210px), 720px);
+    grid-auto-rows: minmax(118px, 1fr);
+  }
   body.public-weekly-widget .h-summary-chips { grid-template-columns: minmax(180px, 280px); }
 </style>
 </head>
@@ -589,6 +609,7 @@
       </div>
     </header>
     <main class="history-main">
+      <button class="widget-width-resizer" type="button" data-widget-width-resizer aria-label="위젯 가로폭 조절"></button>
       <div class="h-nav">
         <button class="h-nav-btn" id="hPrevBtn" onclick="hMove(-1)" title="이전" aria-label="이전">◀</button>
         <div class="h-nav-range" id="hRangeLabel">-</div>
@@ -620,7 +641,7 @@
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
 <script src="code-sync.js?v=3"></script>
-<script src="shared.js?v=6"></script>
+<script src="shared.js?v=7"></script>
 <script>
   'use strict';
 
@@ -1388,6 +1409,16 @@
     initTheme();
     initModalBase();
     initHeaderCollapse();
+    if (typeof initWidgetWidthResizer === 'function') {
+      initWidgetWidthResizer({
+        targetSelector: 'main.history-main',
+        storageKey: 'worklog.publicWeekly.width',
+        defaultWidth: 980,
+        minWidth: 380,
+        maxWidth: 1400,
+        ratio: 0.62
+      });
+    }
     subscribeStateChanges(render);
     if (state.weekStart) hWeekStart = previousWeekStart(state.weekStart);
     render();
