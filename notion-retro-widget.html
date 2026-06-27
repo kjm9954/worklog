@@ -784,9 +784,10 @@
       text-align: center;
     }
     body[data-single-widget="true"][data-widget-page="check"] .calendar {
+      height: 100%;
       grid-template-rows: 24px;
-      grid-auto-rows: 96px;
-      align-content: start;
+      grid-auto-rows: minmax(96px, 1fr);
+      align-content: stretch;
     }
     body[data-single-widget="true"][data-widget-page="check"] .weekday {
       height: 24px;
