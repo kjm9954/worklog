@@ -741,7 +741,7 @@
       min-height: 0;
       max-height: 100%;
       padding: 0;
-      overflow: hidden;
+      overflow: visible;
     }
     body[data-single-widget="true"][data-widget-page="history"] .widget-width-resizer {
       display: none !important;
@@ -750,7 +750,7 @@
       min-height: var(--retro-widget-ratio-height, 680px);
     }
     body[data-single-widget="true"][data-widget-page="history"] .history-left > .panel .panel-body {
-      min-height: 320px;
+      min-height: 0;
     }
     body[data-single-widget="true"][data-widget-page="history"] #page-history .panel-head {
       padding: 12px 14px;
@@ -774,9 +774,25 @@
     body[data-single-widget="true"][data-widget-page="history"] #page-history,
     body[data-single-widget="true"][data-widget-page="history"] #page-history .history-grid,
     body[data-single-widget="true"][data-widget-page="history"] .history-overview {
-      height: 100%;
+      height: auto;
       min-height: 0;
-      overflow: hidden;
+      overflow: visible;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] .history-overview {
+      align-items: start;
+      align-content: start;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] .history-left {
+      align-content: start;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] .history-left > .panel,
+    body[data-single-widget="true"][data-widget-page="history"] .history-month-panel {
+      height: auto;
+      align-self: start;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] .history-left > .panel .panel-body,
+    body[data-single-widget="true"][data-widget-page="history"] .history-month-panel .panel-body {
+      flex: 0 0 auto;
     }
     body[data-single-widget="true"] #page-detail-history .history-grid > .panel {
       display: flex;
@@ -1385,14 +1401,14 @@
       grid-template-columns: repeat(6, minmax(70px, 1fr));
       gap: 14px;
       width: 100%;
-      min-height: 300px;
+      min-height: 190px;
       align-items: end;
     }
 
     .trend-bar-item {
       min-width: 0;
       display: grid;
-      grid-template-rows: auto minmax(190px, 1fr) auto;
+      grid-template-rows: auto minmax(124px, 1fr) auto;
       gap: 8px;
       text-align: center;
       font-variant-numeric: tabular-nums;
@@ -1406,7 +1422,7 @@
 
     .trend-column {
       position: relative;
-      min-height: 190px;
+      min-height: 124px;
       border-radius: var(--radius);
       background: var(--gray-bg);
       overflow: hidden;
@@ -3584,7 +3600,7 @@
       $("#trendBars").innerHTML = `<div class="trend-chart">${
         rows.map((row) => {
           const missRatio = rowMissRate(row);
-          const safeHeight = Math.max(row.miss ? 4 : 0, missRatio);
+          const safeHeight = Math.max(row.miss ? 8 : 0, missRatio);
           return `
             <div class="trend-bar-item" title="${row.label} 실수율 ${missRatio}% · 실수 ${row.miss}건 · 실수 없음 ${row.ok}건">
               <span class="trend-percent">${missRatio}%</span>
