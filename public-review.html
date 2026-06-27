@@ -557,8 +557,33 @@
   :root[data-theme="dark"] .h-signal-badge.warn { background: #3d3005; color: #ffd96a; border-color: #5a4b15; }
   :root[data-theme="dark"] .h-signal-badge.info { background: #1e2e42; color: #7fb6e8; border-color: #2d4a6a; }
   .h-summary-actions { display: flex; gap: 6px; margin-left: auto; }
-  body.public-review-widget main.history-main { min-height: 430px; }
-  body.public-review-widget .h-report-card { min-height: 300px; }
+  body.public-review-widget main.history-main {
+    min-height: 430px;
+    min-height: max(430px, calc(100vh - 72px));
+  }
+  body.public-review-widget #hWeekView {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  body.public-review-widget .h-report-card {
+    flex: 1;
+    min-height: clamp(300px, calc(100vh - 176px), 820px);
+  }
+  body.public-review-widget .h-auto-summary {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  body.public-review-widget .h-diagnosis-grid {
+    flex: 1;
+    align-items: stretch;
+  }
+  body.public-review-widget .h-diagnosis-card {
+    min-height: clamp(160px, calc((100vh - 250px) * 0.42), 360px);
+  }
 
   @media (max-width: 900px) {
     .h-week-grid { grid-template-columns: repeat(2, 1fr); }
@@ -631,7 +656,7 @@
 
   <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
   <script src="code-sync.js?v=3"></script>
-  <script src="shared.js?v=5"></script>
+  <script src="shared.js?v=6"></script>
   <script>
   'use strict';
 
