@@ -1039,7 +1039,16 @@
     width: 100%;
   }
   body.public-calendar-widget .board-important-section { min-width: 0; }
-  body.public-calendar-widget .board-cal-grid { min-height: 430px; }
+  body.public-calendar-widget .board-cal-panel {
+    min-height: clamp(470px, calc(100vh - 190px), 920px);
+    display: flex;
+    flex-direction: column;
+  }
+  body.public-calendar-widget .board-cal-grid {
+    flex: 1;
+    min-height: 430px;
+    grid-auto-rows: minmax(68px, 1fr);
+  }
   body.public-calendar-widget .routine-date-button {
     min-width: 82px;
     border: 1px solid var(--border);
@@ -1212,7 +1221,7 @@
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
 <script src="code-sync.js?v=3"></script>
-<script src="shared.js?v=5"></script>
+<script src="shared.js?v=6"></script>
 <script>
   'use strict';
 
@@ -1436,6 +1445,7 @@
 
   function boardPopoverScrollHandler(e) {
     if (!boardOpenPopover) return;
+    if (boardOpenPopover.keepOpenOnScroll) return;
     const pop = boardOpenPopover.el;
     if (pop && e && e.target && pop.contains(e.target)) return;
     closeBoardPopover();
@@ -1826,8 +1836,9 @@
       </div>
     `;
     document.body.appendChild(pop);
+    pop.addEventListener('wheel', function(e) { e.stopPropagation(); }, { passive: true });
     positionPopoverBelow(anchorEl, pop, { centered: true });
-    boardOpenPopover = { type: 'routines', el: pop };
+    boardOpenPopover = { type: 'routines', el: pop, keepOpenOnScroll: true };
     attachBoardPopoverGlobalListeners();
   };
 

@@ -1,0 +1,3400 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>업무 복기 위젯</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg: #f7f7f5;
+      --bg-2: #fbfbfa;
+      --card: #ffffff;
+      --text: #37352f;
+      --text-muted: #787774;
+      --text-subtle: #9b9a97;
+      --border: #e9e9e7;
+      --border-strong: #d3d3d0;
+      --red: #e03e3e;
+      --red-bg: #fdecec;
+      --blue: #2383e2;
+      --blue-bg: #e7f1fb;
+      --gray-bg: #f1f1f0;
+      --purple-bg: #ede7f8;
+      --purple-fg: #5a4db5;
+      --orange-bg: #fbf0e4;
+      --orange-fg: #a3500a;
+      --yellow-bg: #f8edc5;
+      --yellow-fg: #8a5a00;
+      --peach-bg: #f6d9c8;
+      --peach-fg: #9a4a1f;
+      --green-bg: #dff3e1;
+      --green-fg: #1f6a2a;
+      --sky-bg: #dff0ff;
+      --sky-fg: #1b69b5;
+      --warn-bg: #fff6da;
+      --warn-fg: #8a5a00;
+      --radius: 6px;
+      --radius-sm: 4px;
+      --shadow-sm: 0 1px 2px rgba(15, 15, 15, 0.04);
+      --shadow-md: 0 8px 28px rgba(15, 15, 15, 0.08);
+    }
+
+    html, body { min-height: 100%; margin: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Pretendard", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Segoe UI", system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      letter-spacing: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button { cursor: pointer; }
+
+    .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .app-header > div:first-child {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    h1 {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .title-sub {
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+
+    .page-tabs {
+      display: flex;
+      width: fit-content;
+      gap: 2px;
+      margin-top: 0;
+      padding: 0;
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .page-tab {
+      position: relative;
+      min-height: 30px;
+      border: 0;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 4px 16px;
+      font-size: 0.8125rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .page-tab:hover {
+      background: var(--bg-2);
+      color: var(--text);
+    }
+
+    .page-tab.active {
+      background: var(--card);
+      color: var(--text);
+      font-weight: 950;
+    }
+
+    .page-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: -1px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--text);
+    }
+
+    .header-actions {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .sync-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      color: var(--text-muted);
+      padding: 0 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .btn {
+      min-height: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      color: var(--text);
+      padding: 5px 11px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: var(--bg); border-color: var(--border-strong); }
+    .btn.primary { background: var(--text); color: var(--card); border-color: var(--text); }
+    .btn.blue { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .btn.danger { background: var(--red); color: #fff; border-color: var(--red); }
+
+    .json-export-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(15, 15, 15, 0.18);
+    }
+
+    .json-export-panel[hidden] { display: none; }
+
+    .json-export-card {
+      width: min(720px, 100%);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow-md);
+    }
+
+    .json-export-head,
+    .json-export-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .json-export-actions {
+      justify-content: flex-end;
+      border-top: 1px solid var(--border);
+      border-bottom: 0;
+    }
+
+    .json-export-body { padding: 12px; }
+
+    .json-export-body textarea {
+      width: 100%;
+      min-height: 260px;
+      box-sizing: border-box;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-2);
+      color: var(--text);
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.75rem;
+      line-height: 1.45;
+    }
+
+    .main {
+      width: min(1280px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 10px 0 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+    #page-check.active {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .page-stack { display: grid; gap: 10px; }
+
+    .check-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 190px;
+      gap: 10px;
+      align-items: start;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .check-layout > .panel {
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav-card,
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 8px 12px;
+    }
+
+    .check-sidebar {
+      position: sticky;
+      top: 58px;
+      display: grid;
+      align-content: start;
+      justify-items: center;
+      justify-self: center;
+      gap: 10px;
+      width: 176px;
+      box-sizing: border-box;
+      padding: 10px;
+    }
+
+    .check-sidebar .month-nav {
+      position: relative;
+      display: block;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .retro-nudge {
+      display: grid;
+      gap: 7px;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ead796;
+      border-radius: var(--radius-sm);
+      background: var(--warn-bg);
+      color: var(--warn-fg);
+      padding: 10px;
+      text-align: left;
+    }
+
+    .retro-nudge[hidden] { display: none; }
+
+    .retro-nudge-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.6875rem;
+      font-weight: 950;
+    }
+
+    .retro-nudge strong {
+      color: var(--text);
+      font-size: 0.8125rem;
+      line-height: 1.35;
+    }
+
+    .retro-nudge p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .retro-nudge .btn {
+      width: 100%;
+      min-height: 28px;
+      background: var(--card);
+    }
+
+    .month-popover-button {
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card);
+      color: var(--text);
+      padding: 6px 9px;
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .month-popover-button:hover { background: var(--bg-2); border-color: var(--border-strong); }
+
+    .month-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 30;
+      width: 248px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow-md);
+      padding: 12px;
+    }
+
+    .month-popover[hidden] { display: none; }
+
+    .month-popover-head {
+      display: grid;
+      grid-template-columns: 28px 1fr 28px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .month-popover-title {
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .month-popover-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .month-popover-weekday,
+    .month-popover-day {
+      display: grid;
+      place-items: center;
+      min-height: 25px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      font-weight: 800;
+    }
+
+    .month-popover-weekday {
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 900;
+    }
+
+    .month-popover-weekday.sun,
+    .month-popover-day.sun { color: var(--red); }
+
+    .month-popover-weekday.sat,
+    .month-popover-day.sat { color: var(--blue); }
+
+    .month-popover-day {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      padding: 0;
+    }
+
+    .month-popover-day:hover { background: var(--bg-2); }
+    .month-popover-day.selected { background: var(--blue); color: #fff; }
+    .month-popover-day.today { border-color: var(--blue); color: var(--blue); background: var(--card); }
+    .month-popover-day.selected.today { color: #fff; }
+    .month-popover-empty { min-height: 25px; }
+
+    .check-sidebar .summary-chips {
+      display: grid;
+      grid-template-columns: 1fr;
+      justify-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .check-sidebar .chip {
+      justify-content: center;
+      width: 100%;
+      max-width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .check-sidebar .progress-chip { min-width: 0; }
+
+    .month-nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card);
+      color: var(--text-muted);
+      font-weight: 900;
+    }
+
+    .icon-btn:hover { background: var(--bg); color: var(--text); }
+
+    .month-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .month-label input,
+    .field input,
+    .field textarea,
+    .search-row input {
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-2);
+      color: var(--text);
+      padding: 7px 9px;
+      outline: none;
+    }
+
+    .month-label input { width: 124px; min-height: 28px; padding: 3px 8px; }
+
+    .month-label input:focus,
+    .field input:focus,
+    .field textarea:focus,
+    .search-row input:focus {
+      border-color: var(--blue);
+      background: var(--card);
+      box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.14);
+    }
+
+    .summary-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .chip {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 7px;
+      min-height: 30px;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-2);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .chip .label { color: var(--text-muted); font-size: 0.75rem; font-weight: 700; }
+    .chip .value { color: var(--text); font-size: 1rem; font-weight: 900; line-height: 1; }
+    .chip.good { background: var(--blue-bg); border-color: #b9d6f3; }
+    .chip.warn { background: var(--red-bg); border-color: #f2c7c7; }
+
+    .progress-chip {
+      min-width: 156px;
+      flex-wrap: wrap;
+    }
+
+    .progress-track {
+      flex: 1 1 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: #e6e6e3;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--blue);
+      transition: width 0.2s ease;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .record-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.75fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .history-grid { display: grid; gap: 12px; }
+    #page-history .history-grid { gap: 10px; }
+    .history-overview {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.9fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .history-left {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 10px;
+      height: 100%;
+    }
+
+    .history-insights {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .insight-card {
+      display: grid;
+      align-content: start;
+      gap: 4px;
+      min-height: 92px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow-sm);
+      padding: 10px 12px;
+    }
+
+    .insight-card.core { grid-column: span 3; }
+    .insight-card.impact-card {
+      grid-column: span 2;
+      min-height: 74px;
+    }
+    .insight-card.impact-card strong { font-size: 1.35rem; }
+    .insight-card.impact-card.zero {
+      border-color: var(--border);
+      background: var(--bg-2);
+    }
+    .insight-card.impact-card.zero strong { color: var(--text-subtle); }
+    .insight-card.impact-card.external.has-count {
+      border-color: #f1bfc0;
+      background: var(--red-bg);
+    }
+    .insight-card.impact-card.external.has-count strong { color: var(--red); }
+
+    .insight-label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 900;
+    }
+
+    .insight-card strong {
+      color: var(--text);
+      font-size: 1.6rem;
+      line-height: 1.1;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .insight-card p { margin: 0; color: var(--text-muted); font-size: 0.75rem; }
+    .insight-card.good strong { color: var(--green-fg); }
+    .insight-card.warn strong { color: var(--red); }
+    .insight-card.neutral strong { color: var(--text-muted); }
+    .history-left > .panel,
+    .history-month-panel {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .history-left > .panel .panel-body,
+    .history-month-panel .panel-body {
+      flex: 1;
+    }
+
+    .history-left > .panel .panel-body {
+      display: flex;
+      align-items: center;
+    }
+
+    .history-left > .panel .trend-bars { width: 100%; }
+
+    .panel { overflow: hidden; }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+
+    .panel-title { margin: 0; font-size: 0.9375rem; font-weight: 900; }
+    .panel-sub { margin: 2px 0 0; color: var(--text-muted); font-size: 0.75rem; }
+    .panel-body { padding: 10px 12px; }
+    #page-check .check-layout > .panel .panel-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .calendar-wrap {
+      flex: 1;
+      min-height: clamp(520px, calc(100vh - 210px), 980px);
+      overflow-x: auto;
+      padding-bottom: 2px;
+      display: flex;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(104px, 1fr));
+      grid-auto-rows: minmax(96px, 1fr);
+      gap: 3px;
+      min-width: 760px;
+      min-height: 100%;
+      width: 100%;
+    }
+
+    .weekday {
+      padding: 1px 0 3px;
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .day {
+      min-height: 96px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card);
+      padding: 7px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, opacity 0.15s, transform 0.15s;
+    }
+
+    .day:hover {
+      background: #fafdff;
+      border-color: var(--blue);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .day.outside { min-height: 96px; background: var(--bg-2); opacity: 0.45; }
+    .day.weekend, .day.no-check, .day.future { min-height: 96px; background: #fafafa; opacity: 0.52; }
+    .day.unchecked:not(.weekend):not(.no-check):not(.future):not(.outside) {
+      border: 1px dashed var(--border-strong);
+      background: var(--card);
+      opacity: 1;
+    }
+    .day.weekend:hover, .day.no-check:hover, .day.future:hover {
+      background: #fafafa;
+      border-color: var(--border);
+      box-shadow: none;
+      transform: none;
+    }
+    .day.future { filter: grayscale(0.15); }
+    .day.today {
+      border: 1.5px solid var(--blue);
+      background: var(--blue-bg);
+      opacity: 1;
+      filter: none;
+      box-shadow: inset 0 0 0 1px rgba(35, 131, 226, 0.1);
+    }
+    .day.today:has(.quick-btn.active) {
+      background: var(--card);
+    }
+    .day.today.weekend,
+    .day.today.no-check,
+    .day.today.future {
+      background: var(--blue-bg);
+      border-color: var(--blue);
+      opacity: 1;
+      filter: none;
+    }
+    .day.today:hover {
+      background: var(--blue-bg);
+      border-color: var(--blue);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .day.today:has(.quick-btn.active):hover {
+      background: var(--card);
+    }
+    .day.selected { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.16); }
+
+    .day-top,
+    .day-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .day-foot { justify-content: flex-start; }
+    .day.today .day-top { justify-content: flex-start; }
+
+    .day-num { font-size: 0.8125rem; font-weight: 900; }
+    .day.today .day-num {
+      color: var(--blue);
+      font-size: 1.12rem;
+      line-height: 1;
+    }
+
+    .today-label {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      padding: 1px 6px;
+      font-size: 0.625rem;
+      font-weight: 900;
+    }
+
+    .quick-check { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+
+    .quick-btn {
+      min-height: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-2);
+      color: var(--text-muted);
+      padding: 0 6px;
+      font-size: 0.75rem;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .day .category-chip {
+      padding: 1px 7px;
+      font-size: 0.625rem;
+    }
+
+    .quick-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1em;
+      font-size: 0.8rem;
+      line-height: 1;
+    }
+
+    .quick-btn.ok.active { background: var(--blue-bg); border-color: #b9d6f3; color: #1b69b5; }
+    .quick-btn.miss.active { background: var(--red-bg); border-color: #f1bfc0; color: #c02b2b; }
+    .day.today .quick-btn { background: var(--card); }
+    .day.today .quick-btn.ok.active { background: var(--card); border-color: var(--blue); color: var(--blue); }
+    .day.today .quick-btn.miss.active { background: var(--red-bg); border-color: #f1bfc0; color: var(--red); }
+    .quick-btn:disabled { cursor: default; opacity: 0.62; }
+
+    .day-top.only-date {
+      justify-content: flex-start;
+      color: var(--text-subtle);
+    }
+
+    .category-chip {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      max-width: 100%;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: var(--gray-bg);
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .category-chip.table, .cat-pill.table { background: var(--purple-bg); color: var(--purple-fg); }
+    .category-chip.map, .cat-pill.map { background: var(--green-bg); color: var(--green-fg); }
+    .category-chip.schedule, .cat-pill.schedule { background: var(--yellow-bg); color: var(--yellow-fg); }
+    .category-chip.friends, .cat-pill.friends { background: var(--peach-bg); color: var(--peach-fg); }
+    .category-chip.comm, .cat-pill.comm { background: var(--sky-bg); color: var(--sky-fg); }
+
+    .record-hero {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-2);
+    }
+
+    .record-hero strong { font-size: 1rem; }
+    .record-hero span { color: var(--text-muted); font-size: 0.8125rem; font-weight: 800; }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .field textarea { min-height: 124px; resize: vertical; }
+    .field textarea.short { min-height: 54px; }
+    .form-grid { display: grid; gap: 14px; }
+
+    .step-heading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .step-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-size: 0.8125rem;
+      font-weight: 900;
+    }
+
+    .step-num {
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--text);
+      color: var(--card);
+      font-size: 0.6875rem;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .step-note {
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 800;
+    }
+
+    .cat-picker {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cat-empty {
+      width: 100%;
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-2);
+      color: var(--text-muted);
+      padding: 10px;
+      font-size: 0.8125rem;
+      font-weight: 800;
+    }
+
+    .cat-manager {
+      display: grid;
+      grid-template-columns: minmax(160px, 1fr) auto;
+      gap: 6px;
+    }
+
+    .cat-option {
+      min-height: 32px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 2px 4px;
+      text-align: center;
+      font-weight: 900;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .filter-chip {
+      min-height: 34px;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 5px 9px;
+      text-align: left;
+      font-weight: 800;
+    }
+
+    .cat-option:hover { border-color: var(--border); background: var(--bg-2); }
+    .cat-option.active { border-color: var(--border-strong); background: var(--card); box-shadow: var(--shadow-sm); }
+
+    .cat-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 0.8125rem;
+      font-weight: 900;
+      color: inherit;
+    }
+
+    .cat-check {
+      min-width: 14px;
+      color: var(--text);
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .cat-check:empty { display: none; }
+
+    .cat-remove {
+      width: 18px;
+      height: 18px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--text-muted);
+      padding: 0;
+      font-size: 0.8125rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .cat-remove:hover { background: var(--card); color: var(--text); }
+
+    .impact-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .impact-option {
+      min-height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--card);
+      color: var(--text);
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .impact-option:hover {
+      background: var(--bg-2);
+      border-color: var(--border-strong);
+      color: var(--text);
+    }
+
+    .impact-option.active {
+      border-color: var(--blue);
+      background: var(--blue-bg);
+      color: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue) inset;
+      font-weight: 950;
+    }
+
+    .impact-option[data-impact="team"].active {
+      border-color: #ead796;
+      background: var(--warn-bg);
+      color: var(--warn-fg);
+      box-shadow: 0 0 0 1px #d9bd66 inset;
+    }
+
+    .impact-option.external.active {
+      border-color: #f1bfc0;
+      background: var(--red-bg);
+      color: var(--red);
+      box-shadow: 0 0 0 1px var(--red) inset;
+    }
+
+    .record-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      margin: 0 -14px -12px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+    }
+
+    .record-actions .btn.primary { flex: 1 1 180px; }
+
+    .save-complete {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-2);
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+    }
+
+    .save-complete.show { display: flex; }
+    .save-complete strong { color: var(--text); font-size: 0.9375rem; }
+
+    .similar-summary {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card);
+    }
+
+    .similar-summary strong { font-size: 0.875rem; }
+    .similar-summary span { color: var(--text-muted); font-size: 0.75rem; font-weight: 800; }
+    .similar-summary-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .similar-summary-tags span {
+      border-radius: 999px;
+      background: var(--bg-2);
+      padding: 2px 7px;
+    }
+
+    .similar-list { display: grid; gap: 8px; }
+
+    .similar-repeat-banner,
+    .similar-action-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+    }
+
+    .similar-repeat-banner {
+      background: var(--blue-bg);
+      color: var(--blue);
+      font-size: 0.875rem;
+      font-weight: 950;
+    }
+
+    .similar-action-card {
+      display: grid;
+      gap: 5px;
+      background: var(--card);
+    }
+
+    .similar-action-card .label {
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 950;
+    }
+
+    .similar-action-card p {
+      margin: 0;
+      color: var(--text);
+      font-size: 0.8125rem;
+      font-weight: 850;
+    }
+
+    .similar-action-card small {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .similar-item,
+    .similar-empty {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-2);
+      padding: 9px 10px;
+      font-size: 0.8125rem;
+    }
+
+    .similar-item {
+      display: grid;
+      gap: 6px;
+    }
+
+    .similar-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .similar-meta strong { color: var(--text); font-size: 0.8125rem; }
+
+    .similar-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: var(--gray-bg);
+      color: var(--text-muted);
+      padding: 2px 7px;
+      font-size: 0.6875rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .similar-item p,
+    .similar-item small,
+    .similar-empty {
+      margin: 0;
+      color: var(--text-muted);
+    }
+
+    .similar-item small { font-size: 0.75rem; }
+
+    .history-detail { color: var(--text); }
+    .history-action {
+      margin-top: 0;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .trend-bars,
+    .month-list { display: grid; gap: 10px; }
+
+    #page-history .trend-bars,
+    #page-history .month-list { gap: 6px; }
+
+    .trend-row {
+      display: grid;
+      grid-template-columns: 72px 1fr 54px 46px;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 5px 6px;
+      font-size: 0.8125rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .trend-row.current {
+      border-color: var(--border);
+      background: var(--bg-2);
+    }
+
+    .trend-ratio {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .trend-legend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 3px;
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 800;
+    }
+
+    .trend-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-swatch {
+      display: inline-block;
+      width: 14px;
+      height: 8px;
+      border-radius: 999px;
+    }
+
+    .legend-swatch.miss { background: var(--red); }
+    .legend-swatch.ok { background: #4a86e8; }
+
+    .stack {
+      height: 18px;
+      border-radius: var(--radius-sm);
+      background: var(--gray-bg);
+      overflow: hidden;
+      display: flex;
+      box-shadow: inset 0 0 0 1px var(--border);
+    }
+
+    .stack .miss,
+    .stack .ok {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .stack .miss { background: var(--red); }
+    .stack .ok { background: #4a86e8; }
+
+    .month-card {
+      display: grid;
+      gap: 5px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card);
+      padding: 9px 10px;
+    }
+
+    .month-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-weight: 900;
+    }
+
+    .month-title { font-size: 0.9375rem; }
+    .month-categories {
+      display: flex;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .month-card p { margin: 0; color: var(--text-muted); font-size: 0.75rem; }
+
+    .month-card-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .month-delta {
+      border-radius: 999px;
+      background: var(--gray-bg);
+      padding: 2px 8px;
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .month-delta.good { background: var(--green-bg); color: var(--green-fg); }
+    .month-delta.warn { background: var(--red-bg); color: var(--red); }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+
+    .filter-chip {
+      min-height: 24px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text-muted);
+      padding: 2px 8px;
+      font-size: 0.6875rem;
+    }
+
+    .filter-chip[data-cat="맵"] { background: var(--green-bg); color: var(--green-fg); }
+    .filter-chip[data-cat="일정"] { background: var(--yellow-bg); color: var(--yellow-fg); }
+    .filter-chip[data-cat="테이블"] { background: var(--purple-bg); color: var(--purple-fg); }
+    .filter-chip[data-cat="프렌즈"] { background: var(--peach-bg); color: var(--peach-fg); }
+    .filter-chip[data-cat="커뮤니케이션"] { background: var(--sky-bg); color: var(--sky-fg); }
+    .filter-chip.map { background: var(--green-bg); color: var(--green-fg); }
+    .filter-chip.schedule { background: var(--yellow-bg); color: var(--yellow-fg); }
+    .filter-chip.table { background: var(--purple-bg); color: var(--purple-fg); }
+    .filter-chip.friends { background: var(--peach-bg); color: var(--peach-fg); }
+    .filter-chip.comm { background: var(--sky-bg); color: var(--sky-fg); }
+    .filter-chip.active { border-color: transparent; box-shadow: var(--shadow-sm); }
+    .filter-chip[data-cat=""] .cat-pill, .filter-chip.active[data-cat=""] { background: var(--text); color: var(--card); }
+    .filter-chip.active[data-cat="맵"] { background: var(--green-bg); color: var(--green-fg); }
+    .filter-chip.active[data-cat="일정"] { background: var(--yellow-bg); color: var(--yellow-fg); }
+    .filter-chip.active[data-cat="테이블"] { background: var(--purple-bg); color: var(--purple-fg); }
+    .filter-chip.active[data-cat="프렌즈"] { background: var(--peach-bg); color: var(--peach-fg); }
+    .filter-chip.active[data-cat="커뮤니케이션"] { background: var(--sky-bg); color: var(--sky-fg); }
+
+    #page-history .panel-head { padding: 7px 12px; }
+    #page-history .panel-body { padding: 9px 12px; }
+    #page-history .panel-sub { margin-top: 1px; font-size: 0.6875rem; }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 0.8125rem;
+      --history-detail-col: 44%;
+      --history-action-col: 26%;
+    }
+
+    .history-col-date { width: 8%; }
+    .history-col-category { width: 12%; }
+    .history-col-impact { width: 10%; }
+    .history-col-detail { width: var(--history-detail-col); }
+    .history-col-action { width: var(--history-action-col); }
+
+    .history-table th,
+    .history-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .history-table th {
+      position: relative;
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 900;
+      user-select: none;
+    }
+
+    .history-table tr:last-child td { border-bottom: 0; }
+    .history-table tbody tr:hover { background: var(--bg-2); }
+    .history-table td { overflow-wrap: anywhere; }
+    .history-table .date { color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .history-table .category-chip { font-size: 0.625rem; padding: 1px 7px; }
+
+    .impact-badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 999px;
+      background: var(--gray-bg);
+      color: var(--text-muted);
+      padding: 1px 7px;
+      font-size: 0.625rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .impact-badge.team {
+      background: var(--blue-bg);
+      color: var(--blue);
+    }
+
+    .impact-badge.external {
+      background: var(--red-bg);
+      color: var(--red);
+      box-shadow: 0 0 0 1px #f1bfc0 inset;
+    }
+
+    .history-action-link {
+      border: 0;
+      background: transparent;
+      color: var(--text-subtle);
+      padding: 0;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .history-action-link:hover {
+      color: var(--text-muted);
+    }
+
+    .history-resize-handle {
+      position: absolute;
+      top: 0;
+      right: -4px;
+      bottom: 0;
+      width: 8px;
+      cursor: col-resize;
+      z-index: 1;
+    }
+
+    .history-resize-handle::after {
+      content: "";
+      position: absolute;
+      top: 7px;
+      bottom: 7px;
+      left: 3px;
+      width: 2px;
+      border-radius: 999px;
+      background: transparent;
+    }
+
+    .history-resize-handle:hover::after,
+    .history-table.resizing .history-resize-handle::after {
+      background: var(--border-strong);
+    }
+
+    .history-table.resizing,
+    .history-table.resizing * {
+      cursor: col-resize;
+      user-select: none;
+    }
+
+    .empty {
+      padding: 18px;
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-2);
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      .app-header { align-items: flex-start; flex-direction: column; }
+      .header-actions { justify-content: flex-start; }
+      .check-layout, .two-col, .record-layout, .history-overview { grid-template-columns: 1fr; }
+      .check-sidebar { position: static; order: -1; justify-self: center; }
+    }
+
+    @media (max-width: 620px) {
+      .main { width: min(100vw - 12px, 1280px); }
+      .page-tabs { width: 100%; overflow-x: auto; }
+      .page-tab { flex: 0 0 auto; }
+      .nav-card { padding: 10px; }
+      .history-insights { grid-template-columns: 1fr; }
+      .insight-card.core,
+      .insight-card.impact-card { grid-column: auto; }
+      .summary-chips { width: 100%; }
+      .chip { flex: 1 1 calc(50% - 8px); }
+      .record-actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div>
+        <h1>업무 복기</h1>
+        <nav class="page-tabs" aria-label="복기 페이지">
+          <button class="page-tab active" data-page="check" type="button">체크</button>
+          <button class="page-tab" data-page="trend" type="button">실수기록</button>
+          <button class="page-tab" data-page="history" type="button">히스토리</button>
+        </nav>
+        <div class="header-actions">
+          <span class="sync-badge" id="saveState">로컬 저장됨</span>
+          <button class="btn" id="exportJson" type="button">JSON 추출</button>
+          <button class="btn" id="importJson" type="button">JSON 불러오기</button>
+          <input id="jsonImportInput" type="file" accept="application/json,.json" hidden>
+          <button class="btn" id="resetDemo" type="button">예시 초기화</button>
+          <button class="btn primary" id="todayButton" type="button">오늘 체크</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="json-export-panel" id="jsonExportPanel" hidden>
+      <div class="json-export-card" role="dialog" aria-modal="true" aria-labelledby="jsonExportTitle">
+        <div class="json-export-head">
+          <strong id="jsonExportTitle">JSON 추출</strong>
+          <button class="icon-btn" id="jsonExportClose" type="button" aria-label="닫기">×</button>
+        </div>
+        <div class="json-export-body">
+          <textarea id="jsonExportText" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="json-export-actions">
+          <button class="btn primary" id="copyJson" type="button">복사</button>
+          <button class="btn" id="downloadJsonAgain" type="button">파일 저장</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="json-export-panel" id="jsonImportPanel" hidden>
+      <div class="json-export-card" role="dialog" aria-modal="true" aria-labelledby="jsonImportTitle">
+        <div class="json-export-head">
+          <strong id="jsonImportTitle">JSON 불러오기</strong>
+          <button class="icon-btn" id="jsonImportClose" type="button" aria-label="닫기">×</button>
+        </div>
+        <div class="json-export-body">
+          <textarea id="jsonImportText" placeholder="JSON을 붙여넣기" spellcheck="false"></textarea>
+        </div>
+        <div class="json-export-actions">
+          <button class="btn" id="chooseJsonFile" type="button">파일 선택</button>
+          <button class="btn primary" id="applyPastedJson" type="button">불러오기</button>
+        </div>
+      </div>
+    </div>
+
+    <main class="main">
+      <section class="page active" id="page-check">
+        <div class="check-layout">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">월간 체크 달력</h2>
+                <p class="panel-sub">실수 없음은 달력에서 바로 저장, 실수 있음은 추이 페이지로 이동해 상세를 남깁니다.</p>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="calendar-wrap">
+                <div class="calendar" id="calendar" aria-label="월간 실수 체크 달력"></div>
+              </div>
+            </div>
+          </article>
+
+          <aside class="nav-card check-sidebar" aria-label="월간 체크 요약">
+            <div class="retro-nudge" id="retroNudge" hidden>
+              <span class="retro-nudge-label"><span aria-hidden="true">💡</span>회고 신호</span>
+              <strong id="retroNudgeTitle">이번 달에 같은 실수가 반복됐어요</strong>
+              <p>잠깐 히스토리 보고 갈까요?</p>
+              <button class="btn" id="nudgeHistoryButton" type="button">히스토리 보기</button>
+            </div>
+            <div class="month-nav">
+              <button class="month-popover-button" id="monthPickerButton" type="button" aria-expanded="false" aria-controls="monthPopover">
+                <span id="monthTitle">2026년 4월</span>
+              </button>
+              <input id="monthInput" type="month" value="2026-04" hidden>
+              <div class="month-popover" id="monthPopover" hidden>
+                <div class="month-popover-head">
+                  <button class="icon-btn" id="prevMonth" type="button" aria-label="이전 달">&lt;</button>
+                  <div class="month-popover-title" id="monthPopoverTitle">2026년 5월</div>
+                  <button class="icon-btn" id="nextMonth" type="button" aria-label="다음 달">&gt;</button>
+                </div>
+                <div class="month-popover-grid" id="monthPopoverGrid" aria-label="월 선택 달력"></div>
+              </div>
+            </div>
+            <div class="summary-chips">
+              <div class="chip warn"><span class="label">실수</span><span class="value" id="missCount">0</span></div>
+              <div class="chip good"><span class="label">실수 없음</span><span class="value" id="okCount">0</span></div>
+              <div class="chip progress-chip"><span class="label">체크일</span><span class="value" id="checkedCount">0</span><span class="progress-track"><span class="progress-fill" id="checkProgress"></span></span></div>
+              <div class="chip"><span class="label">최다 유형</span><span class="value" id="topCategory">-</span></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="page-trend">
+        <div class="record-layout">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">실수 상세 기록</h2>
+                <p class="panel-sub">카테고리를 고르고, 다음에 확인할 것을 한 줄로 남깁니다.</p>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="record-hero">
+                <strong id="recordDateLabel">-</strong>
+                <span>저장하면 히스토리 페이지의 3개월 추이, 월별 히스토리, 상세 히스토리에 바로 반영됩니다.</span>
+              </div>
+
+              <form class="form-grid" id="recordForm">
+                <div class="field">
+                  <span class="step-label"><span class="step-num">1</span>카테고리 선택</span>
+                  <input id="recordCategoryValue" type="hidden">
+                  <div class="cat-picker" id="catButtons"></div>
+                  <div class="cat-manager">
+                    <input id="categoryInput" placeholder="카테고리 추가">
+                    <button class="btn" id="addCategory" type="button">추가</button>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <div class="step-heading">
+                    <span class="step-label"><span class="step-num">2</span>영향 범위</span>
+                    <span class="step-note">기본값 나만, 1번 탭</span>
+                  </div>
+                  <input id="recordImpactValue" type="hidden" value="self">
+                  <div class="impact-picker" id="impactButtons" aria-label="영향 범위">
+                    <button class="impact-option" data-impact="self" type="button">나만</button>
+                    <button class="impact-option" data-impact="team" type="button">팀</button>
+                    <button class="impact-option external" data-impact="external" type="button">외부</button>
+                  </div>
+                </div>
+
+                <label class="field"><span class="step-label"><span class="step-num">3</span>무슨 일이 있었나</span>
+                  <textarea id="recordDetail" placeholder="예: 데이터 수정 후 기존 체크리스트를 확인하지 못함."></textarea>
+                </label>
+
+                <label class="field"><span class="step-label"><span class="step-num">4</span>다음엔 뭘 확인할까</span>
+                  <textarea class="short" id="recordNextAction" placeholder="예: 공유 전 데이터 검수 3단계를 먼저 확인."></textarea>
+                </label>
+
+                <div class="save-complete" id="saveComplete">
+                  <strong>저장 완료</strong>
+                  <span>히스토리 보기 또는 체크로 돌아가기를 선택할 수 있습니다.</span>
+                </div>
+
+                <div class="record-actions">
+                  <button class="btn primary" type="submit">저장</button>
+                  <button class="btn" id="saveAndHistory" type="button">히스토리 보기</button>
+                  <button class="btn" id="backToCheck" type="button">체크로 돌아가기</button>
+                </div>
+              </form>
+            </div>
+          </article>
+
+          <aside class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">최근 같은 실수</h2>
+                <p class="panel-sub">선택한 카테고리 기준 최근 3개를 보여줍니다.</p>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="similar-summary" id="similarSummary"></div>
+              <div class="similar-list" id="similarMistakes"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="page-history">
+        <div class="history-grid">
+          <section class="history-overview">
+            <div class="history-left">
+              <section class="history-insights" aria-label="이번 달 히스토리 핵심 지표">
+                <article class="insight-card core" id="monthChangeCard">
+                  <span class="insight-label">전월 대비 변화</span>
+                  <strong id="monthChangeValue">-</strong>
+                  <p id="monthChangeText">이번 달 실수 흐름을 계산 중입니다.</p>
+                </article>
+                <article class="insight-card core" id="streakCard">
+                  <span class="insight-label">연속 무실수 일수</span>
+                  <strong id="streakValue">-</strong>
+                  <p id="streakText">최근 체크 흐름을 계산 중입니다.</p>
+                </article>
+                <article class="insight-card impact-card" id="impactSelfCard">
+                  <span class="insight-label">나만 영향</span>
+                  <strong id="impactSelfCount">0건</strong>
+                  <p>내 작업 안에서 정리 가능</p>
+                </article>
+                <article class="insight-card impact-card" id="impactTeamCard">
+                  <span class="insight-label">팀 영향</span>
+                  <strong id="impactTeamCount">0건</strong>
+                  <p>팀 공유와 확인 필요</p>
+                </article>
+                <article class="insight-card impact-card external" id="impactExternalCard">
+                  <span class="insight-label">외부 영향</span>
+                  <strong id="impactExternalCount">0건</strong>
+                  <p>외부 노출 전 우선 점검</p>
+                </article>
+              </section>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <h2 class="panel-title">최근 3개월 실수 추이</h2>
+                    <div class="trend-legend" aria-label="실수 추이 범례">
+                      <span><span class="legend-swatch miss" aria-hidden="true"></span>실수</span>
+                      <span><span class="legend-swatch ok" aria-hidden="true"></span>실수 없음</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel-body">
+                  <div class="trend-bars" id="trendBars"></div>
+                </div>
+              </article>
+            </div>
+
+            <article class="panel history-month-panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="panel-title">월별 히스토리 요약</h2>
+                  <p class="panel-sub">월별 반복 카테고리와 흐름을 카드로 봅니다.</p>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="month-list" id="monthHistory"></div>
+              </div>
+            </article>
+          </section>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">지난 실수 상세 히스토리</h2>
+                <p class="panel-sub">키워드와 카테고리 칩으로 빠르게 찾아봅니다.</p>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="search-row">
+                <input id="historySearch" placeholder="검색: 데이터, 공유, 커밋, 체크">
+              </div>
+              <div class="filter-chips" id="historyFilter">
+              </div>
+              <table class="history-table" id="historyTable" aria-label="지난 실수 상세 히스토리">
+                <colgroup>
+                  <col class="history-col-date">
+                  <col class="history-col-category">
+                  <col class="history-col-impact">
+                  <col class="history-col-detail">
+                  <col class="history-col-action">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>날짜</th>
+                    <th>카테고리</th>
+                    <th>영향 범위</th>
+                    <th>상세 내용 <span class="history-resize-handle" id="historyDetailResize" aria-hidden="true"></span></th>
+                    <th>개선 사항</th>
+                  </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://notion-widgets-api.wldnjsdkk.workers.dev";
+    const WIDGET_API_KEY = "";
+    const USE_MOCK = WORKER_URL === "";
+    const CLOUD_SYNC_DEBOUNCE_MS = 1200;
+    const storeKey = "retro-calendar-widget-v8";
+    const categoryStoreKey = "retro-calendar-widget-categories-v2";
+    const historyColumnStoreKey = "retro-calendar-widget-history-columns-v1";
+    const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const offFridayBase = "2026-05-22";
+    let activeHistoryFilter = "";
+    const seedPayload = window.__WORK_RETRO_DATA__ || {};
+
+    const fallbackSeedRecords = {
+      "2026-05-01": { status: "ok", category: "", detail: "", impact: "self" },
+      "2026-05-04": { status: "ok", category: "", detail: "", impact: "self" },
+      "2026-05-05": { status: "ok", category: "", detail: "", impact: "self" },
+      "2026-05-06": { status: "miss", category: "", detail: "프레임 데이터 수정 후 기본 양식 체크를 빠뜨렸다.", impact: "self" },
+      "2026-05-07": { status: "ok", category: "", detail: "", impact: "self" },
+      "2026-05-11": { status: "ok", category: "", detail: "", impact: "self" },
+      "2026-05-12": { status: "", category: "", detail: "", impact: "self" },
+      "2026-04-23": { status: "miss", category: "", detail: "플랫폼 이슈를 기획서에서 히스토리 찾느라 시간이 오래 걸렸다.", impact: "self" },
+      "2026-04-15": { status: "miss", category: "", detail: "텍스트 수정 시 기존 히스토리 체크를 놓쳤다.", impact: "self" },
+      "2026-03-25": { status: "miss", category: "", detail: "미션 튜토리얼 번호 변경 QA/내부 공유 누락.", impact: "self" },
+      "2026-03-20": { status: "miss", category: "", detail: "맵 추가 후 다이아 맵 로딩 이슈 발생. 커밋 전 확인 필요.", impact: "self" }
+    };
+    const seedRecords = seedPayload.records || fallbackSeedRecords;
+    const seedCategories = Array.isArray(seedPayload.categories) ? seedPayload.categories : [];
+    const seedMonth = seedPayload.month || "2026-04";
+    const seedSelectedDate = seedPayload.selectedDate || "2026-04-30";
+
+    const olderHistory = [];
+
+    let records = loadRecords();
+    let managedCategories = loadCategories();
+    let historyColumns = loadHistoryColumns();
+    let selectedDate = seedSelectedDate;
+    let savedNoticeKey = "";
+    let monthPopoverOpen = false;
+    let saveStateTimer = null;
+    let lastExportJson = "";
+    let cloudSyncEnabled = false;
+    let cloudSyncTimer = null;
+    let cloudSyncInFlight = false;
+    let cloudSyncPending = false;
+    let cloudApplyingRemote = false;
+    let cloudLastSignature = "";
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+    function cloneSeed() {
+      return JSON.parse(JSON.stringify(seedRecords));
+    }
+
+    function loadRecords() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(storeKey) || "null");
+        return normalizeRecords(stored && typeof stored === "object" ? stored : cloneSeed());
+      } catch {
+        return normalizeRecords(cloneSeed());
+      }
+    }
+
+    function loadCategories() {
+      try {
+        const storedRaw = localStorage.getItem(categoryStoreKey);
+        if (!storedRaw) return [...seedCategories];
+        const stored = JSON.parse(storedRaw || "[]");
+        if (!Array.isArray(stored)) return [];
+        const seen = new Set();
+        return stored
+          .map((item) => normalizeCategory(String(item).trim()))
+          .filter((item) => {
+            if (!item || seen.has(item)) return false;
+            seen.add(item);
+            return true;
+          });
+      } catch {
+        return [];
+      }
+    }
+
+    function normalizeCategory(category) {
+      if (category === "빌드") return "일정";
+      return category || "";
+    }
+
+    function normalizeRecords(source) {
+      Object.values(source).forEach((record) => {
+        record.status = normalizeStatus(record.status);
+        record.category = normalizeCategory(record.category);
+        record.nextAction = record.nextAction || "";
+        record.impact = normalizeImpact(record.impact);
+      });
+      return source;
+    }
+
+    function scheduleCloudSave(delay = CLOUD_SYNC_DEBOUNCE_MS) {
+      if (!cloudSyncEnabled || cloudApplyingRemote) return;
+      if (cloudSyncTimer) window.clearTimeout(cloudSyncTimer);
+      cloudSyncTimer = window.setTimeout(() => saveCloudStateNow(), delay);
+    }
+
+    function saveCategories() {
+      localStorage.setItem(categoryStoreKey, JSON.stringify(managedCategories));
+      scheduleCloudSave();
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function normalizeHistoryColumns(detailValue, actionValue) {
+      let detail = clamp(Number(detailValue) || 44, 24, 50);
+      let action = clamp(Number(actionValue) || 26, 16, 40);
+      const maxTotal = 70;
+      if (detail + action > maxTotal) {
+        action = clamp(maxTotal - detail, 16, 40);
+        detail = clamp(maxTotal - action, 24, 50);
+      }
+      return { detail, action };
+    }
+
+    function loadHistoryColumns() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(historyColumnStoreKey) || "null");
+        if (!stored || typeof stored !== "object") throw new Error("empty");
+        const detail = Number(stored.detail);
+        const action = Number(stored.action);
+        if (!Number.isFinite(detail) || !Number.isFinite(action)) throw new Error("invalid");
+        return normalizeHistoryColumns(detail, action);
+      } catch {
+        return normalizeHistoryColumns(44, 26);
+      }
+    }
+
+    function saveHistoryColumns() {
+      localStorage.setItem(historyColumnStoreKey, JSON.stringify(historyColumns));
+      scheduleCloudSave();
+    }
+
+    function applyHistoryColumns() {
+      const table = $("#historyTable");
+      if (!table) return;
+      historyColumns = normalizeHistoryColumns(historyColumns.detail, historyColumns.action);
+      table.style.setProperty("--history-detail-col", `${historyColumns.detail}%`);
+      table.style.setProperty("--history-action-col", `${historyColumns.action}%`);
+    }
+
+    function defaultSaveStateText() {
+      return cloudSyncEnabled ? "클라우드 동기화됨" : "로컬 저장됨";
+    }
+
+    function setSaveState(message, resetMessage = defaultSaveStateText()) {
+      const target = $("#saveState");
+      target.textContent = message;
+      if (saveStateTimer) window.clearTimeout(saveStateTimer);
+      if (resetMessage === null) {
+        saveStateTimer = null;
+        return;
+      }
+      saveStateTimer = window.setTimeout(() => {
+        target.textContent = resetMessage;
+        saveStateTimer = null;
+      }, 900);
+    }
+
+    function saveRecords(changedDate = "") {
+      normalizeRecords(records);
+      localStorage.setItem(storeKey, JSON.stringify(records));
+      setSaveState("저장됨");
+      if (changedDate) {
+        saveCloudRecordNow(changedDate);
+      } else {
+        scheduleCloudSave();
+      }
+    }
+
+    function normalizeDateKey(value) {
+      const text = String(value || "").trim();
+      const ymd = text.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})$/);
+      if (ymd) return dateKey(Number(ymd[1]), Number(ymd[2]), Number(ymd[3]));
+
+      const shortYmd = text.match(/^(\d{2})\/(\d{1,2})\/(\d{1,2})$/);
+      if (shortYmd) return dateKey(2000 + Number(shortYmd[1]), Number(shortYmd[2]), Number(shortYmd[3]));
+
+      const md = text.match(/^(\d{1,2})\/(\d{1,2})$/);
+      if (md) {
+        const baseYear = Number(($("#monthInput")?.value || todayKey()).slice(0, 4));
+        const month = Number(md[1]);
+        const year = month >= 9 && baseYear >= 2026 ? baseYear - 1 : baseYear;
+        return dateKey(year, month, Number(md[2]));
+      }
+
+      return "";
+    }
+
+    function normalizeStatus(value) {
+      const text = String(value || "").trim();
+      if (["miss", "실수 있음", "실수", "O", "o", "있음"].includes(text)) return "miss";
+      if (["ok", "실수 없음", "없음", "X", "x"].includes(text)) return "ok";
+      if (["skip", "체크 제외", "쉬는날", "연차", "오전 반차", "오후 반차", "반차", "휴가"].includes(text)) return "skip";
+      return "";
+    }
+
+    function normalizeImpact(value) {
+      const text = String(value || "").trim().toLowerCase();
+      if (["team", "팀"].includes(text)) return "team";
+      if (["external", "외부"].includes(text)) return "external";
+      return "self";
+    }
+
+    function impactLabel(value) {
+      const impact = normalizeImpact(value);
+      if (impact === "team") return "팀";
+      if (impact === "external") return "외부";
+      return "나만";
+    }
+
+    function impactClass(value) {
+      return normalizeImpact(value);
+    }
+
+    function combineText(current, next) {
+      const lines = [current, next]
+        .flatMap((value) => String(value || "").split(/\r?\n/))
+        .map((line) => line.trim())
+        .filter(Boolean);
+      return Array.from(new Set(lines)).join("\n");
+    }
+
+    function mergeRecord(target, key, incoming) {
+      const current = target[key] || { status: "", category: "", detail: "", nextAction: "", impact: "self" };
+      const categories = [current.category, incoming.category]
+        .flatMap(splitCategories)
+        .filter(Boolean);
+      target[key] = {
+        status: current.status === "miss" || incoming.status === "miss" ? "miss" : current.status || incoming.status || "",
+        category: Array.from(new Set(categories)).join(", "),
+        detail: combineText(current.detail, incoming.detail),
+        nextAction: combineText(current.nextAction, incoming.nextAction),
+        impact: normalizeImpact(incoming.impact || current.impact)
+      };
+    }
+
+    function rowValue(row, keys) {
+      const lowerMap = Object.fromEntries(Object.entries(row).map(([key, value]) => [key.toLowerCase(), value]));
+      for (const key of keys) {
+        if (Object.prototype.hasOwnProperty.call(row, key)) return row[key];
+        const lowerKey = key.toLowerCase();
+        if (Object.prototype.hasOwnProperty.call(lowerMap, lowerKey)) return lowerMap[lowerKey];
+      }
+      return "";
+    }
+
+    function recordMapFromArray(rows) {
+      const nextRecords = {};
+      rows.forEach((row) => {
+        if (!row || typeof row !== "object") return;
+        const key = normalizeDateKey(rowValue(row, ["date", "날짜", "key"]));
+        if (!key) return;
+        const incoming = {
+          status: normalizeStatus(rowValue(row, ["status", "상태", "체크"])) || "miss",
+          category: normalizeCategory(String(rowValue(row, ["category", "카테고리", "유형", "구분"]) || "").trim()),
+          detail: String(rowValue(row, ["detail", "상세 내용", "상세내용", "내용"]) || "").trim(),
+          nextAction: String(rowValue(row, ["nextAction", "next_action", "개선 사항", "개선사항", "다음 액션", "다음엔 뭘 확인할까"]) || "").trim(),
+          impact: normalizeImpact(rowValue(row, ["impact", "영향 범위", "영향범위"]))
+        };
+        mergeRecord(nextRecords, key, incoming);
+      });
+      return nextRecords;
+    }
+
+    function normalizeRecordMap(source) {
+      if (Array.isArray(source)) return recordMapFromArray(source);
+      if (!source || typeof source !== "object") throw new Error("records가 비어 있습니다.");
+
+      const nextRecords = {};
+      Object.entries(source).forEach(([date, record]) => {
+        const key = normalizeDateKey(date);
+        if (!key || !record || typeof record !== "object") return;
+        const incoming = {
+          status: normalizeStatus(record.status),
+          category: normalizeCategory(String(record.category || "").trim()),
+          detail: String(record.detail || "").trim(),
+          nextAction: String(record.nextAction || record.next_action || "").trim(),
+          impact: normalizeImpact(record.impact)
+        };
+        mergeRecord(nextRecords, key, incoming);
+      });
+      return normalizeRecords(nextRecords);
+    }
+
+    function splitCategories(value) {
+      return String(value || "")
+        .split(/[,/·\n]+/)
+        .map((category) => normalizeCategory(category.trim()))
+        .filter(Boolean);
+    }
+
+    function categoriesFromRecordMap(source) {
+      const seen = new Set();
+      Object.values(source).forEach((record) => {
+        splitCategories(record.category).forEach((category) => seen.add(category));
+      });
+      return Array.from(seen);
+    }
+
+    function exportPayload() {
+      return {
+        schema: "work-retro-widget",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        selectedDate,
+        month: $("#monthInput").value,
+        categories: [...managedCategories],
+        historyColumns: { ...historyColumns },
+        records: normalizeRecords(JSON.parse(JSON.stringify(records)))
+      };
+    }
+
+    function readUrlSettings() {
+      const searchParams = new URLSearchParams(window.location.search || "");
+      const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
+      return { searchParams, hashParams };
+    }
+
+    function urlValue(...keys) {
+      const { searchParams, hashParams } = readUrlSettings();
+      for (const key of keys) {
+        const value = searchParams.get(key) || hashParams.get(key);
+        if (value) return value;
+      }
+      return "";
+    }
+
+    function getWidgetApiKey() {
+      return WIDGET_API_KEY || urlValue("nk", "key") || "";
+    }
+
+    function getCloudSpace() {
+      return urlValue("space", "ws", "slot") || "work-retro-main";
+    }
+
+    function canUseCloudSync() {
+      return Boolean(!USE_MOCK && WORKER_URL && !WORKER_URL.includes("REPLACE-ME") && getWidgetApiKey());
+    }
+
+    function cloudEndpoint(path) {
+      return `${WORKER_URL.replace(/\/+$/, "")}${path}`;
+    }
+
+    function cloudStateEndpoint() {
+      return `${cloudEndpoint("/work-retro/state")}?space=${encodeURIComponent(getCloudSpace())}`;
+    }
+
+    function cloudHeaders(hasBody = false) {
+      const headers = {};
+      const apiKey = getWidgetApiKey();
+      if (hasBody) headers["Content-Type"] = "application/json";
+      if (apiKey) headers["X-Widget-Key"] = apiKey;
+      return headers;
+    }
+
+    async function loadCloudState() {
+      const response = await fetch(cloudStateEndpoint(), { headers: cloudHeaders() });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      return data && data.state ? data.state : null;
+    }
+
+    async function saveCloudRecordNow(date) {
+      if (!cloudSyncEnabled || cloudApplyingRemote || !date) return;
+      const record = recordFor(date);
+      setSaveState("클라우드 저장 중", null);
+      try {
+        const response = await fetch(cloudEndpoint("/work-retro/record"), {
+          method: "POST",
+          headers: cloudHeaders(true),
+          body: JSON.stringify({
+            space: getCloudSpace(),
+            date,
+            status: record.status || "",
+            category: record.category || "",
+            detail: record.detail || "",
+            nextAction: record.nextAction || "",
+            impact: normalizeImpact(record.impact)
+          })
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        setSaveState("클라우드 저장됨");
+      } catch (error) {
+        console.warn("cloud record save failed", error);
+        setSaveState("클라우드 저장 실패", "로컬 저장됨");
+      }
+    }
+
+    async function saveCloudStateNow() {
+      if (!cloudSyncEnabled || cloudApplyingRemote) return;
+      if (cloudSyncInFlight) {
+        cloudSyncPending = true;
+        return;
+      }
+
+      const payload = exportPayload();
+      const signature = JSON.stringify({
+        records: payload.records,
+        categories: payload.categories,
+        historyColumns: payload.historyColumns,
+        selectedDate: payload.selectedDate,
+        month: payload.month
+      });
+
+      if (signature === cloudLastSignature) return;
+
+      cloudSyncInFlight = true;
+      setSaveState("클라우드 저장 중", null);
+      try {
+        const response = await fetch(cloudStateEndpoint(), {
+          method: "PUT",
+          headers: cloudHeaders(true),
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        cloudLastSignature = signature;
+        setSaveState("클라우드 저장됨");
+      } catch (error) {
+        console.warn("cloud save failed", error);
+        setSaveState("클라우드 저장 실패", "로컬 저장됨");
+      } finally {
+        cloudSyncInFlight = false;
+        if (cloudSyncPending) {
+          cloudSyncPending = false;
+          scheduleCloudSave(0);
+        }
+      }
+    }
+
+    async function initCloudSync() {
+      if (!canUseCloudSync()) {
+        cloudSyncEnabled = false;
+        setSaveState("로컬 저장됨", null);
+        return;
+      }
+
+      cloudSyncEnabled = true;
+      setSaveState("클라우드 불러오는 중", null);
+      try {
+        const remoteState = await loadCloudState();
+        if (remoteState) {
+          cloudApplyingRemote = true;
+          try {
+            applyImportedJson(remoteState, { message: "클라우드 동기화됨", skipCloudSave: true, preserveView: true });
+            const payload = exportPayload();
+            cloudLastSignature = JSON.stringify({
+              records: payload.records,
+              categories: payload.categories,
+              historyColumns: payload.historyColumns,
+              selectedDate: payload.selectedDate,
+              month: payload.month
+            });
+          } finally {
+            cloudApplyingRemote = false;
+          }
+          setSaveState("클라우드 동기화됨", null);
+        } else {
+          setSaveState("클라우드 준비됨");
+          scheduleCloudSave(0);
+        }
+      } catch (error) {
+        cloudSyncEnabled = false;
+        cloudApplyingRemote = false;
+        console.warn("cloud load failed", error);
+        setSaveState("클라우드 연결 실패", "로컬 저장됨");
+      }
+    }
+
+    function tryDownloadJson(text = lastExportJson) {
+      if (!text) return;
+      const blob = new Blob([text], { type: "application/json;charset=utf-8" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.download = `work-retro-${todayKey()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function showJsonExportPanel(text) {
+      $("#jsonExportText").value = text;
+      $("#jsonExportPanel").hidden = false;
+    }
+
+    function hideJsonExportPanel() {
+      $("#jsonExportPanel").hidden = true;
+    }
+
+    function showJsonImportPanel() {
+      $("#jsonImportPanel").hidden = false;
+      $("#jsonImportText").focus();
+    }
+
+    function hideJsonImportPanel() {
+      $("#jsonImportPanel").hidden = true;
+    }
+
+    async function copyExportJson() {
+      const text = $("#jsonExportText").value || lastExportJson;
+      if (!text) return;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          $("#jsonExportText").select();
+          document.execCommand("copy");
+        }
+        setSaveState("JSON 복사됨");
+      } catch {
+        $("#jsonExportText").select();
+        setSaveState("복사할 JSON 선택됨");
+      }
+    }
+
+    function downloadJson() {
+      lastExportJson = JSON.stringify(exportPayload(), null, 2);
+      showJsonExportPanel(lastExportJson);
+      setSaveState("JSON 생성됨");
+    }
+
+    function applyImportedJson(payload, options = {}) {
+      const nextRecords = normalizeRecordMap(payload.records || payload);
+      const payloadCategories = Array.isArray(payload.categories) ? payload.categories : [];
+      const seen = new Set();
+      managedCategories = [...payloadCategories, ...categoriesFromRecordMap(nextRecords)]
+        .map((category) => normalizeCategory(String(category || "").trim()))
+        .filter((category) => {
+          if (!category || seen.has(category)) return false;
+          seen.add(category);
+          return true;
+        });
+
+      records = nextRecords;
+      historyColumns = payload.historyColumns && typeof payload.historyColumns === "object"
+        ? normalizeHistoryColumns(payload.historyColumns.detail || historyColumns.detail, payload.historyColumns.action || historyColumns.action)
+        : historyColumns;
+      if (!options.preserveView) {
+        selectedDate = normalizeDateKey(payload.selectedDate) || Object.keys(records).sort().pop() || todayKey();
+        $("#monthInput").value = payload.month || selectedDate.slice(0, 7);
+      }
+      activeHistoryFilter = "";
+      savedNoticeKey = "";
+      localStorage.setItem(storeKey, JSON.stringify(records));
+      saveCategories();
+      saveHistoryColumns();
+      renderAll();
+      if (!options.skipCloudSave) scheduleCloudSave(0);
+      setSaveState(options.message || "JSON 반영됨");
+    }
+
+    function cleanupImportedJsonText(raw) {
+      let text = String(raw || "").replace(/^\uFEFF/, "").trim();
+      const fenced = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+      if (fenced) text = fenced[1].trim();
+      return text;
+    }
+
+    function unwrapImportedJson(parsed) {
+      let out = parsed;
+      for (let i = 0; i < 4; i += 1) {
+        if (typeof out === "string") {
+          out = JSON.parse(cleanupImportedJsonText(out));
+          continue;
+        }
+        if (!out || typeof out !== "object") break;
+        if (out.state && typeof out.state === "object" && !out.records) {
+          out = out.state;
+          continue;
+        }
+        const storageKeys = [storeKey, "retro-calendar-widget-v8", "work-retro-state"];
+        const storageKey = storageKeys.find((key) => typeof out[key] === "string");
+        if (storageKey) {
+          out = JSON.parse(cleanupImportedJsonText(out[storageKey]));
+          continue;
+        }
+        if (typeof out.value === "string") {
+          out = JSON.parse(cleanupImportedJsonText(out.value));
+          continue;
+        }
+        break;
+      }
+      return out;
+    }
+
+    function parseImportedJsonText(raw) {
+      const text = cleanupImportedJsonText(raw);
+      if (!text) throw new Error("비어 있는 JSON입니다.");
+      return unwrapImportedJson(JSON.parse(text));
+    }
+
+    async function importJsonFromFile(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        applyImportedJson(parseImportedJsonText(await file.text()));
+        hideJsonImportPanel();
+      } catch (error) {
+        window.alert(`JSON을 불러오지 못했습니다.\n${error.message}`);
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    function importPastedJson() {
+      const text = $("#jsonImportText").value.trim();
+      if (!text) {
+        setSaveState("붙여넣을 JSON 없음");
+        return;
+      }
+      try {
+        applyImportedJson(parseImportedJsonText(text));
+        $("#jsonImportText").value = "";
+        hideJsonImportPanel();
+      } catch (error) {
+        window.alert(`JSON을 불러오지 못했습니다.\n${error.message}`);
+      }
+    }
+
+    function pad(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function dateKey(year, month, day) {
+      return `${year}-${pad(month)}-${pad(day)}`;
+    }
+
+    function keyToUtc(key) {
+      const [year, month, day] = key.split("-").map(Number);
+      return Date.UTC(year, month - 1, day);
+    }
+
+    function todayKey() {
+      const today = new Date();
+      return dateKey(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    }
+
+    function displayDate(key) {
+      const [year, month, day] = key.split("-");
+      return `${year.slice(2)}/${month}/${day}`;
+    }
+
+    function fullDateLabel(key) {
+      const [year, month, day] = key.split("-").map(Number);
+      const date = new Date(year, month - 1, day);
+      return `${year}.${pad(month)}.${pad(day)} ${["일", "월", "화", "수", "목", "금", "토"][date.getDay()]}요일`;
+    }
+
+    function monthTitle(monthValue) {
+      const [year, month] = monthValue.split("-");
+      return `${year}년 ${Number(month)}월`;
+    }
+
+    function monthShort(monthValue) {
+      const [year, month] = monthValue.split("-");
+      return `${year.slice(2)}.${pad(month)}`;
+    }
+
+    function addMonths(monthValue, delta) {
+      const [year, month] = monthValue.split("-").map(Number);
+      const date = new Date(year, month - 1 + delta, 1);
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}`;
+    }
+
+    function monthDays(monthValue) {
+      const [year, month] = monthValue.split("-").map(Number);
+      const first = new Date(year, month - 1, 1);
+      const last = new Date(year, month, 0);
+      const days = [];
+      for (let i = 0; i < first.getDay(); i += 1) days.push(null);
+      for (let day = 1; day <= last.getDate(); day += 1) {
+        days.push({ year, month, day, key: dateKey(year, month, day), dow: new Date(year, month - 1, day).getDay() });
+      }
+      while (days.length % 7 !== 0) days.push(null);
+      return days;
+    }
+
+    function closeMonthPopover() {
+      monthPopoverOpen = false;
+      $("#monthPopover").hidden = true;
+      $("#monthPickerButton").setAttribute("aria-expanded", "false");
+    }
+
+    function openMonthPopover() {
+      monthPopoverOpen = true;
+      renderMonthPopover();
+      $("#monthPopover").hidden = false;
+      $("#monthPickerButton").setAttribute("aria-expanded", "true");
+    }
+
+    function toggleMonthPopover() {
+      if (monthPopoverOpen) closeMonthPopover();
+      else openMonthPopover();
+    }
+
+    function renderMonthPopover() {
+      const monthValue = $("#monthInput").value;
+      const today = todayKey();
+      $("#monthPopoverTitle").textContent = monthTitle(monthValue);
+
+      const chunks = ["일", "월", "화", "수", "목", "금", "토"].map((day, index) => {
+        const tone = index === 0 ? "sun" : index === 6 ? "sat" : "";
+        return `<span class="month-popover-weekday ${tone}">${day}</span>`;
+      });
+
+      monthDays(monthValue).forEach((day) => {
+        if (!day) {
+          chunks.push(`<span class="month-popover-empty"></span>`);
+          return;
+        }
+        const tone = day.dow === 0 ? "sun" : day.dow === 6 ? "sat" : "";
+        const selected = day.key === selectedDate ? "selected" : "";
+        const isToday = day.key === today ? "today" : "";
+        chunks.push(`<button class="month-popover-day ${tone} ${selected} ${isToday}" data-date="${day.key}" type="button">${day.day}</button>`);
+      });
+
+      $("#monthPopoverGrid").innerHTML = chunks.join("");
+    }
+
+    function isOffFriday(key, dow) {
+      if (dow !== 5) return false;
+      const diffDays = Math.round((keyToUtc(key) - keyToUtc(offFridayBase)) / 86400000);
+      return diffDays % 14 === 0;
+    }
+
+    function dayState(day) {
+      if (!day) return { closed: true, reason: "빈 날짜" };
+      if (day.dow === 0 || day.dow === 6) return { closed: true, reason: "주말" };
+      if (isOffFriday(day.key, day.dow)) return { closed: true, reason: "놀금" };
+      if (records[day.key]?.status === "skip") return { closed: true, reason: records[day.key]?.detail || "체크 제외" };
+      if (keyToUtc(day.key) > keyToUtc(todayKey())) return { closed: true, reason: "예정" };
+      return { closed: false, reason: "" };
+    }
+
+    function recordFor(key) {
+      if (!records[key]) records[key] = { status: "", category: "", detail: "", nextAction: "", impact: "self" };
+      records[key].impact = normalizeImpact(records[key].impact);
+      return records[key];
+    }
+
+    const categoryTones = ["map", "schedule", "table", "friends", "comm"];
+
+    function categoryClass(category) {
+      const normalized = normalizeCategory(category);
+      if (normalized === "테이블") return "table";
+      if (normalized === "맵") return "map";
+      if (normalized === "일정") return "schedule";
+      if (normalized === "프렌즈") return "friends";
+      if (normalized === "커뮤니케이션") return "comm";
+      if (!normalized || normalized === "미입력") return "";
+      const managedIndex = managedCategories.indexOf(normalized);
+      if (managedIndex >= 0) return categoryTones[managedIndex % categoryTones.length];
+      const hash = Array.from(normalized).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+      return categoryTones[hash % categoryTones.length];
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function normalizeManagedCategories() {
+      const seen = new Set();
+      managedCategories = managedCategories
+        .map((category) => normalizeCategory(String(category).trim()))
+        .filter((category) => {
+          if (!category || seen.has(category)) return false;
+          seen.add(category);
+          return true;
+        });
+    }
+
+    function setSelectedCategory(category) {
+      $("#recordCategoryValue").value = normalizeCategory(category);
+      hideSaveComplete();
+      renderCategoryControls();
+      renderSimilarMistakes($("#recordCategoryValue").value);
+    }
+
+    function setSelectedImpact(impact) {
+      $("#recordImpactValue").value = normalizeImpact(impact);
+      hideSaveComplete();
+      renderImpactControls();
+    }
+
+    function renderImpactControls(selectedImpact = $("#recordImpactValue")?.value || "self") {
+      const selected = normalizeImpact(selectedImpact);
+      $$(".impact-option").forEach((button) => {
+        button.classList.toggle("active", normalizeImpact(button.dataset.impact) === selected);
+      });
+    }
+
+    function addManagedCategory() {
+      const input = $("#categoryInput");
+      const category = normalizeCategory(input.value.trim());
+      if (!category) return;
+      normalizeManagedCategories();
+      if (!managedCategories.includes(category)) {
+        managedCategories.push(category);
+        saveCategories();
+      }
+      input.value = "";
+      setSelectedCategory(category);
+      renderHistoryFilters();
+    }
+
+    function removeManagedCategory(category) {
+      const normalized = normalizeCategory(category);
+      managedCategories = managedCategories.filter((item) => item !== normalized);
+      saveCategories();
+      if ($("#recordCategoryValue").value === normalized) {
+        $("#recordCategoryValue").value = "";
+      }
+      if (activeHistoryFilter === normalized) {
+        activeHistoryFilter = "";
+      }
+      hideSaveComplete();
+      renderCategoryControls();
+      renderSimilarMistakes($("#recordCategoryValue").value);
+      renderHistoryFilters();
+      renderHistory();
+    }
+
+    function renderCategoryControls(selectedCategory = $("#recordCategoryValue")?.value || "") {
+      normalizeManagedCategories();
+      const selected = normalizeCategory(selectedCategory);
+      const container = $("#catButtons");
+
+      if (!managedCategories.length) {
+        container.innerHTML = `<div class="cat-empty">아직 카테고리가 없습니다. 아래에서 직접 추가해 주세요.</div>`;
+        return;
+      }
+
+      container.innerHTML = managedCategories.map((category) => {
+        const safeCategory = escapeHtml(category);
+        const active = category === selected;
+        return `
+          <span class="cat-option ${active ? "active" : ""}" data-cat="${safeCategory}" role="button" tabindex="0">
+            <span class="cat-check">${active ? "✓" : ""}</span>
+            <span class="cat-pill ${categoryClass(category)}">${safeCategory}</span>
+            <button class="cat-remove" data-cat="${safeCategory}" type="button" aria-label="${safeCategory} 삭제">×</button>
+          </span>
+        `;
+      }).join("");
+    }
+
+    function renderHistoryFilters() {
+      normalizeManagedCategories();
+      if (activeHistoryFilter && !managedCategories.includes(activeHistoryFilter)) {
+        activeHistoryFilter = "";
+      }
+
+      $("#historyFilter").innerHTML = [
+        `<button class="filter-chip ${activeHistoryFilter ? "" : "active"}" data-cat="" type="button">전체</button>`,
+        ...managedCategories.map((category) => `
+          <button class="filter-chip ${categoryClass(category)} ${activeHistoryFilter === category ? "active" : ""}" data-cat="${escapeHtml(category)}" type="button">${escapeHtml(category)}</button>
+        `)
+      ].join("");
+    }
+
+    function categoryLabel(category) {
+      const normalized = normalizeCategory(category);
+      return normalized || "분류 없음";
+    }
+
+    function legacyCategoryMatch(rowCategory, filterCategory) {
+      return splitCategories(rowCategory).includes(normalizeCategory(filterCategory));
+    }
+
+    function statusLabel(status) {
+      if (status === "ok") return "실수 없음";
+      if (status === "miss") return "실수 있음";
+      if (status === "skip") return "체크 제외";
+      return "미입력";
+    }
+
+    function statsForMonth(monthValue) {
+      const days = monthDays(monthValue).filter(Boolean);
+      const requiredDays = days.filter((day) => !dayState(day).closed);
+      const checked = requiredDays.filter((day) => recordFor(day.key).status);
+      const miss = checked.filter((day) => recordFor(day.key).status === "miss");
+      const ok = checked.filter((day) => recordFor(day.key).status === "ok");
+      const categoryCounts = {};
+      miss.forEach((day) => {
+        splitCategories(recordFor(day.key).category).forEach((category) => {
+          categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+        });
+      });
+      const categories = Object.entries(categoryCounts)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([category]) => category);
+      const top = categories[0] || "-";
+      return { checked: checked.length, miss: miss.length, ok: ok.length, top, categories, categoryCounts, required: requiredDays.length };
+    }
+
+    function nudgeForMonth(monthValue) {
+      const entries = Object.entries(statsForMonth(monthValue).categoryCounts || {})
+        .filter(([, count]) => count >= 2)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+      if (!entries.length) return null;
+      const [category, count] = entries[0];
+      return { category, count };
+    }
+
+    function setPage(page) {
+      $$(".page").forEach((item) => item.classList.toggle("active", item.id === `page-${page}`));
+      $$(".page-tab").forEach((item) => item.classList.toggle("active", item.dataset.page === page));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      renderAll();
+    }
+
+    function setMonth(monthValue) {
+      $("#monthInput").value = monthValue;
+      const [year, month] = monthValue.split("-").map(Number);
+      selectedDate = dateKey(year, month, 1);
+      renderAll();
+      if (monthPopoverOpen) renderMonthPopover();
+    }
+
+    function markStatus(key, status) {
+      const day = monthDays(key.slice(0, 7)).filter(Boolean).find((item) => item.key === key);
+      if (dayState(day).closed) return;
+      const record = recordFor(key);
+      record.status = record.status === status ? "" : status;
+      selectedDate = key;
+      saveRecords(key);
+      if (status === "miss" && record.status === "miss") {
+        setPage("trend");
+      } else {
+        renderAll();
+      }
+    }
+
+    function renderCalendar() {
+      const monthValue = $("#monthInput").value;
+      const today = todayKey();
+      const chunks = weekdays.map((day) => `<div class="weekday">${day}</div>`);
+
+      monthDays(monthValue).forEach((day) => {
+        if (!day) {
+          chunks.push(`<div class="day outside" aria-hidden="true"></div>`);
+          return;
+        }
+        const record = recordFor(day.key);
+        const state = dayState(day);
+        const category = categoryLabel(record.category);
+        const hoverText = day.key === today ? "오늘 날짜" : state.reason || `${day.day}일 체크`;
+        const classes = [
+          day.dow === 0 || day.dow === 6 ? "weekend" : "",
+          isOffFriday(day.key, day.dow) ? "no-check" : "",
+          keyToUtc(day.key) > keyToUtc(today) ? "future" : "",
+          record.status ? "checked" : "unchecked",
+          day.key === today ? "today" : "",
+          day.key === selectedDate ? "selected" : ""
+        ].join(" ");
+
+        chunks.push(`
+          <div class="day ${classes}" data-date="${day.key}" title="${hoverText}">
+            ${state.closed ? `
+              <div class="day-top only-date">
+                <span class="day-num">${day.day}</span>
+                ${day.key === today ? `<span class="today-label">오늘</span>` : ""}
+              </div>
+            ` : `
+              <div class="day-top">
+                <span class="day-num">${day.day}</span>
+                ${day.key === today ? `<span class="today-label">오늘</span>` : ""}
+              </div>
+              <div class="quick-check" role="group" aria-label="${day.day}일 체크">
+                <button class="quick-btn ok ${record.status === "ok" ? "active" : ""}" data-status="ok" data-date="${day.key}" type="button"><span class="quick-icon" aria-hidden="true">✓</span><span>없음</span></button>
+                <button class="quick-btn miss ${record.status === "miss" ? "active" : ""}" data-status="miss" data-date="${day.key}" type="button"><span class="quick-icon" aria-hidden="true">⚠</span><span>실수</span></button>
+              </div>
+              <div class="day-foot">
+                <span class="category-chip ${categoryClass(record.category)}">${escapeHtml(category)}</span>
+              </div>
+            `}
+          </div>
+        `);
+      });
+
+      $("#calendar").innerHTML = chunks.join("");
+      $$(".day[data-date]").forEach((cell) => {
+        cell.addEventListener("click", (event) => {
+          const button = event.target.closest(".quick-btn");
+          if (button) {
+            markStatus(button.dataset.date, button.dataset.status);
+            return;
+          }
+          selectedDate = cell.dataset.date;
+          renderAll();
+        });
+      });
+    }
+
+    function renderSummary() {
+      const monthValue = $("#monthInput").value;
+      const stats = statsForMonth(monthValue);
+      const nudge = nudgeForMonth(monthValue);
+      $("#monthTitle").textContent = monthTitle(monthValue);
+      $("#missCount").textContent = stats.miss;
+      $("#okCount").textContent = stats.ok;
+      $("#checkedCount").textContent = `${stats.checked}/${stats.required}`;
+      $("#checkProgress").style.width = `${stats.required ? Math.round((stats.checked / stats.required) * 100) : 0}%`;
+      $("#topCategory").textContent = stats.top;
+      $("#retroNudge").hidden = !nudge;
+      if (nudge) {
+        $("#retroNudgeTitle").textContent = `이번 달에 '${nudge.category}' 실수 ${nudge.count}번`;
+      }
+      if (monthPopoverOpen) renderMonthPopover();
+    }
+
+    function olderDateToKey(value) {
+      const [year, month, day] = value.split("/").map(Number);
+      return dateKey(2000 + year, month, day);
+    }
+
+    function displayMonthDay(value) {
+      const parts = value.split("/");
+      return parts.length === 3 ? `${parts[1]}/${parts[2]}` : displayDate(value).slice(3);
+    }
+
+    function topKeyword(rows) {
+      const stopWords = new Set(["다음", "확인", "필요", "누락", "실수", "기존", "체크", "수정", "발생", "시간"]);
+      const counts = {};
+
+      rows.forEach((row) => {
+        `${row.detail || ""} ${row.nextAction || ""}`
+          .replace(/[^\w가-힣\s]/g, " ")
+          .split(/\s+/)
+          .map((word) => word.trim())
+          .filter((word) => word.length > 1 && !stopWords.has(word))
+          .forEach((word) => {
+            counts[word] = (counts[word] || 0) + 1;
+          });
+      });
+
+      return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
+    }
+
+    function oneLine(text) {
+      return (text || "상세 내용 작성 필요").split(/\r?\n/).map((line) => line.trim()).find(Boolean) || "상세 내용 작성 필요";
+    }
+
+    function similarMistakeRows(category) {
+      const normalizedCategory = normalizeCategory(category);
+      if (!normalizedCategory) return [];
+
+      const currentRows = Object.entries(records)
+        .filter(([date, record]) => {
+          return date !== selectedDate
+            && record.status === "miss"
+            && normalizeCategory(record.category) === normalizedCategory;
+        })
+        .sort((a, b) => b[0].localeCompare(a[0]))
+        .map(([date, record]) => ({
+          key: date,
+          date: displayDate(date),
+          detail: record.detail,
+          nextAction: record.nextAction || "",
+          impact: normalizeImpact(record.impact)
+        }));
+
+      const olderRows = olderHistory
+        .filter((row) => normalizeCategory(row.category) === normalizedCategory)
+        .map((row) => ({
+          key: olderDateToKey(row.date),
+          date: row.date,
+          detail: row.detail,
+          nextAction: row.nextAction || "",
+          impact: normalizeImpact(row.impact)
+        }));
+
+      return [...currentRows, ...olderRows].slice(0, 3);
+    }
+
+    function allSimilarMistakeRows(category) {
+      const normalizedCategory = normalizeCategory(category);
+      if (!normalizedCategory) return [];
+
+      const currentRows = Object.entries(records)
+        .filter(([date, record]) => {
+          return date !== selectedDate
+            && record.status === "miss"
+            && normalizeCategory(record.category) === normalizedCategory;
+        })
+        .map(([date, record]) => ({
+          key: date,
+          date: displayDate(date),
+          detail: record.detail,
+          nextAction: record.nextAction || "",
+          impact: normalizeImpact(record.impact)
+        }));
+
+      const olderRows = olderHistory
+        .filter((row) => normalizeCategory(row.category) === normalizedCategory)
+        .map((row) => ({
+          key: olderDateToKey(row.date),
+          date: row.date,
+          detail: row.detail,
+          nextAction: row.nextAction || "",
+          impact: normalizeImpact(row.impact)
+        }));
+
+      return [...currentRows, ...olderRows].sort((a, b) => b.key.localeCompare(a.key));
+    }
+
+    function renderSimilarMistakes(category) {
+      const normalizedCategory = normalizeCategory(category);
+      const container = $("#similarMistakes");
+      const summary = $("#similarSummary");
+
+      if (!normalizedCategory) {
+        summary.innerHTML = `
+          <strong>카테고리를 먼저 선택해주세요</strong>
+          <span>선택하면 최근 패턴이 자동으로 정리됩니다.</span>
+        `;
+        container.innerHTML = `<div class="similar-empty">카테고리를 선택하면 최근 같은 실수가 여기에 표시됩니다.</div>`;
+        return;
+      }
+
+      const allRows = allSimilarMistakeRows(normalizedCategory);
+      const rows = allRows.slice(0, 3);
+      const repeatCount = allRows.length + 1;
+      const previousAction = allRows.find((row) => String(row.nextAction || "").trim());
+      const selected = keyToUtc(selectedDate);
+      const recentCount = allRows.filter((row) => {
+        const diff = (selected - keyToUtc(row.key)) / 86400000;
+        return diff >= 0 && diff <= 30;
+      }).length;
+      const lastDate = rows[0] ? displayMonthDay(rows[0].date) : "-";
+      const keyword = topKeyword(allRows);
+
+      summary.innerHTML = `
+        <strong>${escapeHtml(normalizedCategory)} 패턴</strong>
+        <div class="similar-summary-tags">
+          <span>전체 ${allRows.length}건</span>
+          <span>최근 30일 ${recentCount}건</span>
+          <span>마지막 ${escapeHtml(lastDate)}</span>
+          <span>키워드 ${escapeHtml(keyword)}</span>
+        </div>
+      `;
+
+      const chunks = [];
+      if (repeatCount > 1) {
+        chunks.push(`<div class="similar-repeat-banner">이번이 ${repeatCount}번째 같은 유형</div>`);
+      }
+      if (previousAction) {
+        chunks.push(`
+          <article class="similar-action-card">
+            <span class="label">지난번엔 이렇게 하기로 했어요</span>
+            <p>${escapeHtml(oneLine(previousAction.nextAction))}</p>
+            <small>${escapeHtml(previousAction.date)} 작성</small>
+          </article>
+        `);
+      }
+      if (rows.length) {
+        chunks.push(rows.map((row) => `
+          <article class="similar-item">
+            <div class="similar-meta">
+              <strong>${escapeHtml(row.date)}</strong>
+              <span class="impact-badge ${impactClass(row.impact)}">${escapeHtml(impactLabel(row.impact))}</span>
+            </div>
+            <p>${escapeHtml(oneLine(row.detail))}</p>
+            ${row.nextAction ? `<small>다음 확인: ${escapeHtml(oneLine(row.nextAction))}</small>` : ""}
+          </article>
+        `).join(""));
+      } else {
+        chunks.push(`<div class="similar-empty">최근 같은 카테고리 실수가 없습니다. 이번 기록이 첫 기준점이 됩니다.</div>`);
+      }
+      container.innerHTML = chunks.join("");
+    }
+
+    function renderRecordPage() {
+      const record = recordFor(selectedDate);
+      const storedCategory = normalizeCategory(record.category);
+      const selectedCategory = managedCategories.includes(storedCategory) ? storedCategory : "";
+      $("#recordDateLabel").textContent = fullDateLabel(selectedDate);
+      $("#recordCategoryValue").value = selectedCategory;
+      $("#recordImpactValue").value = normalizeImpact(record.impact);
+      $("#recordDetail").value = record.detail || "";
+      $("#recordNextAction").value = record.nextAction || "";
+      renderCategoryControls(selectedCategory);
+      renderImpactControls(record.impact);
+      renderSimilarMistakes(selectedCategory);
+      $("#saveComplete").classList.toggle("show", savedNoticeKey === selectedDate);
+    }
+
+    function hideSaveComplete() {
+      savedNoticeKey = "";
+      $("#saveComplete").classList.remove("show");
+    }
+
+    function saveRecordDetail() {
+      const record = recordFor(selectedDate);
+      record.status = "miss";
+      record.category = $("#recordCategoryValue").value;
+      record.detail = $("#recordDetail").value.trim();
+      record.nextAction = $("#recordNextAction").value.trim();
+      record.impact = normalizeImpact($("#recordImpactValue").value);
+      savedNoticeKey = selectedDate;
+      saveRecords(selectedDate);
+      renderAll();
+    }
+
+    function categoriesForMonth(monthValue, fallback = []) {
+      const categories = statsForMonth(monthValue).categories || [];
+      return categories.length ? categories : fallback.filter((category) => category && category !== "-");
+    }
+
+    function trendRows() {
+      const current = $("#monthInput").value;
+      const currentStats = statsForMonth(current);
+      const prevMonth = addMonths(current, -1);
+      const prevStats = statsForMonth(prevMonth);
+      const prevPrevMonth = addMonths(current, -2);
+      const prevPrevStats = statsForMonth(prevPrevMonth);
+      return [
+        { month: current, label: monthShort(current), miss: currentStats.miss, ok: currentStats.ok, top: currentStats.top, categories: currentStats.categories },
+        { month: prevMonth, label: monthShort(prevMonth), miss: prevStats.miss, ok: prevStats.ok, top: prevStats.top, categories: prevStats.categories },
+        { month: prevPrevMonth, label: monthShort(prevPrevMonth), miss: prevPrevStats.miss, ok: prevPrevStats.ok, top: prevPrevStats.top, categories: prevPrevStats.categories }
+      ];
+    }
+
+    function signedPercent(value) {
+      return `${value > 0 ? "+" : ""}${value}%`;
+    }
+
+    function signedCount(value) {
+      return `${value > 0 ? "+" : ""}${value}건`;
+    }
+
+    function monthChangeRate(current, previous) {
+      if (previous === 0) return current === 0 ? 0 : 100;
+      return Math.round(((current - previous) / previous) * 100);
+    }
+
+    function dayFromKey(key) {
+      const [year, month, day] = key.split("-").map(Number);
+      return { year, month, day, key, dow: new Date(year, month - 1, day).getDay() };
+    }
+
+    function noMistakeStreak() {
+      const date = new Date(keyToUtc(todayKey()));
+      let streak = 0;
+
+      for (let i = 0; i < 120; i += 1) {
+        const key = dateKey(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+        const day = dayFromKey(key);
+        date.setUTCDate(date.getUTCDate() - 1);
+
+        if (dayState(day).closed) continue;
+
+        const status = records[key]?.status || "";
+        if (!status) {
+          if (streak === 0) continue;
+          break;
+        }
+        if (status === "ok") {
+          streak += 1;
+          continue;
+        }
+        break;
+      }
+
+      return streak;
+    }
+
+    function renderHistoryInsights() {
+      const rows = trendRows();
+      const current = rows[0];
+      const previous = rows[1];
+      const change = monthChangeRate(current.miss, previous.miss);
+      const streak = noMistakeStreak();
+
+      $("#monthChangeValue").textContent = signedPercent(change);
+      $("#monthChangeText").textContent = `이번 달 실수 ${current.miss}건, 지난달 ${previous.miss}건`;
+      $("#streakValue").textContent = `${streak}일`;
+      $("#streakText").textContent = streak > 0
+        ? `현재 ${streak}일 연속 실수 없음`
+        : "최근 체크일에 실수가 있어 연속 기록을 다시 시작하면 좋아요.";
+
+      $("#monthChangeCard").classList.toggle("good", change < 0);
+      $("#monthChangeCard").classList.toggle("warn", change > 0);
+      $("#monthChangeCard").classList.toggle("neutral", change === 0);
+      $("#streakCard").classList.toggle("good", streak > 0);
+      $("#streakCard").classList.toggle("warn", streak === 0);
+    }
+
+    function renderImpactInsights() {
+      const counts = { self: 0, team: 0, external: 0 };
+      historyRows().forEach((row) => {
+        counts[normalizeImpact(row.impact)] += 1;
+      });
+      $("#impactSelfCount").textContent = `${counts.self}건`;
+      $("#impactTeamCount").textContent = `${counts.team}건`;
+      $("#impactExternalCount").textContent = `${counts.external}건`;
+      [
+        ["#impactSelfCard", counts.self],
+        ["#impactTeamCard", counts.team],
+        ["#impactExternalCard", counts.external]
+      ].forEach(([selector, count]) => {
+        const card = $(selector);
+        card.classList.toggle("zero", count === 0);
+        card.classList.toggle("has-count", count > 0);
+      });
+    }
+
+    function renderTrendBars() {
+      const rows = trendRows();
+      const max = Math.max(1, ...rows.map((row) => row.miss + row.ok));
+      $("#trendBars").innerHTML = rows.map((row, index) => {
+        const total = row.miss + row.ok;
+        const missWidth = (row.miss / max) * 100;
+        const okWidth = (row.ok / max) * 100;
+        const missRatio = total ? Math.round((row.miss / total) * 100) : 0;
+        return `
+          <div class="trend-row ${index === 0 ? "current" : ""}" title="실수 ${row.miss}건 / 실수 없음 ${row.ok}건">
+            <strong>${row.label}</strong>
+            <div class="stack">
+              <span class="miss" style="width:${missWidth}%"></span>
+              <span class="ok" style="width:${okWidth}%"></span>
+            </div>
+            <span>${row.miss}/${row.ok}</span>
+            <span class="trend-ratio">${missRatio}%</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderMonthHistory() {
+      const rows = trendRows();
+      $("#monthHistory").innerHTML = rows.map((row, index) => {
+        const previous = rows[index + 1];
+        const delta = previous ? row.miss - previous.miss : 0;
+        const tone = row.miss >= 3 ? "주의 필요" : "괜찮은 흐름";
+        const deltaLabel = previous ? `전월 대비 ${signedCount(delta)}` : "기준 월";
+        const deltaClass = delta < 0 ? "good" : delta > 0 ? "warn" : "";
+        return `
+          <article class="month-card">
+            <div class="month-card-head">
+              <span class="month-title">${row.label}</span>
+              <span class="month-delta ${deltaClass}">${deltaLabel}</span>
+            </div>
+            <div class="month-categories">
+              ${(row.categories || []).map((category) => `
+                <span class="category-chip ${categoryClass(category)}">${escapeHtml(category)}</span>
+              `).join("")}
+            </div>
+            <div class="month-card-stats">
+              <span>실수 ${row.miss}건</span>
+              <span>실수 없음 ${row.ok}건</span>
+            </div>
+            <p>${tone}</p>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function historyRows() {
+      const currentRows = Object.entries(records)
+        .filter(([, record]) => record.status === "miss")
+        .map(([date, record]) => ({
+          sortKey: date,
+          date: displayDate(date),
+          category: normalizeCategory(record.category) || "미입력",
+          detail: record.detail || "상세 내용 작성 필요",
+          nextAction: record.nextAction || "",
+          impact: normalizeImpact(record.impact)
+        }));
+      const olderRows = olderHistory.map((row) => ({
+        sortKey: olderDateToKey(row.date),
+        date: row.date,
+        category: normalizeCategory(row.category) || "미입력",
+        detail: row.detail || "상세 내용 작성 필요",
+        nextAction: row.nextAction || "",
+        impact: normalizeImpact(row.impact)
+      }));
+      return [...currentRows, ...olderRows].sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+    }
+
+    function renderHistory() {
+      const query = $("#historySearch").value.trim().toLowerCase();
+      const rows = historyRows().filter((row) => {
+        const text = `${row.date} ${row.category} ${impactLabel(row.impact)} ${row.detail} ${row.nextAction || ""}`.toLowerCase();
+        return (!query || text.includes(query)) && (!activeHistoryFilter || legacyCategoryMatch(row.category, activeHistoryFilter));
+      });
+
+      $("#historyBody").innerHTML = rows.length ? rows.map((row) => `
+        <tr>
+          <td class="date">${escapeHtml(row.date)}</td>
+          <td>
+            <span class="category-chip ${categoryClass(row.category)}">${escapeHtml(row.category)}</span>
+          </td>
+          <td>
+            <span class="impact-badge ${impactClass(row.impact)}">${escapeHtml(impactLabel(row.impact))}</span>
+          </td>
+          <td>
+            <div class="history-detail">${escapeHtml(row.detail)}</div>
+          </td>
+          <td>
+            <div class="history-action">${row.nextAction
+              ? escapeHtml(row.nextAction)
+              : `<button class="history-action-link" data-edit-date="${escapeHtml(row.sortKey)}" type="button">개선책 추가</button>`}</div>
+          </td>
+        </tr>
+      `).join("") : `<tr><td colspan="5"><div class="empty">조건에 맞는 실수 히스토리가 없습니다.</div></td></tr>`;
+    }
+
+    function openHistoryRecord(date) {
+      const key = normalizeDateKey(date);
+      if (!key) return;
+      selectedDate = key;
+      $("#monthInput").value = key.slice(0, 7);
+      savedNoticeKey = "";
+      setPage("trend");
+    }
+
+    function setPage(page) {
+      $$(".page").forEach((item) => item.classList.toggle("active", item.id === `page-${page}`));
+      $$(".page-tab").forEach((item) => item.classList.toggle("active", item.dataset.page === page));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      renderAll();
+    }
+
+    function setMonth(monthValue) {
+      $("#monthInput").value = monthValue;
+      const [year, month] = monthValue.split("-").map(Number);
+      selectedDate = dateKey(year, month, 1);
+      renderAll();
+    }
+
+    function renderAll() {
+      applyHistoryColumns();
+      renderSummary();
+      renderCalendar();
+      renderRecordPage();
+      renderHistoryInsights();
+      renderImpactInsights();
+      renderTrendBars();
+      renderMonthHistory();
+      renderHistoryFilters();
+      renderHistory();
+    }
+
+    $("#exportJson").addEventListener("click", downloadJson);
+    $("#importJson").addEventListener("click", showJsonImportPanel);
+    $("#jsonImportInput").addEventListener("change", importJsonFromFile);
+    $("#jsonExportClose").addEventListener("click", hideJsonExportPanel);
+    $("#copyJson").addEventListener("click", copyExportJson);
+    $("#downloadJsonAgain").addEventListener("click", () => {
+      tryDownloadJson(lastExportJson);
+      setSaveState("파일 저장 시도됨");
+    });
+    $("#jsonExportPanel").addEventListener("click", (event) => {
+      if (event.target.id === "jsonExportPanel") hideJsonExportPanel();
+    });
+    $("#jsonImportClose").addEventListener("click", hideJsonImportPanel);
+    $("#chooseJsonFile").addEventListener("click", () => $("#jsonImportInput").click());
+    $("#applyPastedJson").addEventListener("click", importPastedJson);
+    $("#jsonImportPanel").addEventListener("click", (event) => {
+      if (event.target.id === "jsonImportPanel") hideJsonImportPanel();
+    });
+    $("#jsonImportText").addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") importPastedJson();
+    });
+
+    $$(".page-tab").forEach((tab) => tab.addEventListener("click", () => setPage(tab.dataset.page)));
+    $("#monthInput").addEventListener("change", () => setMonth($("#monthInput").value));
+    $("#prevMonth").addEventListener("click", () => setMonth(addMonths($("#monthInput").value, -1)));
+    $("#nextMonth").addEventListener("click", () => setMonth(addMonths($("#monthInput").value, 1)));
+    $("#monthPickerButton").addEventListener("click", toggleMonthPopover);
+    $("#monthPopoverGrid").addEventListener("click", (event) => {
+      const button = event.target.closest(".month-popover-day");
+      if (!button) return;
+      selectedDate = button.dataset.date;
+      $("#monthInput").value = selectedDate.slice(0, 7);
+      closeMonthPopover();
+      renderAll();
+    });
+    document.addEventListener("click", (event) => {
+      if (!monthPopoverOpen) return;
+      if (event.target.closest(".month-nav")) return;
+      closeMonthPopover();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && monthPopoverOpen) closeMonthPopover();
+    });
+    $("#backToCheck").addEventListener("click", () => setPage("check"));
+    $("#nudgeHistoryButton").addEventListener("click", () => setPage("history"));
+
+    $("#catButtons").addEventListener("click", (event) => {
+      const removeButton = event.target.closest(".cat-remove");
+      if (removeButton) {
+        event.stopPropagation();
+        removeManagedCategory(removeButton.dataset.cat);
+        return;
+      }
+
+      const option = event.target.closest(".cat-option");
+      if (option) setSelectedCategory(option.dataset.cat);
+    });
+
+    $("#catButtons").addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const option = event.target.closest(".cat-option");
+      if (!option) return;
+      event.preventDefault();
+      setSelectedCategory(option.dataset.cat);
+    });
+
+    $("#impactButtons").addEventListener("click", (event) => {
+      const option = event.target.closest(".impact-option");
+      if (option) setSelectedImpact(option.dataset.impact);
+    });
+
+    $("#addCategory").addEventListener("click", addManagedCategory);
+    $("#categoryInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addManagedCategory();
+      }
+    });
+
+    ["recordDetail", "recordNextAction"].forEach((id) => {
+      $(`#${id}`).addEventListener("input", hideSaveComplete);
+    });
+
+    $("#recordForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      saveRecordDetail();
+    });
+
+    $("#saveAndHistory").addEventListener("click", () => {
+      saveRecordDetail();
+      setPage("history");
+    });
+
+    $("#todayButton").addEventListener("click", () => {
+      const today = new Date();
+      const monthValue = `${today.getFullYear()}-${pad(today.getMonth() + 1)}`;
+      selectedDate = dateKey(today.getFullYear(), today.getMonth() + 1, today.getDate());
+      $("#monthInput").value = monthValue;
+      setPage("check");
+    });
+
+    $("#resetDemo").addEventListener("click", () => {
+      records = normalizeRecords(cloneSeed());
+      managedCategories = [...seedCategories];
+      localStorage.setItem(storeKey, JSON.stringify(records));
+      saveCategories();
+      selectedDate = todayKey();
+      $("#monthInput").value = selectedDate.slice(0, 7);
+      setPage("check");
+    });
+
+    $("#historySearch").addEventListener("input", renderHistory);
+    $("#historyFilter").addEventListener("click", (event) => {
+      const button = event.target.closest(".filter-chip");
+      if (button) {
+        activeHistoryFilter = button.dataset.cat;
+        renderHistoryFilters();
+        renderHistory();
+      }
+    });
+    $("#historyBody").addEventListener("click", (event) => {
+      const button = event.target.closest(".history-action-link");
+      if (button) openHistoryRecord(button.dataset.editDate);
+    });
+
+    $("#historyDetailResize").addEventListener("pointerdown", (event) => {
+      const table = $("#historyTable");
+      const handle = event.currentTarget;
+      event.preventDefault();
+      table.classList.add("resizing");
+      handle.setPointerCapture(event.pointerId);
+
+      const resize = (moveEvent) => {
+        const rect = table.getBoundingClientRect();
+        const fixedPercent = 30;
+        const minDetail = 24;
+        const minAction = 16;
+        const pointerPercent = ((moveEvent.clientX - rect.left) / rect.width) * 100;
+        const detail = clamp(pointerPercent - fixedPercent, minDetail, 100 - fixedPercent - minAction);
+        historyColumns = {
+          detail,
+          action: 100 - fixedPercent - detail
+        };
+        applyHistoryColumns();
+      };
+
+      const stop = () => {
+        table.classList.remove("resizing");
+        saveHistoryColumns();
+        handle.removeEventListener("pointermove", resize);
+      };
+
+      handle.addEventListener("pointermove", resize);
+      handle.addEventListener("pointerup", stop, { once: true });
+      handle.addEventListener("pointercancel", stop, { once: true });
+    });
+
+    selectedDate = todayKey();
+    $("#monthInput").value = selectedDate.slice(0, 7);
+    renderAll();
+    initCloudSync();
+  </script>
+</body>
+</html>

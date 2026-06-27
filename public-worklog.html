@@ -2062,19 +2062,34 @@
   }
   body.public-worklog-widget main#mode-daily > .daily-content,
   body.public-worklog-widget main#mode-daily > .daily-content > .daily-wrap {
-    width: 100%;
     max-width: 100%;
+  }
+  body.public-worklog-widget main#mode-daily > .daily-content {
+    width: 100%;
+    overflow-x: auto;
+  }
+  body.public-worklog-widget main#mode-daily > .daily-content > .daily-wrap {
+    width: min(var(--public-worklog-content-w, 900px), 100%);
   }
   body.public-worklog-widget .daily-wrap {
     margin-left: 0;
-    margin-right: 0;
+    margin-right: auto;
   }
+  body.public-worklog-widget .daily-nav,
+  body.public-worklog-widget #dailyCard,
+  body.public-worklog-widget .daily-hint-wrap {
+    width: var(--public-worklog-content-w, 900px);
+    max-width: 100%;
+  }
+  body.public-worklog-widget .daily-day-tabs { min-width: 0; }
+  body.public-worklog-widget .daily-day-tab { min-width: 0; }
   body.public-worklog-widget .daily-card {
-    width: 100%;
+    width: var(--public-worklog-content-w, 900px);
     max-width: 100%;
   }
   body.public-worklog-widget .daily-table-wrap {
     width: 100%;
+    overflow-x: auto;
   }
   body.public-worklog-widget .daily-head { gap: 10px; }
   .worklog-column-controls {
@@ -2189,7 +2204,7 @@
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
 <script src="code-sync.js?v=3"></script>
-<script src="shared.js?v=5"></script>
+<script src="shared.js?v=6"></script>
 <script>
 'use strict';
 // daily.html 전용 스크립트. 공용(상수·유틸·상태·테마·모달·I/O·싱크)은 shared.js.
@@ -4964,6 +4979,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
       const delta = resizing.isLeft ? -raw : raw;
       const newW = Math.max(resizing.minSize, resizing.startW + delta);
       document.documentElement.style.setProperty(resizing.varName, newW + 'px');
+      if (resizing.kind === 'dcol') syncPublicWorklogWidth();
     });
     document.addEventListener('mouseup', function() {
       if (!resizing) return;
@@ -5027,6 +5043,16 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     return baseCount - ['start', 'end', 'est'].filter(col => cols[col] === false).length;
   }
 
+  function syncPublicWorklogWidth() {
+    if (!document.body || !document.body.classList.contains('public-worklog-widget')) return;
+    const wrap = document.querySelector('#mode-daily .daily-wrap');
+    const table = document.querySelector('#dailyCard .daily-table');
+    if (!wrap || !table) return;
+    const tableWidth = Math.ceil(table.getBoundingClientRect().width || table.scrollWidth || 0);
+    if (!tableWidth) return;
+    wrap.style.setProperty('--public-worklog-content-w', Math.max(360, tableWidth) + 'px');
+  }
+
   function decorateWorklogTable() {
     const table = document.querySelector('#dailyCard .daily-table');
     if (!table) return;
@@ -5060,7 +5086,11 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
   }
 
   const baseRenderDailyCard = renderDailyCard;
-  renderDailyCard = function() { baseRenderDailyCard(); decorateWorklogTable(); };
+  renderDailyCard = function() {
+    baseRenderDailyCard();
+    decorateWorklogTable();
+    syncPublicWorklogWidth();
+  };
 
   window.toggleWorklogColumnMenu = function(btn) {
     const wrap = btn && btn.closest ? btn.closest('.worklog-column-controls') : null;
@@ -5077,6 +5107,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     cols[col] = !!checked;
     saveState();
     decorateWorklogTable();
+    syncPublicWorklogWidth();
   };
 
   async function init() {

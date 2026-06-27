@@ -862,6 +862,46 @@ function restoreImportedObject(imported, sourceLabel, renderAll) {
   return true;
 }
 
+function cleanupImportedJsonText(raw) {
+  let text = String(raw || '').replace(/^\uFEFF/, '').trim();
+  const fenced = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fenced) text = fenced[1].trim();
+  return text;
+}
+
+function unwrapImportedJson(parsed) {
+  let out = parsed;
+  for (let i = 0; i < 4; i++) {
+    if (typeof out === 'string') {
+      out = JSON.parse(cleanupImportedJsonText(out));
+      continue;
+    }
+    if (!out || typeof out !== 'object') break;
+    if (out.state && typeof out.state === 'object' && detectBackupSections(out).length === 0) {
+      out = out.state;
+      continue;
+    }
+    const storageKeys = [STORAGE_KEY, 'worklog-pub-widget-state-v1', 'worklog-widget-state-v1'];
+    const storageKey = storageKeys.find(key => typeof out[key] === 'string');
+    if (storageKey) {
+      out = JSON.parse(cleanupImportedJsonText(out[storageKey]));
+      continue;
+    }
+    if (typeof out.value === 'string') {
+      out = JSON.parse(cleanupImportedJsonText(out.value));
+      continue;
+    }
+    break;
+  }
+  return out;
+}
+
+function parseImportedJsonText(raw) {
+  const text = cleanupImportedJsonText(raw);
+  if (!text) throw new Error('비어 있는 JSON입니다.');
+  return unwrapImportedJson(JSON.parse(text));
+}
+
 // 복원 완료 후 재렌더가 필요하므로 page-side renderAll 콜백을 인자로 받음
 function importJson(event, renderAll) {
   const file = event.target.files && event.target.files[0];
@@ -869,7 +909,7 @@ function importJson(event, renderAll) {
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const imported = JSON.parse(e.target.result);
+      const imported = parseImportedJsonText(e.target.result);
       restoreImportedObject(imported, `"${file.name}"`, renderAll);
     } catch (err) {
       showModal('복원 실패', '유효한 JSON 파일이 아닙니다.\n' + (err.message || ''), null);
@@ -918,13 +958,13 @@ function importJsonText(renderAll) {
   msgEl.appendChild(textarea);
 
   modalCallback = function() {
-    const raw = (pasted || '').trim();
+    const raw = (textarea.value || pasted || '').trim();
     if (!raw) {
       showModal('복원 실패', '붙여넣은 JSON 텍스트가 비어 있습니다.', null);
       return;
     }
     try {
-      const imported = JSON.parse(raw);
+      const imported = parseImportedJsonText(raw);
       restoreImportedObject(imported, '붙여넣은 JSON', renderAll);
     } catch (err) {
       showModal('복원 실패', '유효한 JSON 텍스트가 아닙니다.\n' + (err.message || ''), null);
