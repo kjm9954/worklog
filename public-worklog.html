@@ -2058,7 +2058,7 @@
   body.public-worklog-widget main#mode-daily.daily-layout {
     min-height: 620px;
     padding: 14px;
-    justify-content: flex-start;
+    justify-content: center;
   }
   body.public-worklog-widget main#mode-daily > .daily-content,
   body.public-worklog-widget main#mode-daily > .daily-content > .daily-wrap {
@@ -2066,26 +2066,43 @@
   }
   body.public-worklog-widget main#mode-daily > .daily-content {
     width: 100%;
-    overflow-x: hidden;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
   }
   body.public-worklog-widget main#mode-daily > .daily-content > .daily-wrap {
-    width: min(var(--public-worklog-content-w, 900px), calc(100vw - 28px));
+    width: min(var(--public-worklog-content-w, 900px), calc(100vw - 28px)) !important;
+    max-width: calc(100vw - 28px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
   }
   body.public-worklog-widget .daily-wrap {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
   body.public-worklog-widget .daily-nav,
   body.public-worklog-widget #dailyCard,
   body.public-worklog-widget .daily-hint-wrap {
-    width: var(--public-worklog-content-w, 900px);
-    max-width: 100%;
+    width: min(var(--public-worklog-content-w, 900px), calc(100vw - 28px)) !important;
+    max-width: calc(100vw - 28px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  body.public-worklog-widget #dailyCard {
+    display: flex !important;
+    justify-content: center !important;
   }
   body.public-worklog-widget .daily-day-tabs { min-width: 0; }
   body.public-worklog-widget .daily-day-tab { min-width: 0; }
   body.public-worklog-widget .daily-card {
-    width: var(--public-worklog-content-w, 900px);
-    max-width: 100%;
+    width: min(var(--public-worklog-content-w, 900px), calc(100vw - 28px)) !important;
+    max-width: calc(100vw - 28px) !important;
   }
   body.public-worklog-widget .daily-table-wrap {
     width: 100%;

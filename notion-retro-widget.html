@@ -692,6 +692,7 @@
       width: 100%;
     }
 
+    body[data-single-widget="true"] .app-header,
     body[data-single-widget="true"] .page-tabs { display: none; }
     body[data-single-widget="true"] .main {
       padding-top: 12px;
@@ -733,6 +734,21 @@
     body[data-single-widget="true"] .widget-width-resizer {
       display: block;
     }
+    body[data-single-widget="true"][data-widget-page="check"] .widget-width-resizer {
+      opacity: 0;
+      border-color: transparent;
+      background: transparent;
+      box-shadow: none;
+      transition: opacity 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    body[data-single-widget="true"][data-widget-page="check"] .widget-width-resizer:hover,
+    body[data-single-widget="true"][data-widget-page="check"] .widget-width-resizer:focus-visible,
+    body[data-single-widget="true"][data-widget-page="check"].resizing-widget .widget-width-resizer {
+      opacity: 1;
+      border-color: var(--border);
+      background: var(--card);
+      box-shadow: var(--shadow-sm);
+    }
     .widget-width-resizer::before {
       content: "";
       position: absolute;
@@ -744,6 +760,15 @@
       background: var(--border-strong);
       transform: translate(-50%, -50%);
       box-shadow: 4px 0 0 var(--border-strong), -4px 0 0 var(--border-strong);
+    }
+    body[data-single-widget="true"][data-widget-page="check"] .widget-width-resizer::before {
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    body[data-single-widget="true"][data-widget-page="check"] .widget-width-resizer:hover::before,
+    body[data-single-widget="true"][data-widget-page="check"] .widget-width-resizer:focus-visible::before,
+    body[data-single-widget="true"][data-widget-page="check"].resizing-widget .widget-width-resizer::before {
+      opacity: 1;
     }
     body.resizing-widget,
     body.resizing-widget * {
@@ -757,6 +782,19 @@
       font-size: 0.6875rem;
       font-weight: 900;
       text-align: center;
+    }
+    body[data-single-widget="true"][data-widget-page="check"] .calendar {
+      grid-template-rows: 24px;
+      grid-auto-rows: 96px;
+      align-content: start;
+    }
+    body[data-single-widget="true"][data-widget-page="check"] .weekday {
+      height: 24px;
+      min-height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
     }
 
     .day {
