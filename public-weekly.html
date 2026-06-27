@@ -568,26 +568,64 @@
     main.history-main { padding: 10px; }
   }
 
-  body.public-weekly-widget main.history-main {
+  body.public-weekly-widget .app {
+    box-sizing: border-box;
+    padding: 14px 12px;
+    overflow: hidden;
+  }
+  body.public-weekly-widget .app-header {
     width: min(var(--widget-content-w, 980px), calc(100vw - 24px));
-    min-height: max(560px, var(--widget-ratio-h, 608px));
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
+  body.public-weekly-widget .app-header.collapsed {
+    width: auto;
+    margin-left: auto;
+    margin-right: 0;
+  }
+  body.public-weekly-widget main.history-main {
+    flex: 1 1 auto;
+    width: min(var(--widget-content-w, 980px), calc(100vw - 24px));
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
     margin-left: auto;
     margin-right: auto;
     position: relative;
-    overflow-x: hidden;
+    overflow: hidden;
+    box-sizing: border-box;
   }
   body.public-weekly-widget #hWeekView {
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;
+    overflow: hidden;
   }
   body.public-weekly-widget #hWeekView .h-card {
-    flex: 1;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  body.public-weekly-widget #hWeekView .h-section-title {
+    flex: 0 0 auto;
   }
   body.public-weekly-widget .h-week-grid {
-    min-height: clamp(260px, calc(var(--widget-ratio-h, 608px) - 210px), 720px);
-    grid-auto-rows: minmax(118px, 1fr);
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    grid-auto-rows: minmax(0, 1fr);
+  }
+  body.public-weekly-widget .h-day {
+    min-height: 0;
+  }
+  body.public-weekly-widget .h-day-more {
+    margin-top: auto;
   }
   body.public-weekly-widget .h-summary-chips { grid-template-columns: minmax(180px, 280px); }
 </style>
