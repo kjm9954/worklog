@@ -305,6 +305,13 @@
       padding: 10px;
     }
 
+    body[data-single-widget="true"][data-widget-page="check"] .check-sidebar {
+      align-self: stretch;
+      align-content: center;
+      justify-content: center;
+      text-align: center;
+    }
+
     .check-sidebar .month-nav {
       position: relative;
       display: block;
@@ -369,9 +376,9 @@
     .month-popover-button:hover { background: var(--bg-2); border-color: var(--border-strong); }
 
     .month-popover {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
+      position: fixed;
+      top: 72px;
+      right: 24px;
       z-index: 30;
       width: 248px;
       border: 1px solid var(--border-strong);
@@ -568,21 +575,20 @@
     }
     .history-overview {
       display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.9fr);
-      gap: 10px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
       align-items: stretch;
     }
 
     .history-left {
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      gap: 10px;
-      height: 100%;
+      gap: 14px;
+      min-height: 0;
     }
 
     .history-insights {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 10px;
     }
 
@@ -598,9 +604,7 @@
       padding: 10px 12px;
     }
 
-    .insight-card.core { grid-column: span 3; }
     .insight-card.impact-card {
-      grid-column: span 2;
       min-height: 74px;
     }
     .insight-card.impact-card strong { font-size: 1.35rem; }
@@ -614,6 +618,11 @@
       background: var(--red-bg);
     }
     .insight-card.impact-card.external.has-count strong { color: var(--red); }
+    .insight-card.impact-card.external.zero {
+      border-color: #b7dfc0;
+      background: var(--green-bg);
+    }
+    .insight-card.impact-card.external.zero strong { color: var(--green-fg); }
 
     .insight-label {
       color: var(--text-muted);
@@ -647,7 +656,7 @@
 
     .history-left > .panel .panel-body {
       display: flex;
-      align-items: center;
+      align-items: stretch;
     }
 
     .history-left > .panel .trend-bars { width: 100%; }
@@ -673,6 +682,9 @@
       flex-direction: column;
       min-height: 0;
     }
+    body[data-single-widget="true"][data-widget-page="check"] #page-check .panel-head {
+      display: none;
+    }
 
     .calendar-wrap {
       flex: 1;
@@ -696,6 +708,29 @@
     body[data-single-widget="true"] .page-tabs { display: none; }
     body[data-single-widget="true"] .main {
       padding-top: 12px;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] .main {
+      width: calc(100vw - 24px) !important;
+      max-width: none;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] .widget-width-resizer {
+      display: none !important;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] .history-overview {
+      min-height: var(--retro-widget-ratio-height, 680px);
+    }
+    body[data-single-widget="true"][data-widget-page="history"] .history-left > .panel .panel-body {
+      min-height: 320px;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] #page-history .panel-head {
+      padding: 12px 14px;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] #page-history .panel-body {
+      padding: 14px;
+    }
+    body[data-single-widget="true"][data-widget-page="history"] #page-history .panel-sub {
+      margin-top: 2px;
+      font-size: 0.75rem;
     }
     body[data-single-widget="true"] .check-layout,
     body[data-single-widget="true"] .record-layout,
@@ -784,9 +819,10 @@
       text-align: center;
     }
     body[data-single-widget="true"][data-widget-page="check"] .calendar {
+      height: 100%;
       grid-template-rows: 24px;
-      grid-auto-rows: 96px;
-      align-content: start;
+      grid-auto-rows: minmax(96px, 1fr);
+      align-content: stretch;
     }
     body[data-single-widget="true"][data-widget-page="check"] .weekday {
       height: 24px;
@@ -1299,7 +1335,56 @@
     .month-list { display: grid; gap: 10px; }
 
     #page-history .trend-bars,
-    #page-history .month-list { gap: 6px; }
+    #page-history .month-list { gap: 12px; }
+
+    .trend-chart {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(70px, 1fr));
+      gap: 14px;
+      width: 100%;
+      min-height: 300px;
+      align-items: end;
+    }
+
+    .trend-bar-item {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto minmax(190px, 1fr) auto;
+      gap: 8px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .trend-percent {
+      color: var(--text);
+      font-size: 0.875rem;
+      font-weight: 950;
+    }
+
+    .trend-column {
+      position: relative;
+      min-height: 190px;
+      border-radius: var(--radius);
+      background: var(--gray-bg);
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px var(--border);
+    }
+
+    .trend-column .miss-rate {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      min-height: 2px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      background: var(--red);
+    }
+
+    .trend-month {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 900;
+    }
 
     .trend-row {
       display: grid;
@@ -1349,7 +1434,7 @@
     }
 
     .legend-swatch.miss { background: var(--red); }
-    .legend-swatch.ok { background: #4a86e8; }
+    .legend-swatch.ok { background: var(--gray-bg); box-shadow: inset 0 0 0 1px var(--border); }
 
     .stack {
       height: 18px;
@@ -1374,11 +1459,11 @@
 
     .month-card {
       display: grid;
-      gap: 5px;
+      gap: 10px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       background: var(--card);
-      padding: 9px 10px;
+      padding: 12px;
     }
 
     .month-card-head {
@@ -1390,6 +1475,11 @@
     }
 
     .month-title { font-size: 0.9375rem; }
+    .month-list {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      align-items: stretch;
+    }
+
     .month-categories {
       display: flex;
       justify-content: flex-start;
@@ -1407,6 +1497,20 @@
       font-size: 0.75rem;
       font-weight: 800;
     }
+
+    .month-status {
+      width: fit-content;
+      border-radius: 999px;
+      background: var(--gray-bg);
+      color: var(--text-muted);
+      padding: 2px 8px;
+      font-size: 0.6875rem;
+      font-weight: 900;
+    }
+
+    .month-status.good { background: var(--green-bg); color: var(--green-fg); }
+    .month-status.warn { background: var(--red-bg); color: var(--red); }
+    .month-status.watch { background: var(--yellow-bg); color: var(--yellow-fg); }
 
     .month-delta {
       border-radius: 999px;
@@ -1461,10 +1565,132 @@
     .filter-chip.active[data-cat="테이블"] { background: var(--purple-bg); color: var(--purple-fg); }
     .filter-chip.active[data-cat="프렌즈"] { background: var(--peach-bg); color: var(--peach-fg); }
     .filter-chip.active[data-cat="커뮤니케이션"] { background: var(--sky-bg); color: var(--sky-fg); }
+    .filter-chip.missing-action {
+      margin-left: auto;
+      border-color: #f1bfc0;
+      background: var(--red-bg);
+      color: var(--red);
+    }
+    .filter-chip.missing-action.active {
+      background: var(--red);
+      color: #fff;
+      box-shadow: var(--shadow-sm);
+    }
 
     #page-history .panel-head { padding: 7px 12px; }
     #page-history .panel-body { padding: 9px 12px; }
     #page-history .panel-sub { margin-top: 1px; font-size: 0.6875rem; }
+
+    .history-card-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-card {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow-sm);
+      padding: 12px;
+    }
+
+    .history-card-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .history-card-date {
+      color: var(--text);
+      font-weight: 950;
+    }
+
+    .history-card-detail {
+      color: var(--text);
+      font-size: 0.875rem;
+      font-weight: 750;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .history-card-action {
+      display: grid;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .history-action-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      color: var(--text);
+      font-size: 0.75rem;
+      font-weight: 950;
+    }
+
+    .history-action-text {
+      margin: 0;
+      color: var(--text);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .history-action-missing {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .history-missing-tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 999px;
+      background: var(--red-bg);
+      color: var(--red);
+      padding: 3px 9px;
+      font-size: 0.75rem;
+      font-weight: 950;
+    }
+
+    .history-more-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .history-more-btn {
+      min-height: 32px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card);
+      color: var(--text);
+      padding: 4px 12px;
+      font-size: 0.8125rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .history-more-btn:hover {
+      background: var(--bg-2);
+      border-color: var(--border-strong);
+    }
 
     .history-table {
       width: 100%;
@@ -1799,7 +2025,7 @@
                   <p id="streakText">최근 체크 흐름을 계산 중입니다.</p>
                 </article>
                 <article class="insight-card impact-card" id="impactSelfCard">
-                  <span class="insight-label">나만 영향</span>
+                  <span class="insight-label">나의 영향</span>
                   <strong id="impactSelfCount">0건</strong>
                   <p>내 작업 안에서 정리 가능</p>
                 </article>
@@ -1818,10 +2044,10 @@
               <article class="panel">
                 <div class="panel-head">
                   <div>
-                    <h2 class="panel-title">최근 3개월 실수 추이</h2>
+                    <h2 class="panel-title">최근 6개월 실수 추이</h2>
                     <div class="trend-legend" aria-label="실수 추이 범례">
-                      <span><span class="legend-swatch miss" aria-hidden="true"></span>실수</span>
-                      <span><span class="legend-swatch ok" aria-hidden="true"></span>실수 없음</span>
+                      <span><span class="legend-swatch miss" aria-hidden="true"></span>실수율</span>
+                      <span><span class="legend-swatch ok" aria-hidden="true"></span>무실수</span>
                     </div>
                   </div>
                 </div>
@@ -1862,25 +2088,8 @@
               </div>
               <div class="filter-chips" id="historyFilter">
               </div>
-              <table class="history-table" id="historyTable" aria-label="지난 실수 상세 히스토리">
-                <colgroup>
-                  <col class="history-col-date">
-                  <col class="history-col-category">
-                  <col class="history-col-impact">
-                  <col class="history-col-detail">
-                  <col class="history-col-action">
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th>날짜</th>
-                    <th>카테고리</th>
-                    <th>영향 범위</th>
-                    <th>상세 내용 <span class="history-resize-handle" id="historyDetailResize" aria-hidden="true"></span></th>
-                    <th>개선 사항</th>
-                  </tr>
-                </thead>
-                <tbody id="historyBody"></tbody>
-              </table>
+              <div class="history-card-list" id="historyBody" aria-label="지난 실수 상세 히스토리"></div>
+              <div class="history-more-wrap" id="historyMoreWrap"></div>
             </div>
           </article>
         </div>
@@ -1939,6 +2148,8 @@
     let managedCategories = loadCategories();
     let historyColumns = loadHistoryColumns();
     let selectedDate = seedSelectedDate;
+    let showAllHistory = false;
+    let onlyMissingActionFilter = false;
     let savedNoticeKey = "";
     let monthPopoverOpen = false;
     let saveStateTimer = null;
@@ -2516,6 +2727,8 @@
         $("#monthInput").value = payload.month || selectedDate.slice(0, 7);
       }
       activeHistoryFilter = "";
+      showAllHistory = false;
+      onlyMissingActionFilter = false;
       savedNoticeKey = "";
       localStorage.setItem(storeKey, JSON.stringify(records));
       saveCategories();
@@ -2825,15 +3038,21 @@
 
     function renderHistoryFilters() {
       normalizeManagedCategories();
-      if (activeHistoryFilter && !managedCategories.includes(activeHistoryFilter)) {
+      const required = ["커뮤니케이션", "맵", "프렌즈", "테이블"];
+      const categories = [
+        ...required,
+        ...managedCategories.filter((category) => !required.includes(category))
+      ];
+      if (activeHistoryFilter && !categories.includes(activeHistoryFilter)) {
         activeHistoryFilter = "";
       }
 
       $("#historyFilter").innerHTML = [
         `<button class="filter-chip ${activeHistoryFilter ? "" : "active"}" data-cat="" type="button">전체</button>`,
-        ...managedCategories.map((category) => `
+        ...categories.map((category) => `
           <button class="filter-chip ${categoryClass(category)} ${activeHistoryFilter === category ? "active" : ""}" data-cat="${escapeHtml(category)}" type="button">${escapeHtml(category)}</button>
-        `)
+        `),
+        `<button class="filter-chip missing-action ${onlyMissingActionFilter ? "active" : ""}" data-missing-action="true" type="button">개선책 미작성만</button>`
       ].join("");
     }
 
@@ -3189,16 +3408,19 @@
 
     function trendRows() {
       const current = $("#monthInput").value;
-      const currentStats = statsForMonth(current);
-      const prevMonth = addMonths(current, -1);
-      const prevStats = statsForMonth(prevMonth);
-      const prevPrevMonth = addMonths(current, -2);
-      const prevPrevStats = statsForMonth(prevPrevMonth);
-      return [
-        { month: current, label: monthShort(current), miss: currentStats.miss, ok: currentStats.ok, top: currentStats.top, categories: currentStats.categories },
-        { month: prevMonth, label: monthShort(prevMonth), miss: prevStats.miss, ok: prevStats.ok, top: prevStats.top, categories: prevStats.categories },
-        { month: prevPrevMonth, label: monthShort(prevPrevMonth), miss: prevPrevStats.miss, ok: prevPrevStats.ok, top: prevPrevStats.top, categories: prevPrevStats.categories }
-      ];
+      return Array.from({ length: 6 }, (_, index) => {
+        const month = addMonths(current, -index);
+        const stats = statsForMonth(month);
+        return {
+          month,
+          label: monthShort(month),
+          miss: stats.miss,
+          ok: stats.ok,
+          required: stats.required,
+          top: stats.top,
+          categories: stats.categories
+        };
+      });
     }
 
     function signedPercent(value) {
@@ -3285,52 +3507,74 @@
       });
     }
 
+    function rowMissRate(row) {
+      const total = row.miss + row.ok;
+      return total ? Math.round((row.miss / total) * 100) : 0;
+    }
+
+    function monthStatusInfo(row) {
+      const rate = rowMissRate(row);
+      if (row.miss === 0) return { label: "안정", className: "good" };
+      if (rate <= 15) return { label: "권장 소량", className: "good" };
+      if (rate <= 30) return { label: "주의 관찰", className: "watch" };
+      return { label: "주의 필요", className: "warn" };
+    }
+
+    function monthDeltaInfo(row, previous) {
+      if (!previous) return { label: "기준 월", className: "" };
+      const delta = rowMissRate(row) - rowMissRate(previous);
+      if (delta < 0) return { label: `전월 대비 ${delta}%p`, className: "good" };
+      if (delta > 0) return { label: `전월 대비 +${delta}%p`, className: "warn" };
+      return { label: "전월 대비 유지", className: "" };
+    }
+
+    function categoryChipsHtml(categoryValue, emptyLabel = "분류 없음") {
+      const categories = splitCategories(categoryValue).filter(Boolean);
+      const values = categories.length ? categories : [emptyLabel];
+      return values.map((category) => `
+        <span class="category-chip ${categoryClass(category)}">${escapeHtml(category)}</span>
+      `).join("");
+    }
+
     function renderTrendBars() {
-      const rows = trendRows();
-      const max = Math.max(1, ...rows.map((row) => row.miss + row.ok));
-      $("#trendBars").innerHTML = rows.map((row, index) => {
-        const total = row.miss + row.ok;
-        const missWidth = (row.miss / max) * 100;
-        const okWidth = (row.ok / max) * 100;
-        const missRatio = total ? Math.round((row.miss / total) * 100) : 0;
-        return `
-          <div class="trend-row ${index === 0 ? "current" : ""}" title="실수 ${row.miss}건 / 실수 없음 ${row.ok}건">
-            <strong>${row.label}</strong>
-            <div class="stack">
-              <span class="miss" style="width:${missWidth}%"></span>
-              <span class="ok" style="width:${okWidth}%"></span>
+      const rows = trendRows().slice().reverse();
+      $("#trendBars").innerHTML = `<div class="trend-chart">${
+        rows.map((row) => {
+          const missRatio = rowMissRate(row);
+          const safeHeight = Math.max(row.miss ? 4 : 0, missRatio);
+          return `
+            <div class="trend-bar-item" title="${row.label} 실수율 ${missRatio}% · 실수 ${row.miss}건 · 실수 없음 ${row.ok}건">
+              <span class="trend-percent">${missRatio}%</span>
+              <div class="trend-column" aria-label="${row.label} 실수율 ${missRatio}%">
+                <span class="miss-rate" style="height:${safeHeight}%"></span>
+              </div>
+              <span class="trend-month">${row.label}</span>
             </div>
-            <span>${row.miss}/${row.ok}</span>
-            <span class="trend-ratio">${missRatio}%</span>
-          </div>
-        `;
-      }).join("");
+          `;
+        }).join("")
+      }</div>`;
     }
 
     function renderMonthHistory() {
       const rows = trendRows();
       $("#monthHistory").innerHTML = rows.map((row, index) => {
         const previous = rows[index + 1];
-        const delta = previous ? row.miss - previous.miss : 0;
-        const tone = row.miss >= 3 ? "주의 필요" : "괜찮은 흐름";
-        const deltaLabel = previous ? `전월 대비 ${signedCount(delta)}` : "기준 월";
-        const deltaClass = delta < 0 ? "good" : delta > 0 ? "warn" : "";
+        const delta = monthDeltaInfo(row, previous);
+        const status = monthStatusInfo(row);
         return `
           <article class="month-card">
             <div class="month-card-head">
               <span class="month-title">${row.label}</span>
-              <span class="month-delta ${deltaClass}">${deltaLabel}</span>
+              <span class="month-delta ${delta.className}">${delta.label}</span>
             </div>
             <div class="month-categories">
-              ${(row.categories || []).map((category) => `
-                <span class="category-chip ${categoryClass(category)}">${escapeHtml(category)}</span>
-              `).join("")}
+              ${categoryChipsHtml((row.categories || []).join(", "))}
             </div>
             <div class="month-card-stats">
               <span>실수 ${row.miss}건</span>
               <span>실수 없음 ${row.ok}건</span>
             </div>
-            <p>${tone}</p>
+            <span class="month-status ${status.className}">${status.label}</span>
           </article>
         `;
       }).join("");
@@ -3358,32 +3602,58 @@
       return [...currentRows, ...olderRows].sort((a, b) => b.sortKey.localeCompare(a.sortKey));
     }
 
+    function historyCardHtml(row) {
+      const hasAction = !!String(row.nextAction || "").trim();
+      return `
+        <article class="history-card">
+          <div class="history-card-meta">
+            <span class="history-card-date">${escapeHtml(row.date)}</span>
+            <span aria-hidden="true">·</span>
+            ${categoryChipsHtml(row.category)}
+            <span class="impact-badge ${impactClass(row.impact)}">${escapeHtml(impactLabel(row.impact))}</span>
+          </div>
+          <div class="history-card-detail">${escapeHtml(row.detail)}</div>
+          <div class="history-card-action">
+            ${hasAction ? `
+              <span class="history-action-label"><span aria-hidden="true">💡</span><span>개선책</span></span>
+              <p class="history-action-text">${escapeHtml(row.nextAction)}</p>
+            ` : `
+              <div class="history-action-missing">
+                <span class="history-missing-tag">개선책 미작성</span>
+                <button class="history-action-link" data-edit-date="${escapeHtml(row.sortKey)}" type="button">+ 추가</button>
+              </div>
+            `}
+          </div>
+        </article>
+      `;
+    }
+
     function renderHistory() {
       const query = $("#historySearch").value.trim().toLowerCase();
       const rows = historyRows().filter((row) => {
         const text = `${row.date} ${row.category} ${impactLabel(row.impact)} ${row.detail} ${row.nextAction || ""}`.toLowerCase();
-        return (!query || text.includes(query)) && (!activeHistoryFilter || legacyCategoryMatch(row.category, activeHistoryFilter));
+        const matchesText = !query || text.includes(query);
+        const matchesCategory = !activeHistoryFilter || legacyCategoryMatch(row.category, activeHistoryFilter);
+        const matchesMissing = !onlyMissingActionFilter || !String(row.nextAction || "").trim();
+        return matchesText && matchesCategory && matchesMissing;
       });
+      const hasFilter = !!query || !!activeHistoryFilter || onlyMissingActionFilter;
+      const visibleRows = hasFilter || showAllHistory ? rows : rows.slice(0, 5);
+      const rest = Math.max(0, rows.length - visibleRows.length);
 
-      $("#historyBody").innerHTML = rows.length ? rows.map((row) => `
-        <tr>
-          <td class="date">${escapeHtml(row.date)}</td>
-          <td>
-            <span class="category-chip ${categoryClass(row.category)}">${escapeHtml(row.category)}</span>
-          </td>
-          <td>
-            <span class="impact-badge ${impactClass(row.impact)}">${escapeHtml(impactLabel(row.impact))}</span>
-          </td>
-          <td>
-            <div class="history-detail">${escapeHtml(row.detail)}</div>
-          </td>
-          <td>
-            <div class="history-action">${row.nextAction
-              ? escapeHtml(row.nextAction)
-              : `<button class="history-action-link" data-edit-date="${escapeHtml(row.sortKey)}" type="button">개선책 추가</button>`}</div>
-          </td>
-        </tr>
-      `).join("") : `<tr><td colspan="5"><div class="empty">조건에 맞는 실수 히스토리가 없습니다.</div></td></tr>`;
+      $("#historyBody").innerHTML = visibleRows.length
+        ? visibleRows.map(historyCardHtml).join("")
+        : `<div class="empty">조건에 맞는 실수 히스토리가 없습니다.</div>`;
+
+      const moreHost = $("#historyMoreWrap");
+      if (!moreHost) return;
+      if (hasFilter || rows.length <= 5) {
+        moreHost.innerHTML = "";
+        return;
+      }
+      moreHost.innerHTML = showAllHistory
+        ? `<button class="history-more-btn" data-history-collapse="true" type="button">접기</button>`
+        : `<button class="history-more-btn" data-history-more="true" type="button">더보기 (${rest}개 더 있음)</button>`;
     }
 
     function openHistoryRecord(date) {
@@ -3530,15 +3800,26 @@
       localStorage.setItem(storeKey, JSON.stringify(records));
       saveCategories();
       selectedDate = todayKey();
+      activeHistoryFilter = "";
+      showAllHistory = false;
+      onlyMissingActionFilter = false;
       $("#monthInput").value = selectedDate.slice(0, 7);
       setPage("check");
     });
 
-    $("#historySearch").addEventListener("input", renderHistory);
+    $("#historySearch").addEventListener("input", () => {
+      showAllHistory = false;
+      renderHistory();
+    });
     $("#historyFilter").addEventListener("click", (event) => {
       const button = event.target.closest(".filter-chip");
       if (button) {
-        activeHistoryFilter = button.dataset.cat;
+        showAllHistory = false;
+        if (button.dataset.missingAction) {
+          onlyMissingActionFilter = !onlyMissingActionFilter;
+        } else {
+          activeHistoryFilter = button.dataset.cat;
+        }
         renderHistoryFilters();
         renderHistory();
       }
@@ -3547,10 +3828,19 @@
       const button = event.target.closest(".history-action-link");
       if (button) openHistoryRecord(button.dataset.editDate);
     });
+    $("#historyMoreWrap").addEventListener("click", (event) => {
+      const moreButton = event.target.closest("[data-history-more]");
+      const collapseButton = event.target.closest("[data-history-collapse]");
+      if (!moreButton && !collapseButton) return;
+      showAllHistory = !!moreButton;
+      renderHistory();
+    });
 
-    $("#historyDetailResize").addEventListener("pointerdown", (event) => {
+    const historyDetailResize = $("#historyDetailResize");
+    if (historyDetailResize) historyDetailResize.addEventListener("pointerdown", (event) => {
       const table = $("#historyTable");
       const handle = event.currentTarget;
+      if (!table) return;
       event.preventDefault();
       table.classList.add("resizing");
       handle.setPointerCapture(event.pointerId);

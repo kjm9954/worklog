@@ -569,9 +569,11 @@
   }
 
   body.public-weekly-widget .app {
+    --weekly-widget-bg-pad-y: clamp(18px, 6vh, 42px);
     box-sizing: border-box;
-    padding: 14px 12px;
+    padding: var(--weekly-widget-bg-pad-y) 12px;
     overflow: hidden;
+    position: relative;
   }
   body.public-weekly-widget .app-header {
     width: min(var(--widget-content-w, 980px), calc(100vw - 24px));
@@ -581,9 +583,13 @@
     box-sizing: border-box;
   }
   body.public-weekly-widget .app-header.collapsed {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 40;
     width: auto;
-    margin-left: auto;
-    margin-right: 0;
+    margin: 0;
+    padding: 0;
   }
   body.public-weekly-widget main.history-main {
     flex: 1 1 auto;
