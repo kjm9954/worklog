@@ -2066,14 +2066,22 @@
   }
   body.public-worklog-widget main#mode-daily > .daily-content {
     width: 100%;
-    overflow-x: hidden;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
   }
   body.public-worklog-widget main#mode-daily > .daily-content > .daily-wrap {
-    width: min(var(--public-worklog-content-w, 900px), calc(100vw - 28px));
+    width: min(var(--public-worklog-content-w, 900px), calc(100vw - 28px)) !important;
+    max-width: calc(100vw - 28px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
   body.public-worklog-widget .daily-wrap {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
   body.public-worklog-widget .daily-nav,
   body.public-worklog-widget #dailyCard,
