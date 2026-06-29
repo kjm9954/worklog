@@ -238,6 +238,7 @@
 
     .main {
       width: min(var(--retro-widget-width, 1280px), calc(100vw - 24px));
+      max-width: 1800px;
       margin: 0 auto;
       padding: 10px 0 18px;
       flex: 1;
@@ -2237,7 +2238,7 @@
       const main = $(".main");
       if (!main) return 0;
       const minWidth = 360;
-      const maxWidth = 1280;
+      const maxWidth = 1800;
       const available = Math.max(minWidth, Math.min(maxWidth, window.innerWidth - 24));
       const width = Math.max(minWidth, Math.min(Math.round(value || 980), available));
       main.style.setProperty("--retro-widget-width", `${width}px`);
