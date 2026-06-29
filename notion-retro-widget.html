@@ -562,10 +562,31 @@
 
     .record-layout {
       display: grid;
-      grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.75fr);
+      grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
       gap: 12px;
       align-items: start;
     }
+
+    .record-side {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .record-summary { background: var(--green-bg); border-color: #b7dfc0; }
+    .record-summary .panel-head { background: transparent; border-bottom-color: #c4e6cb; }
+    .record-summary .panel-title { color: var(--green-fg); }
+    .record-summary .panel-sub { color: var(--green-fg); opacity: 0.8; }
+    .record-summary-stats { display: flex; gap: 24px; }
+    .record-stat strong {
+      display: block;
+      font-size: 1.6rem;
+      line-height: 1.1;
+      font-weight: 950;
+      color: var(--green-fg);
+      font-variant-numeric: tabular-nums;
+    }
+    .record-stat span { color: var(--green-fg); font-size: 0.75rem; font-weight: 800; }
 
     .history-grid { display: grid; gap: 12px; }
     #page-history .history-grid { gap: 10px; }
@@ -1073,6 +1094,15 @@
     .field textarea { min-height: 124px; resize: vertical; }
     .field textarea.short { min-height: 54px; }
     .form-grid { display: grid; gap: 14px; }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .field-row.top { grid-template-columns: 1.5fr 1fr; }
+    .field-row .field textarea { min-height: 112px; }
 
     .step-heading {
       display: flex;
@@ -1898,6 +1928,7 @@
       .app-header { align-items: flex-start; flex-direction: column; }
       .header-actions { justify-content: flex-start; }
       .check-layout, .two-col, .record-layout, .history-overview { grid-template-columns: 1fr; }
+      .field-row, .field-row.top { grid-template-columns: 1fr; }
       .check-sidebar { position: static; order: -1; justify-self: center; }
     }
 
@@ -2034,36 +2065,40 @@
               </div>
 
               <form class="form-grid" id="recordForm">
-                <div class="field">
-                  <span class="step-label"><span class="step-num">1</span>카테고리 선택</span>
-                  <input id="recordCategoryValue" type="hidden">
-                  <div class="cat-picker" id="catButtons"></div>
-                  <div class="cat-manager">
-                    <input id="categoryInput" placeholder="카테고리 추가">
-                    <button class="btn" id="addCategory" type="button">추가</button>
+                <div class="field-row top">
+                  <div class="field">
+                    <span class="step-label"><span class="step-num">1</span>카테고리 선택</span>
+                    <input id="recordCategoryValue" type="hidden">
+                    <div class="cat-picker" id="catButtons"></div>
+                    <div class="cat-manager">
+                      <input id="categoryInput" placeholder="카테고리 추가">
+                      <button class="btn" id="addCategory" type="button">추가</button>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <div class="step-heading">
+                      <span class="step-label"><span class="step-num">2</span>영향 범위</span>
+                      <span class="step-note">기본값 나만, 1번 탭</span>
+                    </div>
+                    <input id="recordImpactValue" type="hidden" value="self">
+                    <div class="impact-picker" id="impactButtons" aria-label="영향 범위">
+                      <button class="impact-option" data-impact="self" type="button">나만</button>
+                      <button class="impact-option" data-impact="team" type="button">팀</button>
+                      <button class="impact-option external" data-impact="external" type="button">외부</button>
+                    </div>
                   </div>
                 </div>
 
-                <div class="field">
-                  <div class="step-heading">
-                    <span class="step-label"><span class="step-num">2</span>영향 범위</span>
-                    <span class="step-note">기본값 나만, 1번 탭</span>
-                  </div>
-                  <input id="recordImpactValue" type="hidden" value="self">
-                  <div class="impact-picker" id="impactButtons" aria-label="영향 범위">
-                    <button class="impact-option" data-impact="self" type="button">나만</button>
-                    <button class="impact-option" data-impact="team" type="button">팀</button>
-                    <button class="impact-option external" data-impact="external" type="button">외부</button>
-                  </div>
+                <div class="field-row">
+                  <label class="field"><span class="step-label"><span class="step-num">3</span>무슨 일이 있었나</span>
+                    <textarea id="recordDetail" placeholder="예: 데이터 수정 후 기존 체크리스트를 확인하지 못함."></textarea>
+                  </label>
+
+                  <label class="field"><span class="step-label"><span class="step-num">4</span>다음엔 뭘 확인할까</span>
+                    <textarea id="recordNextAction" placeholder="예: 공유 전 데이터 검수 3단계를 먼저 확인."></textarea>
+                  </label>
                 </div>
-
-                <label class="field"><span class="step-label"><span class="step-num">3</span>무슨 일이 있었나</span>
-                  <textarea id="recordDetail" placeholder="예: 데이터 수정 후 기존 체크리스트를 확인하지 못함."></textarea>
-                </label>
-
-                <label class="field"><span class="step-label"><span class="step-num">4</span>다음엔 뭘 확인할까</span>
-                  <textarea class="short" id="recordNextAction" placeholder="예: 공유 전 데이터 검수 3단계를 먼저 확인."></textarea>
-                </label>
 
                 <div class="save-complete" id="saveComplete">
                   <strong>저장 완료</strong>
@@ -2079,18 +2114,41 @@
             </div>
           </article>
 
-          <aside class="panel">
-            <div class="panel-head">
-              <div>
-                <h2 class="panel-title">최근 같은 실수</h2>
-                <p class="panel-sub">선택한 카테고리 기준 최근 3개를 보여줍니다.</p>
+          <div class="record-side">
+            <aside class="panel record-summary">
+              <div class="panel-head">
+                <div>
+                  <h2 class="panel-title">이번 달 요약</h2>
+                  <p class="panel-sub">기록하면서 지금 흐름을 함께 확인하세요.</p>
+                </div>
               </div>
-            </div>
-            <div class="panel-body">
-              <div class="similar-summary" id="similarSummary"></div>
-              <div class="similar-list" id="similarMistakes"></div>
-            </div>
-          </aside>
+              <div class="panel-body">
+                <div class="record-summary-stats">
+                  <div class="record-stat">
+                    <strong id="recordMonthMiss">0건</strong>
+                    <span>이번 달 실수</span>
+                  </div>
+                  <div class="record-stat">
+                    <strong id="recordStreak">0일</strong>
+                    <span>연속 무실수</span>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <aside class="panel record-similar">
+              <div class="panel-head">
+                <div>
+                  <h2 class="panel-title">최근 같은 실수</h2>
+                  <p class="panel-sub">선택한 카테고리 기준 최근 3개를 보여줍니다.</p>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="similar-summary" id="similarSummary"></div>
+                <div class="similar-list" id="similarMistakes"></div>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
 
@@ -3468,7 +3526,16 @@
       renderCategoryControls(selectedCategory);
       renderImpactControls(record.impact);
       renderSimilarMistakes(selectedCategory);
+      renderRecordSummary();
       $("#saveComplete").classList.toggle("show", savedNoticeKey === selectedDate);
+    }
+
+    function renderRecordSummary() {
+      const current = trendRows()[0];
+      const missEl = $("#recordMonthMiss");
+      const streakEl = $("#recordStreak");
+      if (missEl) missEl.textContent = `${current ? current.miss : 0}건`;
+      if (streakEl) streakEl.textContent = `${noMistakeStreak()}일`;
     }
 
     function hideSaveComplete() {
