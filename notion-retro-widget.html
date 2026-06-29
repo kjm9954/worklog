@@ -2334,7 +2334,18 @@
     function initRetroWidgetWidthResizer() {
       const main = $(".main");
       const handle = $("#retroWidgetResizer");
-      if (!main || !handle) return;
+      if (!main) return;
+
+      // Full app embed (tabs visible): the drag resizer is hidden, so fill the
+      // available width up to the cap instead of locking to a small fixed value.
+      if (!singleWidgetPage) {
+        const fill = () => applyRetroWidgetWidth(window.innerWidth);
+        fill();
+        window.addEventListener("resize", fill);
+        return;
+      }
+
+      if (!handle) return;
       let saved = 980;
       try {
         const raw = parseInt(localStorage.getItem(widgetWidthStoreKey), 10);
