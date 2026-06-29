@@ -1495,6 +1495,28 @@
 
     .legend-swatch.miss { background: var(--red); }
     .legend-swatch.ok { background: var(--gray-bg); box-shadow: inset 0 0 0 1px var(--border); }
+    .legend-swatch.line { background: var(--red); height: 3px; }
+    .legend-swatch.avg {
+      width: 14px;
+      height: 0;
+      border-radius: 0;
+      border-top: 2px dashed var(--text-subtle);
+    }
+    .legend-swatch.peak { width: 9px; height: 9px; border-radius: 999px; background: var(--red); }
+    .legend-swatch.latest {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--green-fg);
+    }
+
+    .trend-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+      font-variant-numeric: tabular-nums;
+    }
 
     .stack {
       height: 18px;
@@ -2104,10 +2126,12 @@
               <article class="panel">
                 <div class="panel-head">
                   <div>
-                    <h2 class="panel-title">최근 6개월 실수 추이</h2>
+                    <h2 class="panel-title">최근 6개월 실수율 추이</h2>
                     <div class="trend-legend" aria-label="실수 추이 범례">
-                      <span><span class="legend-swatch miss" aria-hidden="true"></span>실수율</span>
-                      <span><span class="legend-swatch ok" aria-hidden="true"></span>무실수</span>
+                      <span><span class="legend-swatch line" aria-hidden="true"></span>실수율</span>
+                      <span><span class="legend-swatch avg" aria-hidden="true"></span>6개월 평균</span>
+                      <span><span class="legend-swatch peak" aria-hidden="true"></span>최고점</span>
+                      <span><span class="legend-swatch latest" aria-hidden="true"></span>최신</span>
                     </div>
                   </div>
                 </div>
@@ -3598,21 +3622,79 @@
 
     function renderTrendBars() {
       const rows = trendRows().slice().reverse();
-      $("#trendBars").innerHTML = `<div class="trend-chart">${
-        rows.map((row) => {
-          const missRatio = rowMissRate(row);
-          const safeHeight = Math.max(row.miss ? 8 : 0, missRatio);
-          return `
-            <div class="trend-bar-item" title="${row.label} 실수율 ${missRatio}% · 실수 ${row.miss}건 · 실수 없음 ${row.ok}건">
-              <span class="trend-percent">${missRatio}%</span>
-              <div class="trend-column" aria-label="${row.label} 실수율 ${missRatio}%">
-                <span class="miss-rate" style="height:${safeHeight}%"></span>
-              </div>
-              <span class="trend-month">${row.label}</span>
-            </div>
-          `;
-        }).join("")
-      }</div>`;
+      const data = rows.map((row) => rowMissRate(row));
+      const n = rows.length;
+
+      if (!n) {
+        $("#trendBars").innerHTML = "";
+        return;
+      }
+
+      const W = 720, H = 230;
+      const padL = 36, padR = 24, padT = 30, padB = 30;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+      const baseY = padT + plotH;
+
+      const peak = Math.max(...data, 0);
+      const maxVal = Math.max(10, Math.ceil(peak / 10) * 10);
+      const avg = data.reduce((sum, value) => sum + value, 0) / n;
+      const maxIdx = data.indexOf(peak);
+
+      const xAt = (i) => padL + (n <= 1 ? plotW / 2 : (plotW * i) / (n - 1));
+      const yAt = (v) => baseY - (Math.min(v, maxVal) / maxVal) * plotH;
+
+      const pointColor = (i) => {
+        if (i === maxIdx && peak > 0) return "var(--red)";
+        const isLast = i === n - 1;
+        const improved = isLast && i > 0 && data[i] < data[i - 1];
+        if (improved) return "var(--green-fg)";
+        return "var(--red)";
+      };
+
+      const linePts = data.map((v, i) => `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(" ");
+      const areaPts = `${xAt(0).toFixed(1)},${baseY} ${linePts} ${xAt(n - 1).toFixed(1)},${baseY}`;
+
+      const grid = [0, maxVal / 2, maxVal].map((gv) => {
+        const gy = yAt(gv).toFixed(1);
+        return `<line x1="${padL}" y1="${gy}" x2="${W - padR}" y2="${gy}" stroke="var(--border)" stroke-width="1"></line>`
+          + `<text x="${padL - 8}" y="${gy}" text-anchor="end" dominant-baseline="middle" font-size="11" fill="var(--text-subtle)">${Math.round(gv)}%</text>`;
+      }).join("");
+
+      const avgY = yAt(avg);
+      const avgLine = `<line x1="${padL}" y1="${avgY.toFixed(1)}" x2="${W - padR}" y2="${avgY.toFixed(1)}" stroke="var(--text-subtle)" stroke-width="1.5" stroke-dasharray="6 4"></line>`
+        + `<text x="${W - padR}" y="${(avgY - 7).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--text-muted)">평균 ${avg.toFixed(1)}%</text>`;
+
+      const dots = data.map((v, i) => {
+        const emphasized = (i === maxIdx && peak > 0) || i === n - 1;
+        return `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="${emphasized ? 5 : 3.5}" fill="${pointColor(i)}" stroke="var(--card)" stroke-width="2"></circle>`;
+      }).join("");
+
+      const valueLabels = data.map((v, i) => {
+        const emphasized = (i === maxIdx && peak > 0) || i === n - 1;
+        const color = (i === maxIdx && peak > 0) || pointColor(i) === "var(--green-fg)" ? pointColor(i) : "var(--text)";
+        return `<text x="${xAt(i).toFixed(1)}" y="${(yAt(v) - 13).toFixed(1)}" text-anchor="middle" font-size="12.5" font-weight="${emphasized ? 900 : 700}" fill="${color}">${v}%</text>`;
+      }).join("");
+
+      const monthLabels = rows.map((row, i) =>
+        `<text x="${xAt(i).toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--text-muted)">${row.label}</text>`
+      ).join("");
+
+      const hover = rows.map((row, i) =>
+        `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(data[i]).toFixed(1)}" r="16" fill="transparent"><title>${row.label} 실수율 ${data[i]}% · 실수 ${row.miss}건 · 실수 없음 ${row.ok}건</title></circle>`
+      ).join("");
+
+      $("#trendBars").innerHTML = `
+        <svg class="trend-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="최근 6개월 실수율 추이 꺾은선 그래프">
+          ${grid}
+          <polygon points="${areaPts}" fill="var(--red)" fill-opacity="0.1" stroke="none"></polygon>
+          <polyline points="${linePts}" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+          ${avgLine}
+          ${dots}
+          ${valueLabels}
+          ${monthLabels}
+          ${hover}
+        </svg>`;
     }
 
     function renderMonthHistory() {
