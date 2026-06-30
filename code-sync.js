@@ -75,8 +75,23 @@ function workerOk() {
   return typeof WORKER_URL === 'string' && WORKER_URL && !WORKER_URL.includes('REPLACE-ME');
 }
 function recomputeEnabled() {
-  myCode = readMyCode();
+  // 저장소가 비어 있어도(iOS·아이패드 등 iframe 저장 차단) 메모리에 있는 코드는 유지
+  const stored = readMyCode();
+  if (stored) myCode = stored;
   cloudEnabled = !!(myCode && CODE_RE.test(myCode) && workerOk());
+}
+
+/* URL(?code= 또는 #code=)로 전달된 코드 — 기기 저장이 막히는 환경의 핵심 해결책 */
+function readCodeFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search || '');
+    let c = params.get('code') || params.get('mycode');
+    if (!c && window.location.hash) {
+      c = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('code');
+    }
+    c = (c || '').trim();
+    return CODE_RE.test(c) ? c : null;
+  } catch (e) { return null; }
 }
 function shortCode() { return myCode ? myCode.slice(0, 10) + '…' : ''; }
 
@@ -281,12 +296,19 @@ function openManageModal() {
     <p class="cs-sub">이 코드로 어느 기기에서나 같은 데이터를 볼 수 있어요.</p>
     <div class="cs-code"><code>${myCode}</code><button class="cs-btn" style="width:auto;margin:0;padding:8px 12px" id="csCopy">복사</button></div>
     <div class="cs-warn">⚠️ 코드는 비밀번호처럼 다뤄주세요. 코드를 아는 사람은 이 데이터에 접근할 수 있어요.</div>
+    <button class="cs-btn primary" id="csEmbed">📱 모바일·아이패드용 임베드 주소 복사</button>
+    <p class="cs-sub" style="margin-top:6px">이 주소를 노션 임베드 주소로 바꾸면, 기기마다 코드를 다시 입력하지 않아도 돼요.</p>
     <button class="cs-btn" id="csSwitch">다른 코드로 전환</button>
     <button class="cs-link" id="csClose">닫기</button>
   `);
   document.getElementById('csCopy').onclick = async () => {
     const ok = await copyText(myCode);
     document.getElementById('csCopy').textContent = ok ? '복사됨!' : '복사 실패';
+  };
+  document.getElementById('csEmbed').onclick = async () => {
+    const url = location.origin + location.pathname + '?code=' + encodeURIComponent(myCode);
+    const ok = await copyText(url);
+    document.getElementById('csEmbed').textContent = ok ? '주소 복사됨!' : '복사 실패';
   };
   document.getElementById('csSwitch').onclick = openIntroModal;
   document.getElementById('csClose').onclick = closeModal;
@@ -313,6 +335,11 @@ async function initCloudSync(onRemoteApplied) {
   if (!workerOk()) {
     cloudStatus('⌂', '', '서버 미설정 — 이 기기에만 저장');
     return false;
+  }
+  // 저장소에 코드가 없으면 URL의 ?code= 를 채택 (기기 저장이 막히는 모바일/아이패드 대응)
+  if (!cloudEnabled) {
+    const urlCode = readCodeFromUrl();
+    if (urlCode) { writeMyCode(urlCode); recomputeEnabled(); }
   }
   if (!cloudEnabled) {
     cloudStatus('⌂', '', '내 코드 없음 — 눌러서 시작');
