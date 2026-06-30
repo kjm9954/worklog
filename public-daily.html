@@ -1844,6 +1844,28 @@
   .project-popover .daily-pop-row:focus-within .daily-pop-mini { opacity: 1; }
   .daily-pop-mini:hover { background: var(--bg); color: var(--text); }
   .daily-pop-mini[data-act="del"]:hover { color: #c73a3a; }
+  .daily-pop-swatches {
+    display: inline-flex; gap: 3px; padding: 0 2px;
+    opacity: 0; transition: opacity 0.1s;
+  }
+  .project-popover .daily-pop-row:hover .daily-pop-swatches,
+  .project-popover .daily-pop-row:focus-within .daily-pop-swatches { opacity: 1; }
+  .daily-pop-swatch {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.1s, border-color 0.1s, box-shadow 0.1s;
+  }
+  .daily-pop-swatch:hover { transform: scale(1.15); }
+  .daily-pop-swatch.active {
+    border-color: var(--text);
+    box-shadow: 0 0 0 1px var(--card), 0 0 0 2px var(--text);
+  }
+  .daily-pop-swatch[data-slot="p1"] { background: var(--proj-main-bg); }
+  .daily-pop-swatch[data-slot="p2"] { background: var(--proj-sub-bg); }
+  .daily-pop-swatch[data-slot="p3"] { background: var(--proj-etc-bg); }
   .daily-pop-add-label { color: var(--text-subtle); }
   .daily-pop-input {
     flex: 1;
@@ -3274,6 +3296,9 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     const idx = labels.indexOf(name);
     if (idx >= 0) {
       labels.splice(idx, 1);
+      if (state.projectColors && Object.prototype.hasOwnProperty.call(state.projectColors, name)) {
+        delete state.projectColors[name];
+      }
       saveState();
       // 고아 값은 그대로 둠 — 기존 task.project 건드리지 않음
     }
@@ -3327,6 +3352,10 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
           const labels = state.projectLabels || [];
           const idx = labels.indexOf(oldName);
           if (idx >= 0 && !labels.includes(v)) labels[idx] = v;
+          if (state.projectColors && Object.prototype.hasOwnProperty.call(state.projectColors, oldName)) {
+            state.projectColors[v] = state.projectColors[oldName];
+            delete state.projectColors[oldName];
+          }
           saveState();
         }
       }
@@ -3360,6 +3389,13 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
       const rows = labels.map(lbl => {
         const slot = projectSlot(lbl);
         const orphan = (lbl === cur) && isOrphan;
+        const swatches = orphan ? '' : `
+          <span class="daily-pop-swatches" role="group" aria-label="색상 선택">
+            <button class="daily-pop-swatch ${slot === 'p1' ? 'active' : ''}" data-act="color" data-label="${escapeHtml(lbl)}" data-slot="p1" title="분홍"></button>
+            <button class="daily-pop-swatch ${slot === 'p2' ? 'active' : ''}" data-act="color" data-label="${escapeHtml(lbl)}" data-slot="p2" title="보라"></button>
+            <button class="daily-pop-swatch ${slot === 'p3' ? 'active' : ''}" data-act="color" data-label="${escapeHtml(lbl)}" data-slot="p3" title="회색"></button>
+          </span>
+        `;
         const actions = orphan ? '' : `
           <button class="daily-pop-mini" data-act="edit" data-label="${escapeHtml(lbl)}" title="이름 수정">✎</button>
           <button class="daily-pop-mini" data-act="del" data-label="${escapeHtml(lbl)}" title="삭제">×</button>
@@ -3370,6 +3406,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
               <span class="daily-pop-check">${lbl === cur ? '✓' : ''}</span>
               <span class="daily-chip" data-slot="${slot}">${escapeHtml(lbl)}${orphan ? ' <em class="daily-pop-orphan">(삭제됨)</em>' : ''}</span>
             </button>
+            ${swatches}
             ${actions}
           </div>
         `;
@@ -3390,6 +3427,22 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     positionPopoverBelow(anchorEl, pop);
 
     pop.addEventListener('click', function(e) {
+      const swatchBtn = e.target.closest('.daily-pop-swatch[data-act="color"]');
+      if (swatchBtn) {
+        e.stopPropagation(); e.preventDefault();
+        const lbl = swatchBtn.dataset.label;
+        const slot = swatchBtn.dataset.slot;
+        const cur = projectSlot(lbl);
+        if (typeof setProjectColor === 'function') {
+          setProjectColor(lbl, cur === slot ? '' : slot);
+        }
+        saveState();
+        rebuild();
+        positionPopoverBelow(anchorEl, pop);
+        renderDaily();
+        if (typeof renderWeekGrid === 'function') renderWeekGrid();
+        return;
+      }
       const miniBtn = e.target.closest('.daily-pop-mini');
       if (miniBtn) {
         e.stopPropagation();

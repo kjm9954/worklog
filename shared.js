@@ -391,8 +391,16 @@ function autoCarryoverYesterdayTasks() {
 }
 
 // 프로젝트 이름 → 슬롯 매핑 (색상 매핑용 — p1~p3 순환)
+// 우선순위: state.projectColors[name] > 키워드 매칭(팝콘/타운) > projectLabels 인덱스 % 3
 function projectSlot(projectName) {
-  const key = String(projectName || '').trim().toLowerCase();
+  const raw = String(projectName || '').trim();
+  if (!raw) return '';
+  const userMap = state && state.projectColors;
+  if (userMap && typeof userMap === 'object') {
+    const explicit = userMap[raw];
+    if (explicit === 'p1' || explicit === 'p2' || explicit === 'p3') return explicit;
+  }
+  const key = raw.toLowerCase();
   if (key.includes('팝콘') || key.includes('popcorn')) return 'p1';
   if (key.includes('타운') || key.includes('town')) return 'p2';
   const labels = (state && state.projectLabels) || [];
@@ -400,6 +408,19 @@ function projectSlot(projectName) {
   if (idx < 0) return '';
   return 'p' + ((idx % 3) + 1);
 }
+
+function setProjectColor(label, slot) {
+  if (!state) return;
+  if (!state.projectColors || typeof state.projectColors !== 'object') state.projectColors = {};
+  const name = String(label || '').trim();
+  if (!name) return;
+  if (slot === 'p1' || slot === 'p2' || slot === 'p3') {
+    state.projectColors[name] = slot;
+  } else {
+    delete state.projectColors[name];
+  }
+}
+window.setProjectColor = setProjectColor;
 
 /* ── 상태 라이프사이클 ── */
 function createInitialState() {
@@ -414,7 +435,8 @@ function createInitialState() {
     memoChecklist: [],
     lastQuadrant: 'q4',
     lastExportAt: null,
-    carryover: []
+    carryover: [],
+    projectColors: {}
   };
 }
 
@@ -440,6 +462,11 @@ function migrateState(s) {
   }).filter(item => item.text.trim() || item.checked);
   if (!Array.isArray(s.projectLabels)) s.projectLabels = [];
   s.projectLabels = s.projectLabels.filter(p => typeof p === 'string' && p.trim()).map(p => p.trim());
+  if (!s.projectColors || typeof s.projectColors !== 'object') s.projectColors = {};
+  Object.keys(s.projectColors).forEach(k => {
+    const v = s.projectColors[k];
+    if (v !== 'p1' && v !== 'p2' && v !== 'p3') delete s.projectColors[k];
+  });
   if (!s.weekStart || !Array.isArray(s.days) || s.days.length === 0) {
     const monday = getThisMonday();
     s.weekStart = formatDate(monday);
