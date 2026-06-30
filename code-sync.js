@@ -75,8 +75,38 @@ function workerOk() {
   return typeof WORKER_URL === 'string' && WORKER_URL && !WORKER_URL.includes('REPLACE-ME');
 }
 function recomputeEnabled() {
-  myCode = readMyCode();
+  // 저장소가 비어 있어도(iOS·아이패드 등 iframe 저장 차단) 메모리에 있는 코드는 유지
+  const stored = readMyCode();
+  if (stored) myCode = stored;
   cloudEnabled = !!(myCode && CODE_RE.test(myCode) && workerOk());
+}
+
+/* ===== Storage Access API =================================================
+   iOS·아이패드 Safari는 노션 iframe의 저장소를 분리/차단한다. 사용자 제스처와
+   함께 requestStorageAccess()로 1회 권한을 받으면 그 기기에서 localStorage가
+   정상 동작하고 코드가 기억된다. 권한이 한 번 부여되면 이후 방문에선 대개
+   재요청이 조용히 통과해 다시 묻지 않는다.
+   - storageAccessSupported(): API 존재 여부(데스크톱/구형은 false → 기존 동작)
+   - ensureStorageAccess({interactive}): 접근 보장 시도. interactive=true는
+     반드시 click 등 사용자 제스처 안에서 호출해야 한다. */
+function storageAccessSupported() {
+  return !!(document.requestStorageAccess && document.hasStorageAccess);
+}
+async function hasStorageAccessSafe() {
+  if (!storageAccessSupported()) return true;
+  try { return await document.hasStorageAccess(); } catch (e) { return false; }
+}
+async function ensureStorageAccess(opts) {
+  const interactive = opts && opts.interactive;
+  if (!storageAccessSupported()) return true;
+  if (await hasStorageAccessSafe()) return true;
+  try {
+    // 제스처가 아니어도 이미 부여된 권한이면 조용히 통과될 수 있음(재방문).
+    await document.requestStorageAccess();
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 function shortCode() { return myCode ? myCode.slice(0, 10) + '…' : ''; }
 
@@ -141,6 +171,7 @@ function cloudIsEnabled() { return cloudEnabled; }
 /* ===== 코드 채택(만들기/입력) =========================================== */
 async function adoptCode(code) {
   if (!CODE_RE.test(code)) { alert('코드 형식이 올바르지 않아요.\n예: wk-1a2b-3c4d-5e6f-7a8b'); return false; }
+  await ensureStorageAccess({ interactive: true });
   writeMyCode(code);
   recomputeEnabled();
   if (!cloudEnabled) return false;
@@ -214,6 +245,37 @@ async function copyText(t) {
       document.execCommand('copy'); ta.remove(); return true;
     } catch (e2) { return false; }
   }
+}
+
+/* 저장 접근 게이트 — iOS·아이패드: 사용자 제스처로 1회 저장 권한을 받는다.
+   재방문 사용자는 이 버튼 한 번으로 기기에 저장돼 있던 코드가 풀려 바로 이어진다. */
+function openStorageGateModal() {
+  buildOverlay(`
+    <h3>☁ 내 업무일지 시작하기</h3>
+    <p class="cs-sub">이 기기에서 데이터를 기억하려면 한 번만 "허용"해 주세요. 다음부터는 묻지 않아요.</p>
+    <button class="cs-btn primary" id="csGrant">시작하기</button>
+    <button class="cs-link" id="csLater">나중에 (이 기기에만 임시 저장)</button>
+  `);
+  document.getElementById('csGrant').onclick = async () => {
+    const ok = await ensureStorageAccess({ interactive: true });
+    if (ok) recomputeEnabled();
+    if (cloudEnabled) {
+      /* 이전에 저장해둔 코드가 다시 읽힘 → 바로 동기화 */
+      closeModal();
+      cloudApplyingRemote = true;
+      const remote = await cloudLoad();
+      cloudApplyingRemote = false;
+      if (remote && typeof onRemoteAppliedCb === 'function') onRemoteAppliedCb(remote);
+      return;
+    }
+    /* 권한은 처리됐지만 저장된 코드가 없음 → 생성/입력 안내 */
+    openIntroModal();
+  };
+  document.getElementById('csLater').onclick = () => {
+    markIntroSeen();
+    closeModal();
+    cloudStatus('⌂', '', '내 코드 없음 — 아이콘을 눌러 시작');
+  };
 }
 
 /* 첫 진입(코드 없음) */
@@ -314,11 +376,24 @@ async function initCloudSync(onRemoteApplied) {
     cloudStatus('⌂', '', '서버 미설정 — 이 기기에만 저장');
     return false;
   }
+
+  // 저장 접근이 막힌 환경(iOS·아이패드)에서, 권한이 이미 부여돼 있으면 조용히 통과시켜
+  // 저장된 코드를 그대로 읽어온다(재방문 시 무클릭). 그래도 코드를 못 읽으면 게이트를 띄운다.
+  if (!cloudEnabled && storageAccessSupported()) {
+    const ok = await ensureStorageAccess({ interactive: false });
+    if (ok) recomputeEnabled();
+  }
+
   if (!cloudEnabled) {
     cloudStatus('⌂', '', '내 코드 없음 — 눌러서 시작');
     if (shouldSkipIntroPrompt()) return false;
     markIntroSeen();
-    openIntroModal();
+    // 저장 접근 권한이 아직 없으면, 사용자 제스처로 권한을 받는 게이트를 먼저 띄운다.
+    if (storageAccessSupported() && !(await hasStorageAccessSafe())) {
+      openStorageGateModal();
+    } else {
+      openIntroModal();
+    }
     return false;
   }
   cloudApplyingRemote = true;
