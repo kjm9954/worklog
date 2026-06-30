@@ -905,7 +905,27 @@
     font-size: 13px;
     font-family: inherit;
     color: var(--text);
+    animation: pop-in 0.16s ease;
+    transform-origin: top center;
   }
+  .daily-popover.is-closing { animation: pop-out 0.16s ease forwards; }
+  @keyframes pop-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+  @keyframes pop-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.96); } }
+  .date-picker-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 999;
+    animation: dp-fade-in 0.16s ease;
+  }
+  .date-picker-backdrop.hidden { display: none; }
+  @keyframes dp-fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes dp-pop-in {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  .board-cal-day { transition: background 0.15s, transform 0.12s, box-shadow 0.15s; }
+  .board-cal-day:hover { transform: translateY(-1px); }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
   .daily-pop-item {
     display: flex;
     align-items: center;
@@ -1327,11 +1347,14 @@
       try { closeMeta.onClose(); } catch (e) {}
     }
     const el = boardOpenPopover.el;
-    if (el && el.parentNode) el.parentNode.removeChild(el);
     boardOpenPopover = null;
     document.removeEventListener('click', boardPopoverOutsideClick);
     window.removeEventListener('scroll', boardPopoverScrollHandler, true);
     window.removeEventListener('resize', closeBoardPopover);
+    if (el) {
+      el.classList.add('is-closing');
+      setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 160);
+    }
   }
   window.closeBoardPopover = closeBoardPopover;
 
@@ -2307,6 +2330,12 @@
     ].join('');
     document.body.appendChild(el);
 
+    const backdrop = document.createElement('div');
+    backdrop.className = 'date-picker-backdrop hidden';
+    backdrop.addEventListener('click', closeDatePicker);
+    document.body.appendChild(backdrop);
+    datePicker.backdrop = backdrop;
+
     el.addEventListener('mousedown', e => e.preventDefault());
     el.querySelectorAll('.dp-nav').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2348,13 +2377,18 @@
       base = new Date();
     }
     datePicker.currentMonth = new Date(base.getFullYear(), base.getMonth(), 1);
-    positionDatePicker(input);
+    positionDatePicker();
     renderDatePickerGrid();
+    if (datePicker.backdrop) datePicker.backdrop.classList.remove('hidden');
     datePicker.el.classList.remove('hidden');
+    datePicker.el.style.animation = 'none';
+    void datePicker.el.offsetWidth;
+    datePicker.el.style.animation = 'dp-pop-in 0.16s ease';
   }
 
   function closeDatePicker() {
     if (datePicker.el) datePicker.el.classList.add('hidden');
+    if (datePicker.backdrop) datePicker.backdrop.classList.add('hidden');
     datePicker.currentInput = null;
     datePicker.currentMonth = null;
   }
@@ -2372,19 +2406,11 @@
     closeDatePicker();
   }
 
-  function positionDatePicker(input) {
-    const rect = input.getBoundingClientRect();
+  function positionDatePicker() {
     const el = datePicker.el;
-    const width = 268;
-    const height = 290;
-    let left = rect.left;
-    if (left + width > window.innerWidth - 8) left = window.innerWidth - width - 8;
-    if (left < 8) left = 8;
-    let top = rect.bottom + 4;
-    if (top + height > window.innerHeight - 8) top = rect.top - height - 4;
-    if (top < 8) top = 8;
-    el.style.left = left + 'px';
-    el.style.top = top + 'px';
+    el.style.left = '50%';
+    el.style.top = '50%';
+    el.style.transform = 'translate(-50%, -50%)';
   }
 
   function renderDatePickerGrid() {
@@ -2438,9 +2464,6 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && datePicker.el && !datePicker.el.classList.contains('hidden')) closeDatePicker();
     });
-    window.addEventListener('scroll', () => {
-      if (datePicker.el && !datePicker.el.classList.contains('hidden')) closeDatePicker();
-    }, true);
   }
 
   function closeBoardRowMenu() {
