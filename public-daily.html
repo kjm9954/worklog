@@ -271,6 +271,22 @@
   :root[data-theme="dark"] .dday-item-chip.soon { background: #1e2e42; color: #7fb6e8; border-color: #2d4a6a; }
   :root[data-theme="dark"] .dday-item-chip.near { background: #3d3005; color: #ffd96a; border-color: #5a4b15; }
   :root[data-theme="dark"] .dday-item-chip.near.critical { background: #3a1a1a; color: #ff8a8a; border-color: #5a2525; }
+  .dday-item { transition: background 0.15s, transform 0.15s, box-shadow 0.15s; }
+  .dday-item:hover { transform: translateY(-1px); }
+  .dday-item.overdue {
+    border-color: #f5b4b4; background: #fff3f3;
+    animation: soft-red-pulse 1.8s ease-in-out infinite;
+  }
+  :root[data-theme="dark"] .dday-item.overdue { border-color: #5a2525; background: #3a1a1a; }
+  .dday-item.overdue .dday-item-tag { color: #a33; font-weight: 700; }
+  :root[data-theme="dark"] .dday-item.overdue .dday-item-tag { color: #ff8a8a; }
+  @keyframes soft-red-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(224, 62, 62, 0); }
+    50% { box-shadow: 0 0 0 3px rgba(224, 62, 62, 0.18); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
 
   /* 주간 달성률 */
   .week-rate-main {
@@ -2779,11 +2795,11 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     const all = important.map(t => ({ t, kind: '중요' })).concat(routines.map(t => ({ t, kind: '상시' })));
     const items = all
       .map(x => { const o = {}; o.t = x.t; o.kind = x.kind; o.diff = calcDDay(x.t.targetDate); return o; })
-      .filter(x => x.diff != null && x.diff >= 0 && x.diff <= 7 && x.t.status !== '완료');
+      .filter(x => x.diff != null && x.diff <= 7 && x.t.status !== '완료');
 
-    // 0~7일 버킷
+    // 0~7일 버킷 (마감 지난 항목은 '오늘' 버킷으로 합침)
     const buckets = [[], [], [], [], [], [], [], []];
-    items.forEach(x => buckets[x.diff].push(x));
+    items.forEach(x => buckets[Math.max(0, x.diff)].push(x));
 
     if (countEl) countEl.textContent = String(items.length);
 
@@ -2840,10 +2856,12 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
         const t = x.t;
         const proj = t.project ? escapeHtml(t.project) : '';
         const name = t.name ? escapeHtml(t.name) : '<span class="daily-placeholder">(이름 없음)</span>';
+        const overdue = x.diff < 0;
         const metaParts = [x.kind];
         if (proj) metaParts.push(proj);
+        if (overdue) metaParts.push(`<span class="dday-item-tag">마감 ${-x.diff}일 지남</span>`);
         return `
-          <div class="dday-item" title="${escapeHtml(t.name || '')}">
+          <div class="dday-item${overdue ? ' overdue' : ''}" title="${escapeHtml(t.name || '')}">
             <div class="dday-item-main">
               <div class="dday-item-name">${name}</div>
               <div class="dday-item-meta">${metaParts.join(' · ')}</div>

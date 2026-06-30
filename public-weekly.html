@@ -330,7 +330,14 @@
     padding: 20px 24px; max-width: 680px; width: 100%;
     max-height: 85vh; overflow-y: auto;
     box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    animation: pop-in 0.18s ease;
   }
+  .h-day-modal.is-closing { animation: pop-out 0.16s ease forwards; }
+  @keyframes pop-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+  @keyframes pop-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.96); } }
+  .h-day { transition: transform 0.15s, box-shadow 0.15s, background 0.15s; }
+  .h-day:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
   .h-day-modal-head {
     display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
     border-bottom: 1px solid var(--border);
@@ -871,7 +878,7 @@
         </div>
         <div class="h-day-modal-empty">이 날짜의 기록이 없어요.</div>
       `;
-      bd.hidden = false; return;
+      bd.hidden = false; animateDayModalOpen(); return;
     }
     const stats = dayStats(day);
     const rate = stats.total ? Math.round((stats.done / stats.total) * 100) : 0;
@@ -904,9 +911,22 @@
       ${retroHtml}
       ${qBlocks || '<div class="h-day-modal-empty">등록된 업무가 없어요.</div>'}
     `;
-    bd.hidden = false;
+    bd.hidden = false; animateDayModalOpen();
   };
-  window.closeDayModal = function() { document.getElementById('hDayModalBd').hidden = true; };
+  function animateDayModalOpen() {
+    const modal = document.getElementById('hDayModal');
+    if (!modal) return;
+    modal.classList.remove('is-closing');
+    modal.style.animation = 'none'; void modal.offsetWidth; modal.style.animation = '';
+  }
+  window.closeDayModal = function() {
+    const bd = document.getElementById('hDayModalBd');
+    const modal = document.getElementById('hDayModal');
+    if (!bd || bd.hidden) return;
+    if (!modal) { bd.hidden = true; return; }
+    modal.classList.add('is-closing');
+    setTimeout(() => { bd.hidden = true; modal.classList.remove('is-closing'); }, 160);
+  };
 
   function renderSummaryChips() {
     const week = getSelectedWeek();
@@ -1488,6 +1508,8 @@
         hMove(e.key === 'ArrowLeft' ? -1 : 1);
       }
     });
+    const hDayBd = document.getElementById('hDayModalBd');
+    if (hDayBd) hDayBd.addEventListener('click', e => { if (e.target === e.currentTarget) closeDayModal(); });
   })();
   </script>
 </body>
