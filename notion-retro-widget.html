@@ -2271,9 +2271,10 @@
   </div>
 
   <script>
-    const WORKER_URL = "https://notion-widgets-api.wldnjsdkk.workers.dev";
+    const WORKER_URL = "https://worklog-public.wldnjsdkk.workers.dev";
     const WIDGET_API_KEY = "";
     const USE_MOCK = WORKER_URL === "";
+    const WIDGET_INSTANCE_RE = /^[A-Za-z0-9_-]{24,180}$/;
     const CLOUD_SYNC_DEBOUNCE_MS = 1200;
     const storeKey = "retro-calendar-widget-v8";
     const categoryStoreKey = "retro-calendar-widget-categories-v2";
@@ -2703,8 +2704,13 @@
       return urlValue("space", "ws", "slot") || "work-retro-main";
     }
 
+    function getWidgetInstanceId() {
+      return urlValue("w", "instance", "widget_id");
+    }
+
     function canUseCloudSync() {
-      return Boolean(!USE_MOCK && WORKER_URL && !WORKER_URL.includes("REPLACE-ME") && getWidgetApiKey());
+      const instanceId = getWidgetInstanceId();
+      return Boolean(!USE_MOCK && WORKER_URL && !WORKER_URL.includes("REPLACE-ME") && WIDGET_INSTANCE_RE.test(instanceId));
     }
 
     function cloudEndpoint(path) {
@@ -2712,7 +2718,7 @@
     }
 
     function cloudStateEndpoint() {
-      return `${cloudEndpoint("/work-retro/state")}?space=${encodeURIComponent(getCloudSpace())}`;
+      return `${cloudEndpoint("/api/state")}?w=${encodeURIComponent(getWidgetInstanceId())}&scope=retro`;
     }
 
     function cloudHeaders(hasBody = false) {
@@ -2732,28 +2738,7 @@
 
     async function saveCloudRecordNow(date) {
       if (!cloudSyncEnabled || cloudApplyingRemote || !date) return;
-      const record = recordFor(date);
-      setSaveState("클라우드 저장 중", null);
-      try {
-        const response = await fetch(cloudEndpoint("/work-retro/record"), {
-          method: "POST",
-          headers: cloudHeaders(true),
-          body: JSON.stringify({
-            space: getCloudSpace(),
-            date,
-            status: record.status || "",
-            category: record.category || "",
-            detail: record.detail || "",
-            nextAction: record.nextAction || "",
-            impact: normalizeImpact(record.impact)
-          })
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        setSaveState("클라우드 저장됨");
-      } catch (error) {
-        console.warn("cloud record save failed", error);
-        setSaveState("클라우드 저장 실패", "로컬 저장됨");
-      }
+      await saveCloudStateNow();
     }
 
     async function saveCloudStateNow() {
