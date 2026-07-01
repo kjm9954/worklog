@@ -5192,6 +5192,18 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
     subscribeStateChanges(render);
     render();
     initColResize();
+    if (document.body.classList.contains('public-worklog-widget') && typeof initBoxResizer === 'function') {
+      requestAnimationFrame(function() {
+        initBoxResizer({
+          targetSelector: 'main#mode-daily > .daily-content > .daily-wrap',
+          storageKey: 'worklog.pub.worklogWidth',
+          axis: 'x',
+          widthVar: '--public-worklog-content-w',
+          minW: 420, maxW: 1400,
+          viewportPadX: 28
+        });
+      });
+    }
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
     if (typeof initCloudSync === 'function') {
       await initCloudSync(function(remote) {

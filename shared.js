@@ -1299,14 +1299,18 @@ function initBoxResizer(options) {
   const hy = axis === 'both' ? mkHandle('box-resizer-y', '세로 크기 조절') : null;
   const hc = axis === 'both' ? mkHandle('box-resizer-c', '비율 유지 크기 조절') : null;
 
+  const widthVar = cfg.widthVar || '';
+  const heightVar = cfg.heightVar || '';
   let curW = 0, curH = 0;
 
   function applySize(w, h) {
     curW = Math.round(Math.max(minW, Math.min(w, availW())));
-    target.style.width = curW + 'px';
+    if (widthVar) target.style.setProperty(widthVar, curW + 'px');
+    else target.style.width = curW + 'px';
     if (axis === 'both' && h != null) {
       curH = Math.round(Math.max(minH, Math.min(h, availH())));
-      target.style.height = curH + 'px';
+      if (heightVar) target.style.setProperty(heightVar, curH + 'px');
+      else target.style.height = curH + 'px';
     }
   }
   function persist() {

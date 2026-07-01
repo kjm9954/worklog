@@ -3009,12 +3009,14 @@
     render();
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
     if (typeof initBoxResizer === 'function') {
-      initBoxResizer({
-        targetSelector: '.board-important-section',
-        storageKey: 'worklog.pub.calendarBox',
-        minW: 480, minH: 420,
-        maxW: 1600, maxH: 1400,
-        viewportPadX: 20, viewportPadY: 20
+      requestAnimationFrame(function() {
+        initBoxResizer({
+          targetSelector: '.board-important-section',
+          storageKey: 'worklog.pub.calendarBox',
+          minW: 480, minH: 420,
+          maxW: 1600, maxH: 1400,
+          viewportPadX: 20, viewportPadY: 20
+        });
       });
     }
     if (typeof initCloudSync === 'function') {
