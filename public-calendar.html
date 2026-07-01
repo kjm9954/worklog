@@ -339,12 +339,20 @@
     flex-direction: column;
     gap: 3px;
     cursor: default;
-    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.15s;
     outline: none;
   }
   .board-cal-day:hover,
   .board-cal-day:focus-visible {
-    border-color: var(--border-strong);
+    border-color: var(--q2);
+    background: var(--bg-2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(15, 15, 15, 0.1);
+    z-index: 2;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .board-cal-day { transition: none; }
+    .board-cal-day:hover, .board-cal-day:focus-visible { transform: none; }
   }
   .board-cal-day.muted { opacity: 0.35; }
   .board-cal-day.today {
@@ -422,6 +430,10 @@
   .board-cal-chip.cat-asset { background: var(--q1-bg); color: var(--q1); }
   .board-cal-chip.cat-build { background: var(--q3-bg); color: var(--q3); }
   .board-cal-chip.cat-study { background: #efe9fb; color: #6e5bd4; }
+  /* 프로젝트 색상 우선 (선택된 프로젝트 슬롯에 맞춰 표시) */
+  .board-cal-chip[data-slot="p1"] { background: var(--proj-main-bg); color: var(--proj-main-fg); }
+  .board-cal-chip[data-slot="p2"] { background: var(--proj-sub-bg); color: var(--proj-sub-fg); }
+  .board-cal-chip[data-slot="p3"] { background: var(--proj-etc-bg); color: var(--proj-etc-fg); }
   .board-cal-chip.done {
     opacity: 0.55;
     text-decoration: line-through;
@@ -484,6 +496,12 @@
   .board-undated-card.cat-build { border-left-color: var(--q3); }
   .board-day-card.cat-study,
   .board-undated-card.cat-study { border-left-color: #6e5bd4; }
+  .board-day-card[data-slot="p1"],
+  .board-undated-card[data-slot="p1"] { border-left-color: var(--proj-main-fg); }
+  .board-day-card[data-slot="p2"],
+  .board-undated-card[data-slot="p2"] { border-left-color: var(--proj-sub-fg); }
+  .board-day-card[data-slot="p3"],
+  .board-undated-card[data-slot="p3"] { border-left-color: var(--proj-etc-fg); }
   .board-day-card.done,
   .board-undated-card.done { opacity: 0.72; }
   .board-day-card-title {
@@ -906,6 +924,15 @@
     font-size: 13px;
     font-family: inherit;
     color: var(--text);
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+    transform-origin: top center;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+  }
+  .daily-popover.is-open { opacity: 1; transform: none; }
+  .daily-popover.is-closing { opacity: 0; transform: translateY(-4px) scale(0.98); pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .daily-popover { transition: none; }
   }
   .daily-pop-item {
     display: flex;
@@ -1428,20 +1455,30 @@
     closeBoardPopover();
   }
 
-  function closeBoardPopover() {
+  function closeBoardPopover(opts) {
     if (!boardOpenPopover) return;
+    const immediate = opts === true || (opts && opts.immediate);
     const closeMeta = boardOpenPopover;
     if (typeof closeMeta.onClose === 'function') {
       try { closeMeta.onClose(); } catch (e) {}
     }
     const el = boardOpenPopover.el;
-    if (el && el.parentNode) el.parentNode.removeChild(el);
     boardOpenPopover = null;
     document.removeEventListener('click', boardPopoverOutsideClick);
     window.removeEventListener('scroll', boardPopoverScrollHandler, true);
-    window.removeEventListener('resize', closeBoardPopover);
+    window.removeEventListener('resize', boardPopoverResizeHandler);
+    if (!el) return;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (immediate || reduce) {
+      if (el.parentNode) el.parentNode.removeChild(el);
+      return;
+    }
+    el.classList.add('is-closing');
+    el.classList.remove('is-open');
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 180);
   }
   window.closeBoardPopover = closeBoardPopover;
+  function boardPopoverResizeHandler() { closeBoardPopover(true); }
 
   function boardPopoverScrollHandler(e) {
     if (!boardOpenPopover) return;
@@ -1452,10 +1489,12 @@
   }
 
   function attachBoardPopoverGlobalListeners() {
+    const el = boardOpenPopover && boardOpenPopover.el;
+    if (el) requestAnimationFrame(() => { if (el.isConnected) el.classList.add('is-open'); });
     setTimeout(() => {
       document.addEventListener('click', boardPopoverOutsideClick);
       window.addEventListener('scroll', boardPopoverScrollHandler, true);
-      window.addEventListener('resize', closeBoardPopover);
+      window.addEventListener('resize', boardPopoverResizeHandler);
     }, 0);
   }
 
@@ -1543,7 +1582,7 @@
   }
 
   window.openBoardStatusPopover = function(kind, idx, anchorEl) {
-    closeBoardPopover();
+    closeBoardPopover(true);
     const item = getBoardItem(kind, idx);
     if (!item || !anchorEl) return;
     const current = boardStatusKey(item.status);
@@ -1574,7 +1613,7 @@
   };
 
   window.openBoardProjectPopover = function(kind, idx, anchorEl) {
-    closeBoardPopover();
+    closeBoardPopover(true);
     const item = getBoardItem(kind, idx);
     if (!item || !anchorEl) return;
 
@@ -1719,7 +1758,8 @@
       const slot = projectSlot(it.project) || '';
       const statusKey = boardStatusKey(it.status);
       return `
-        <div class="board-undated-card ${boardCategoryTone(it.category)} ${it.status === '완료' ? 'done' : ''}"
+        <div class="board-undated-card ${it.status === '완료' ? 'done' : ''}"
+             data-slot="${slot}"
              draggable="true"
              ondragstart="onImportantDragStart(event, ${idx})"
              ondragend="onImportantDragEnd(event)">
@@ -1796,7 +1836,7 @@
   }
 
   window.openBoardUndatedPopover = function(anchorEl) {
-    closeBoardPopover();
+    closeBoardPopover(true);
     if (!anchorEl) return;
     const pop = document.createElement('div');
     pop.className = 'daily-popover board-undated-popover';
@@ -1820,7 +1860,7 @@
   }
 
   window.openBoardRoutinesPopover = function(anchorEl) {
-    closeBoardPopover();
+    closeBoardPopover(true);
     if (!anchorEl) return;
     const pop = document.createElement('div');
     pop.className = 'daily-popover board-routine-popover';
@@ -1843,7 +1883,7 @@
   };
 
   window.openBoardDateTasksPopover = function(dateStr, anchorEl) {
-    closeBoardPopover();
+    closeBoardPopover(true);
     if (!anchorEl) return;
     const pop = document.createElement('div');
     pop.className = 'daily-popover board-undated-popover';
@@ -1905,6 +1945,8 @@
 
   window.onBoardDayClick = function(event, dateStr) {
     if (event) event.stopPropagation();
+    // 팝업이 떠 있는 상태에서 다른 날짜 셀을 누르면 먼저 닫는다
+    if (boardOpenPopover) closeBoardPopover();
     clearBoardDayClickTimer();
     boardDayClickTimer = setTimeout(() => {
       boardDayClickTimer = null;
@@ -2043,7 +2085,7 @@
   };
 
   window.openImportantEditor = function(idx, anchorEl) {
-    closeBoardPopover();
+    closeBoardPopover(true);
     const item = state.importantTasks[idx];
     if (!item || !anchorEl) return;
     const pop = document.createElement('div');
@@ -2138,7 +2180,8 @@
       const chips = items.slice(0, 1).map(it => {
         const idx = state.importantTasks.indexOf(it);
         return `<button type="button"
-                  class="board-cal-chip ${boardCategoryTone(it.category)} ${it.status === '완료' ? 'done' : ''}"
+                  class="board-cal-chip ${it.status === '완료' ? 'done' : ''}"
+                  data-slot="${projectSlot(it.project) || ''}"
                   data-imp-anchor="${idx}"
                   draggable="true"
                   ondragstart="onImportantDragStart(event, ${idx})"
