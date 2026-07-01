@@ -28,6 +28,23 @@ const PLACEHOLDERS = [
   'WORKLOG_WIDGET_INSTANCE_ID',
   '__WORKLOG_WIDGET_INSTANCE_ID__',
 ];
+const WORKLOG_WIDGET_FILES = new Set([
+  'public-worklog.html',
+  'public-weekly.html',
+  'public-calendar.html',
+  'public-routine.html',
+  'public-memo.html',
+  'public-summary.html',
+  'public-review.html',
+  'public-history.html',
+  'public-distribution.html',
+  'public-daily.html',
+  'public-board.html',
+  'notion-retro-check.html',
+  'notion-retro-record.html',
+  'notion-retro-history.html',
+  'notion-retro-detail-history.html',
+]);
 
 export default {
   async fetch(request, env) {
@@ -84,9 +101,33 @@ async function finishOAuth(request, env) {
   const instanceId = 'w_' + randomId(40);
   const now = new Date().toISOString();
 
-  let patchResult = { updated: 0, scanned: 0, skipped: true };
+  const patchResult = {
+    template: { updated: 0, scanned: 0, skipped: !token.duplicated_template_id },
+    accessiblePages: { updated: 0, scanned: 0, scannedPages: 0, skipped: false, errors: [] },
+  };
   if (token.duplicated_template_id) {
-    patchResult = await patchTemplateEmbeds(env, token.access_token, token.duplicated_template_id, instanceId);
+    try {
+      patchResult.template = await patchTemplateEmbeds(env, token.access_token, token.duplicated_template_id, instanceId);
+    } catch (e) {
+      patchResult.template = { updated: 0, scanned: 0, skipped: false, error: String(e && e.message || e) };
+    }
+  }
+
+  try {
+    patchResult.accessiblePages = await patchAccessibleWorklogEmbeds(
+      env,
+      token.access_token,
+      instanceId,
+      token.duplicated_template_id || ''
+    );
+  } catch (e) {
+    patchResult.accessiblePages = {
+      updated: 0,
+      scanned: 0,
+      scannedPages: 0,
+      skipped: false,
+      errors: [String(e && e.message || e)],
+    };
   }
 
   await env.WORKLOG_KV.put('instance:' + instanceId, JSON.stringify({
@@ -198,35 +239,93 @@ async function notionFetch(accessToken, path, init) {
 }
 
 async function patchTemplateEmbeds(env, accessToken, pageId, instanceId) {
+  return patchPageEmbeds(env, accessToken, pageId, instanceId, { maxBlocks: 500 });
+}
+
+async function patchAccessibleWorklogEmbeds(env, accessToken, instanceId, alreadyPatchedPageId) {
+  const result = { scannedPages: 0, scanned: 0, updated: 0, skipped: false, errors: [] };
+  const seenPages = new Set(alreadyPatchedPageId ? [alreadyPatchedPageId] : []);
+  const maxPages = 80;
+  const maxBlocks = 1600;
+  let cursor = '';
+
+  while (result.scannedPages < maxPages && result.scanned < maxBlocks) {
+    const body = {
+      filter: { property: 'object', value: 'page' },
+      page_size: Math.min(100, maxPages - result.scannedPages),
+    };
+    if (cursor) body.start_cursor = cursor;
+
+    const data = await notionFetch(accessToken, '/search', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+
+    for (const page of data.results || []) {
+      if (!page.id || seenPages.has(page.id)) continue;
+      seenPages.add(page.id);
+      result.scannedPages++;
+
+      try {
+        const pageResult = await patchPageEmbeds(env, accessToken, page.id, instanceId, {
+          maxBlocks: Math.min(500, maxBlocks - result.scanned),
+        });
+        result.scanned += pageResult.scanned;
+        result.updated += pageResult.updated;
+      } catch (e) {
+        if (result.errors.length < 5) result.errors.push(String(e && e.message || e));
+      }
+
+      if (result.scannedPages >= maxPages || result.scanned >= maxBlocks) break;
+    }
+
+    if (!data.has_more || !data.next_cursor) break;
+    cursor = data.next_cursor;
+  }
+
+  return result;
+}
+
+async function patchPageEmbeds(env, accessToken, pageId, instanceId, options) {
   const result = { scanned: 0, updated: 0, skipped: false };
   const queue = [{ id: pageId, depth: 0 }];
-  const maxDepth = 8;
-  const maxBlocks = 500;
+  const maxDepth = options && options.maxDepth || 8;
+  const maxBlocks = options && options.maxBlocks || 500;
 
   while (queue.length && result.scanned < maxBlocks) {
     const current = queue.shift();
-    const data = await notionFetch(accessToken, '/blocks/' + current.id + '/children?page_size=100');
-    for (const block of data.results || []) {
-      result.scanned++;
-      if (block.type === 'embed' && block.embed && block.embed.url) {
-        const nextUrl = instanceUrl(block.embed.url, instanceId);
-        if (nextUrl !== block.embed.url) {
-          await notionFetch(accessToken, '/blocks/' + block.id, {
-            method: 'PATCH',
-            body: JSON.stringify({ embed: { url: nextUrl } }),
-          });
-          result.updated++;
+    let cursor = '';
+
+    do {
+      const path = '/blocks/' + current.id + '/children?page_size=100' +
+        (cursor ? '&start_cursor=' + encodeURIComponent(cursor) : '');
+      const data = await notionFetch(accessToken, path);
+
+      for (const block of data.results || []) {
+        result.scanned++;
+        if (block.type === 'embed' && block.embed && block.embed.url) {
+          const nextUrl = instanceUrl(block.embed.url, instanceId, env);
+          if (nextUrl !== block.embed.url) {
+            await notionFetch(accessToken, '/blocks/' + block.id, {
+              method: 'PATCH',
+              body: JSON.stringify({ embed: { url: nextUrl } }),
+            });
+            result.updated++;
+          }
         }
+        if (block.has_children && current.depth < maxDepth) {
+          queue.push({ id: block.id, depth: current.depth + 1 });
+        }
+        if (result.scanned >= maxBlocks) break;
       }
-      if (block.has_children && current.depth < maxDepth) {
-        queue.push({ id: block.id, depth: current.depth + 1 });
-      }
-    }
+
+      cursor = data.has_more && data.next_cursor ? data.next_cursor : '';
+    } while (cursor && result.scanned < maxBlocks);
   }
   return result;
 }
 
-function instanceUrl(rawUrl, instanceId) {
+function instanceUrl(rawUrl, instanceId, env) {
   let next = String(rawUrl || '');
   let touched = false;
   for (const marker of PLACEHOLDERS) {
@@ -239,7 +338,10 @@ function instanceUrl(rawUrl, instanceId) {
   try {
     const url = new URL(next);
     const w = url.searchParams.get('w') || '';
-    if (w === 'template' || w === 'TEMPLATE' || w === 'INSTANCE_ID' || w === 'WORKLOG_INSTANCE_ID') {
+    if (isTemplateInstanceValue(w)) {
+      url.searchParams.set('w', instanceId);
+      touched = true;
+    } else if (!w && isWorklogWidgetUrl(url, env)) {
       url.searchParams.set('w', instanceId);
       touched = true;
     }
@@ -247,6 +349,29 @@ function instanceUrl(rawUrl, instanceId) {
   } catch (e) {
     return touched ? next : rawUrl;
   }
+}
+
+function isTemplateInstanceValue(value) {
+  return value === 'template' ||
+    value === 'TEMPLATE' ||
+    value === 'INSTANCE_ID' ||
+    PLACEHOLDERS.includes(value);
+}
+
+function isWorklogWidgetUrl(url, env) {
+  const fileName = url.pathname.split('/').pop();
+  if (!WORKLOG_WIDGET_FILES.has(fileName)) return false;
+
+  const baseRaw = env && env.APP_BASE_URL || 'https://kjm9954.github.io/worklog';
+  try {
+    const base = new URL(baseRaw);
+    const basePath = base.pathname.replace(/\/+$/, '');
+    if (url.origin === base.origin && url.pathname.startsWith(basePath + '/')) return true;
+  } catch (e) {
+    // Fall back to the production GitHub Pages host below.
+  }
+
+  return url.hostname === 'kjm9954.github.io' && url.pathname.startsWith('/worklog/');
 }
 
 function randomId(bytes) {

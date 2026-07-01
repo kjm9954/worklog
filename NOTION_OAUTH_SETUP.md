@@ -1,6 +1,8 @@
 # WorkLog Notion OAuth Setup
 
 This is the public-template flow that avoids manual code entry.
+It also tries to patch WorkLog embeds inside existing Notion pages that the
+user grants access to during OAuth.
 
 ## Flow
 
@@ -9,6 +11,8 @@ This is the public-template flow that avoids manual code entry.
 3. Notion duplicates the template and returns `duplicated_template_id`.
 4. `notion-oauth-worker.js` creates a random `w_...` widget instance id.
 5. The Worker patches template embed URLs that contain `WORKLOG_INSTANCE_ID`.
+   It also searches accessible Notion pages and patches WorkLog embed URLs that
+   contain `WORKLOG_INSTANCE_ID` or have no `w` value yet.
 6. Widgets load and save data through `/api/state?w=<instance_id>&scope=<scope>`.
 
 The `w` value is still present in the embed URL, but the user does not type or edit it.
@@ -59,6 +63,22 @@ https://<your-widget-host>/notion-retro-detail-history.html?w=WORKLOG_INSTANCE_I
 
 The Worker will replace `WORKLOG_INSTANCE_ID` after OAuth.
 The same `WORKLOG_INSTANCE_ID` can be used across all embeds. WorkLog state is saved under `scope=worklog`; retro mistake state is saved under `scope=retro`.
+
+## Existing Notion Pages
+
+For a page that is not created through the template option, the user must grant
+the Notion connection access to that page during OAuth. After OAuth, the Worker
+searches accessible pages and updates WorkLog embeds like these:
+
+```text
+https://<your-widget-host>/public-worklog.html?w=WORKLOG_INSTANCE_ID
+https://<your-widget-host>/public-worklog.html
+https://<your-widget-host>/notion-retro-check.html?w=WORKLOG_INSTANCE_ID
+https://<your-widget-host>/notion-retro-check.html
+```
+
+The Worker does not overwrite embeds that already have a real `w_...` instance
+id, so an existing user's connected widgets stay connected to their own data.
 
 ## Client Script
 

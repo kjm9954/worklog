@@ -939,7 +939,17 @@
       box-shadow: none;
       transform: none;
     }
-    .day.future { filter: grayscale(0.15); }
+    .day.future {
+      background: var(--card);
+      opacity: 1;
+      filter: none;
+    }
+    .day.future:hover {
+      background: var(--card);
+      border-color: var(--border);
+      box-shadow: none;
+      transform: none;
+    }
     .day.today {
       border: 1.5px solid var(--blue);
       background: var(--blue-bg);
