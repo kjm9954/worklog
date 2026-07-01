@@ -430,10 +430,13 @@
   .board-cal-chip.cat-asset { background: var(--q1-bg); color: var(--q1); }
   .board-cal-chip.cat-build { background: var(--q3-bg); color: var(--q3); }
   .board-cal-chip.cat-study { background: #efe9fb; color: #6e5bd4; }
-  /* 프로젝트 색상 우선 (선택된 프로젝트 슬롯에 맞춰 표시) */
-  .board-cal-chip[data-slot="p1"] { background: var(--proj-main-bg); color: var(--proj-main-fg); }
-  .board-cal-chip[data-slot="p2"] { background: var(--proj-sub-bg); color: var(--proj-sub-fg); }
-  .board-cal-chip[data-slot="p3"] { background: var(--proj-etc-bg); color: var(--proj-etc-fg); }
+  /* 프로젝트 색상 우선 (선택된 프로젝트 슬롯에 맞춰 표시) — 명시 색상 + !important로 다크 폴백 오버라이드 */
+  .board-cal-chip[data-slot="p1"] { background: #ffe0e0 !important; color: #a33 !important; }
+  .board-cal-chip[data-slot="p2"] { background: #ede7f8 !important; color: #5a4db5 !important; }
+  .board-cal-chip[data-slot="p3"] { background: #eeeeec !important; color: #5b5b58 !important; }
+  :root[data-theme="dark"] .board-cal-chip[data-slot="p1"] { background: #3a1a1a !important; color: #ff8a8a !important; }
+  :root[data-theme="dark"] .board-cal-chip[data-slot="p2"] { background: #332a48 !important; color: #c5b4f0 !important; }
+  :root[data-theme="dark"] .board-cal-chip[data-slot="p3"] { background: #323230 !important; color: #a8a8a5 !important; }
   .board-cal-chip.done {
     opacity: 0.55;
     text-decoration: line-through;
@@ -497,11 +500,11 @@
   .board-day-card.cat-study,
   .board-undated-card.cat-study { border-left-color: #6e5bd4; }
   .board-day-card[data-slot="p1"],
-  .board-undated-card[data-slot="p1"] { border-left-color: var(--proj-main-fg); }
+  .board-undated-card[data-slot="p1"] { border-left-color: #d06a6a; }
   .board-day-card[data-slot="p2"],
-  .board-undated-card[data-slot="p2"] { border-left-color: var(--proj-sub-fg); }
+  .board-undated-card[data-slot="p2"] { border-left-color: #7a6ad0; }
   .board-day-card[data-slot="p3"],
-  .board-undated-card[data-slot="p3"] { border-left-color: var(--proj-etc-fg); }
+  .board-undated-card[data-slot="p3"] { border-left-color: #9a9a97; }
   .board-day-card.done,
   .board-undated-card.done { opacity: 0.72; }
   .board-day-card-title {
@@ -1509,7 +1512,8 @@
 
   function attachBoardPopoverGlobalListeners() {
     const el = boardOpenPopover && boardOpenPopover.el;
-    if (el) requestAnimationFrame(() => { if (el.isConnected) el.classList.add('is-open'); });
+    // reflow 후 클래스 추가 — rAF가 throttle되는 임베드에서도 페이드인 보장
+    if (el) { void el.offsetWidth; el.classList.add('is-open'); }
     setTimeout(() => {
       document.addEventListener('click', boardPopoverOutsideClick);
       window.addEventListener('scroll', boardPopoverScrollHandler, true);
@@ -3009,14 +3013,12 @@
     render();
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
     if (typeof initBoxResizer === 'function') {
-      requestAnimationFrame(function() {
-        initBoxResizer({
-          targetSelector: '.board-important-section',
-          storageKey: 'worklog.pub.calendarBox',
-          minW: 480, minH: 420,
-          maxW: 1600, maxH: 1400,
-          viewportPadX: 20, viewportPadY: 20
-        });
+      initBoxResizer({
+        targetSelector: '.board-important-section',
+        storageKey: 'worklog.pub.calendarBox',
+        minW: 480, minH: 420,
+        maxW: 1600, maxH: 1400,
+        viewportPadX: 20, viewportPadY: 20
       });
     }
     if (typeof initCloudSync === 'function') {

@@ -919,7 +919,7 @@
   function animateDayModalOpen() {
     const modal = document.getElementById('hDayModal');
     const bd = document.getElementById('hDayModalBd');
-    if (bd) { bd.classList.remove('is-open'); requestAnimationFrame(() => bd.classList.add('is-open')); }
+    if (bd) { bd.classList.remove('is-open'); void bd.offsetWidth; bd.classList.add('is-open'); }
     if (!modal) return;
     modal.classList.remove('is-closing');
     modal.style.animation = 'none'; void modal.offsetWidth; modal.style.animation = '';
