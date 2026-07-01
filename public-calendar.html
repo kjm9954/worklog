@@ -1065,11 +1065,30 @@
     grid-template-columns: minmax(0, 1fr);
     width: 100%;
   }
-  body.public-calendar-widget .board-important-section { min-width: 0; }
+  body.public-calendar-widget .board-important-section {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+  body.public-calendar-widget .board-important-section .board-table-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+  body.public-calendar-widget .board-important-section #importantList { height: 100%; }
+  body.public-calendar-widget .board-important-panel { height: 100%; }
+  body.public-calendar-widget .board-cal-shell { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
   body.public-calendar-widget .board-cal-panel {
     min-height: clamp(470px, calc(100vh - 190px), 920px);
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
+  }
+  /* 리사이저로 명시적 크기가 지정되면 min-height 대신 지정 높이를 따른다 */
+  body.public-calendar-widget .board-important-section[style*="height"] .board-cal-panel {
+    min-height: 0;
   }
   body.public-calendar-widget .board-cal-grid {
     flex: 1;
@@ -2989,6 +3008,15 @@
     subscribeStateChanges(render);
     render();
     if (typeof renderBackupReminder === 'function') renderBackupReminder('backupReminder');
+    if (typeof initBoxResizer === 'function') {
+      initBoxResizer({
+        targetSelector: '.board-important-section',
+        storageKey: 'worklog.pub.calendarBox',
+        minW: 480, minH: 420,
+        maxW: 1600, maxH: 1400,
+        viewportPadX: 20, viewportPadY: 20
+      });
+    }
     if (typeof initCloudSync === 'function') {
       await initCloudSync(function(remote) {
         if (window.applyRemoteState && window.applyRemoteState(remote)) render();

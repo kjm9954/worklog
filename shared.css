@@ -190,7 +190,13 @@ button { font-family: inherit; }
   z-index: 25;
   padding: 0;
   box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
+/* 바는 마우스를 갖다대기 전까지 보이지 않음 */
+.widget-width-resizer:hover,
+.widget-width-resizer:focus-visible,
+body.resizing-widget .widget-width-resizer { opacity: 1; }
 .widget-width-resizer::before {
   content: "";
   position: absolute;
@@ -212,6 +218,62 @@ body.resizing-widget * {
   cursor: ew-resize !important;
   user-select: none;
 }
+
+/* 3-핸들 박스 리사이저 (가로/세로/비율) — 평소 숨김, hover 시 표시 */
+.box-resizer {
+  position: absolute;
+  z-index: 30;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  touch-action: none;
+}
+[data-box-resizable]:hover > .box-resizer,
+.box-resizer:hover,
+body.resizing-box .box-resizer { opacity: 1; }
+.box-resizer::before {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  background: var(--border-strong);
+}
+.box-resizer:hover::before,
+body.resizing-box .box-resizer::before { background: var(--q2); }
+.box-resizer-x {
+  top: 6px; bottom: 6px; right: 0;
+  width: 12px; cursor: ew-resize;
+}
+.box-resizer-x::before {
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 3px; height: 40px;
+}
+.box-resizer-y {
+  left: 6px; right: 6px; bottom: 0;
+  height: 12px; cursor: ns-resize;
+}
+.box-resizer-y::before {
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 40px; height: 3px;
+}
+.box-resizer-c {
+  right: 0; bottom: 0;
+  width: 18px; height: 18px; cursor: nwse-resize;
+}
+.box-resizer-c::before {
+  right: 3px; bottom: 3px;
+  width: 9px; height: 9px;
+  border-right: 2px solid var(--border-strong);
+  border-bottom: 2px solid var(--border-strong);
+  background: transparent;
+  border-radius: 0;
+}
+.box-resizer-c:hover::before,
+body.resizing-box .box-resizer-c::before {
+  border-right-color: var(--q2);
+  border-bottom-color: var(--q2);
+  background: transparent;
+}
+body.resizing-box,
+body.resizing-box * { user-select: none; }
 
 .app { display: flex; flex-direction: column; height: 100vh; width: 100%; }
 

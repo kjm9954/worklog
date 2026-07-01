@@ -1265,6 +1265,113 @@ function initWidgetWidthResizer(options) {
   });
 }
 
+/* 3-핸들 박스 리사이저: 우측(가로) · 하단(세로) · 우하단 모서리(비율 유지).
+   핸들은 대상 요소 안쪽 가장자리에 붙어 평소 숨겨졌다가 hover 시 표시된다.
+   가로/세로 px를 localStorage에 저장한다. axis:'x'면 세로/모서리 핸들 생략. */
+function initBoxResizer(options) {
+  const cfg = options || {};
+  const target = document.querySelector(cfg.targetSelector || '');
+  if (!target) return null;
+  const storageKey = cfg.storageKey || ('worklog.box.' + ((location.pathname || '').split('/').pop() || 'widget'));
+  const minW = cfg.minW || 320, minH = cfg.minH || 240;
+  const capW = cfg.maxW || 2200, capH = cfg.maxH || 2200;
+  const padX = cfg.viewportPadX != null ? cfg.viewportPadX : 16;
+  const padY = cfg.viewportPadY != null ? cfg.viewportPadY : 16;
+  const axis = cfg.axis === 'x' ? 'x' : 'both';
+
+  function availW() { return Math.max(minW, Math.min(capW, window.innerWidth - padX)); }
+  function availH() { return Math.max(minH, Math.min(capH, window.innerHeight - padY)); }
+
+  const csPos = getComputedStyle(target).position;
+  if (csPos === 'static') target.style.position = 'relative';
+  target.setAttribute('data-box-resizable', '');
+
+  function mkHandle(cls, label) {
+    const h = document.createElement('div');
+    h.className = 'box-resizer ' + cls;
+    h.setAttribute('role', 'separator');
+    h.setAttribute('aria-label', label);
+    h.style.touchAction = 'none';
+    target.appendChild(h);
+    return h;
+  }
+  const hx = mkHandle('box-resizer-x', '가로 크기 조절');
+  const hy = axis === 'both' ? mkHandle('box-resizer-y', '세로 크기 조절') : null;
+  const hc = axis === 'both' ? mkHandle('box-resizer-c', '비율 유지 크기 조절') : null;
+
+  let curW = 0, curH = 0;
+
+  function applySize(w, h) {
+    curW = Math.round(Math.max(minW, Math.min(w, availW())));
+    target.style.width = curW + 'px';
+    if (axis === 'both' && h != null) {
+      curH = Math.round(Math.max(minH, Math.min(h, availH())));
+      target.style.height = curH + 'px';
+    }
+  }
+  function persist() {
+    try { localStorage.setItem(storageKey, JSON.stringify({ w: curW, h: curH })); } catch (e) {}
+  }
+
+  const rect0 = target.getBoundingClientRect();
+  let initW = cfg.defaultW || rect0.width;
+  let initH = cfg.defaultH || rect0.height;
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+    if (saved && saved.w) initW = saved.w;
+    if (saved && saved.h) initH = saved.h;
+  } catch (e) {}
+  applySize(initW, axis === 'both' ? initH : null);
+
+  function startDrag(mode, e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX, startY = e.clientY;
+    const r = target.getBoundingClientRect();
+    const sw = r.width, sh = r.height;
+    const ratio = sh > 0 ? sw / sh : 1;
+    document.body.classList.add('resizing-box');
+    const handleEl = e.currentTarget;
+    try { handleEl.setPointerCapture(e.pointerId); } catch (err) {}
+    function move(ev) {
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      if (mode === 'x') applySize(sw + dx, curH || sh);
+      else if (mode === 'y') applySize(curW || sw, sh + dy);
+      else {
+        const nw = sw + dx;
+        applySize(nw, nw / ratio);
+      }
+    }
+    function up(ev) {
+      document.body.classList.remove('resizing-box');
+      try { handleEl.releasePointerCapture(ev.pointerId); } catch (err) {}
+      persist();
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+    }
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  }
+  hx.addEventListener('pointerdown', function(e) { startDrag('x', e); });
+  if (hy) hy.addEventListener('pointerdown', function(e) { startDrag('y', e); });
+  if (hc) hc.addEventListener('pointerdown', function(e) { startDrag('c', e); });
+
+  // 더블클릭으로 기본값 복원
+  function resetSize() {
+    applySize(cfg.defaultW || rect0.width, axis === 'both' ? (cfg.defaultH || rect0.height) : null);
+    persist();
+  }
+  [hx, hy, hc].forEach(function(h) { if (h) h.addEventListener('dblclick', resetSize); });
+
+  window.addEventListener('resize', function() {
+    applySize(curW, axis === 'both' ? curH : null);
+  });
+  return { applySize: applySize, reset: resetSize };
+}
+window.initBoxResizer = initBoxResizer;
+
 // onclick 속성에서 쓰이므로 window에도 노출
 window.toggleTheme = toggleTheme;
 window.toggleDevice = toggleDevice;
