@@ -644,6 +644,18 @@
     margin-top: auto;
   }
   body.public-weekly-widget .h-summary-chips { grid-template-columns: minmax(180px, 280px); }
+
+  /* 가로 크기 조절 바 — 그립을 길게 키워 잡기 쉽게 */
+  body.public-weekly-widget .widget-width-resizer {
+    top: 8px;
+    height: calc(100% - 16px);
+    width: 16px;
+    min-width: 16px;
+    right: -10px;
+  }
+  body.public-weekly-widget .widget-width-resizer::before {
+    height: clamp(120px, 45%, 320px);
+  }
 </style>
 </head>
 <body class="public-weekly-widget">
@@ -1485,7 +1497,7 @@
         storageKey: 'worklog.publicWeekly.width',
         defaultWidth: 980,
         minWidth: 380,
-        maxWidth: 1400,
+        maxWidth: 1800,
         ratio: 0.62
       });
     }

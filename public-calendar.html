@@ -1224,6 +1224,77 @@
       justify-content: flex-start;
     }
   }
+
+  /* ══════════════════════════════════════════════════════════════
+     모바일(아이패드/아이폰) — 원형 전용 달력
+     날짜마다 일정 개수를 담은 원형만 노출. 프로젝트 색상 최대 2개
+     (2개면 반반 분할). 탭하면 해당 날짜 일정 편집/추가 팝업.
+     ══════════════════════════════════════════════════════════════ */
+  .board-cal-orb { display: none; }
+  :root[data-device="mobile"] .board-cal-day {
+    min-height: 0;
+    padding: 4px 2px 6px;
+    gap: 4px;
+    align-items: center;
+    justify-content: flex-start;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+  }
+  :root[data-device="mobile"] .board-cal-day:hover,
+  :root[data-device="mobile"] .board-cal-day:focus-visible {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    transform: none;
+  }
+  :root[data-device="mobile"] .board-cal-day .board-cal-chip,
+  :root[data-device="mobile"] .board-cal-day .board-cal-more,
+  :root[data-device="mobile"] .board-cal-day .board-cal-add { display: none !important; }
+  :root[data-device="mobile"] .board-cal-orb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: 1;
+    width: clamp(34px, 9vw, 46px);
+    height: clamp(34px, 9vw, 46px);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    line-height: 1;
+    user-select: none;
+  }
+  :root[data-device="mobile"] .board-cal-orb.empty {
+    background: var(--bg-2) !important;
+    border: 1px dashed var(--border-strong);
+    box-sizing: border-box;
+  }
+  :root[data-device="mobile"] .board-cal-date {
+    order: 2;
+    padding: 0;
+    text-align: center;
+    font-size: 0.6875rem;
+  }
+  :root[data-device="mobile"] .board-cal-day.today,
+  :root[data-device="mobile"] .board-cal-day.selected {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  :root[data-device="mobile"] .board-cal-day.today .board-cal-orb {
+    box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--q2);
+  }
+  :root[data-device="mobile"] body.public-calendar-widget .board-cal-grid,
+  :root[data-device="mobile"] .board-cal-grid {
+    min-height: 0;
+    grid-auto-rows: auto;
+    gap: 6px 3px;
+  }
+  :root[data-device="mobile"] body.public-calendar-widget .board-cal-panel {
+    min-height: 0;
+  }
 </style>
 </head>
 <body class="public-calendar-widget">
@@ -1754,7 +1825,10 @@
 
   function openImportantEditorAfterRender(idx) {
     setTimeout(() => {
-      const anchor = document.querySelector(`[data-imp-anchor="${idx}"]`) || document.querySelector(`[data-cal-date="${boardSelectedDate}"]`) || document.getElementById('importantList');
+      let anchor = document.querySelector(`[data-imp-anchor="${idx}"]`);
+      // 모바일 원형 달력에서는 칩이 숨겨져 있어 (0×0) 앵커로 못 씀 → 날짜 셀로 폴백
+      if (anchor && !anchor.getBoundingClientRect().width) anchor = null;
+      anchor = anchor || document.querySelector(`[data-cal-date="${boardSelectedDate}"]`) || document.getElementById('importantList');
       if (anchor) openImportantEditor(idx, anchor);
     }, 0);
   }
@@ -1971,6 +2045,22 @@
     // 팝업이 떠 있는 상태에서 다른 날짜 셀을 누르면 먼저 닫는다
     if (boardOpenPopover) closeBoardPopover();
     clearBoardDayClickTimer();
+    // 모바일 원형 달력: 탭 즉시 해당 날짜의 일정 팝업(일정이 없으면 추가 팝업)
+    if (document.documentElement.dataset.device === 'mobile') {
+      const date = boardDateObj(dateStr);
+      if (!date) return;
+      boardSelectedDate = dateStr;
+      if (!boardIsSameMonth(dateStr, boardMonthAnchor)) {
+        setBoardMonthAnchor(date, true);
+        renderImportantTasks();
+      }
+      if (!importantTasksForDate(dateStr).length) {
+        addImportantTaskForDate(dateStr);
+        return;
+      }
+      setTimeout(() => openBoardDateTasksAtCell(dateStr), 0);
+      return;
+    }
     boardDayClickTimer = setTimeout(() => {
       boardDayClickTimer = null;
       selectBoardCalendarDate(dateStr);
@@ -2170,6 +2260,29 @@
     attachBoardPopoverGlobalListeners();
   };
 
+  // 모바일 원형 달력 — 프로젝트 슬롯별 대표 색 (칩/카드 색상과 동일 계열의 진한 톤)
+  const ORB_SLOT_COLORS = { p1: '#d06a6a', p2: '#7a6ad0', p3: '#9a9a97' };
+  const ORB_DEFAULT_COLOR = '#4b8bd4';
+
+  function orbColorsForItems(items) {
+    const colors = [];
+    for (const it of items) {
+      const c = ORB_SLOT_COLORS[projectSlot(it.project)] || ORB_DEFAULT_COLOR;
+      if (!colors.includes(c)) colors.push(c);
+      if (colors.length >= 2) break;
+    }
+    return colors;
+  }
+
+  function orbHtml(items) {
+    if (!items.length) return '<div class="board-cal-orb empty" aria-hidden="true"></div>';
+    const colors = orbColorsForItems(items);
+    const bg = colors.length === 1
+      ? colors[0]
+      : `linear-gradient(135deg, ${colors[0]} 0%, ${colors[0]} 50%, ${colors[1]} 50%, ${colors[1]} 100%)`;
+    return `<div class="board-cal-orb" style="background:${bg}" aria-hidden="true">${items.length}</div>`;
+  }
+
   function renderImportantTasks() {
     const list = document.getElementById('importantList');
     if (!list) return;
@@ -2225,6 +2338,7 @@
              ondragleave="onBoardDayDragLeave(event)"
              ondrop="onBoardDayDrop(event, '${key}')">
           <div class="board-cal-date">${date.getDate()}</div>
+          ${orbHtml(items)}
           <button type="button"
                   class="board-cal-add"
                   onclick="event.stopPropagation(); addImportantTaskForDate('${key}')"
@@ -3006,6 +3120,7 @@
   (async function boardInit() {
     state = loadState();
     initTheme();
+    initDevice();
     initModalBase();
     initHeaderCollapse();
     initDatePicker();

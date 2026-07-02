@@ -723,12 +723,24 @@ function toggleDevice() {
   applyDevice(current === 'mobile' ? 'pc' : 'mobile');
 }
 
+// 아이폰/아이패드/안드로이드 터치 기기 감지 (iPadOS 13+는 Macintosh UA + 멀티터치)
+function isTouchMobileDevice() {
+  try {
+    const ua = navigator.userAgent || '';
+    if (/iPhone|iPad|iPod|Android/i.test(ua)) return true;
+    if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+    return false;
+  } catch (e) { return false; }
+}
+
 function initDevice() {
   try {
     const saved = localStorage.getItem(DEVICE_KEY);
-    applyDevice(saved === 'mobile' ? 'mobile' : 'pc');
+    if (saved === 'mobile' || saved === 'pc') applyDevice(saved);
+    else applyDevice(isTouchMobileDevice() ? 'mobile' : 'pc');
   } catch (e) { applyDevice('pc'); }
 }
+window.isTouchMobileDevice = isTouchMobileDevice;
 
 /* ── 모달 ── */
 function showModal(title, message, onConfirm) {

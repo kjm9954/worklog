@@ -1339,8 +1339,8 @@
   :root[data-device="mobile"] .daily-table { width: 100%; min-width: 0; table-layout: auto; }
   :root[data-device="mobile"] .daily-card { min-width: 0; width: 100%; }
 
-  :root[data-device="mobile"] .daily-table col.dcol-project,
-  :root[data-device="mobile"] .daily-table col.dcol-quad,
+  /* 가로(landscape): 구분(1)·분면(2)·업무명(3)·완료(10) 노출.
+     세로(portrait): 분면(2)도 추가로 숨겨 구분·업무명·완료만 노출. */
   :root[data-device="mobile"] .daily-table col.dcol-target,
   :root[data-device="mobile"] .daily-table col.dcol-start,
   :root[data-device="mobile"] .daily-table col.dcol-end,
@@ -1349,13 +1349,26 @@
   :root[data-device="mobile"] .daily-table col.dcol-status,
   :root[data-device="mobile"] .daily-table col.dcol-note,
   :root[data-device="mobile"] .daily-table col.dcol-delete { display: none; }
+  :root[data-device="mobile"] .daily-table col.dcol-project { width: 68px; }
+  :root[data-device="mobile"] .daily-table col.dcol-quad { width: 48px; }
   :root[data-device="mobile"] .daily-table col.dcol-name { width: auto; }
   :root[data-device="mobile"] .daily-table col.dcol-done { width: 56px; }
 
-  :root[data-device="mobile"] .daily-table thead th:not(:nth-child(3)):not(:nth-child(10)),
-  :root[data-device="mobile"] .daily-table tbody td:not(:nth-child(3)):not(:nth-child(10)):not(.daily-empty) {
-    display: none;
+  :root[data-device="mobile"] .daily-table thead th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(10)),
+  :root[data-device="mobile"] .daily-table tbody td:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(10)):not(.daily-empty) {
+    display: none !important;
   }
+
+  @media (orientation: portrait) {
+    :root[data-device="mobile"] .daily-table col.dcol-quad { display: none; }
+    :root[data-device="mobile"] .daily-table thead th:nth-child(2),
+    :root[data-device="mobile"] .daily-table tbody td:nth-child(2):not(.daily-empty) {
+      display: none !important;
+    }
+  }
+
+  /* 모바일에서는 ⚙ 컬럼 버튼 미노출 */
+  :root[data-device="mobile"] .worklog-column-controls { display: none !important; }
   :root[data-device="mobile"] .daily-table th,
   :root[data-device="mobile"] .daily-table td { padding: 8px 10px; font-size: 13px; }
   :root[data-device="mobile"] .daily-table td.daily-name-cell { white-space: normal; word-break: break-word; }

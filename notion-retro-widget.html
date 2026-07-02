@@ -1972,6 +1972,125 @@
       .chip { flex: 1 1 calc(50% - 8px); }
       .record-actions { grid-template-columns: 1fr; }
     }
+
+    /* ══════════════════════════════════════════════════════════════
+       모바일(아이폰/아이패드) 전용 — body[data-mobile="true"]
+       UA 감지로 적용. 임베드 폭과 무관하게 실제 기기 기준.
+       ══════════════════════════════════════════════════════════════ */
+    .today-check-card { display: none; }
+
+    /* 공통: 터치에서 hover 리사이저는 방해만 되므로 숨김.
+       저장된 고정폭도 무시하고 항상 화면 폭에 맞춘다 (회전 대응). */
+    body[data-mobile="true"] .widget-width-resizer { display: none !important; }
+    body[data-mobile="true"] .main {
+      width: calc(100vw - 20px) !important;
+      max-width: none;
+    }
+
+    /* ── 4. 실수 체크 캘린더: 달력 대신 오늘 카드만 ── */
+    body[data-mobile="true"] #page-check .calendar-wrap,
+    body[data-mobile="true"] #page-check .check-sidebar { display: none !important; }
+    body[data-mobile="true"] .check-layout,
+    body[data-mobile="true"][data-single-widget="true"] .check-layout {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+    body[data-mobile="true"][data-single-widget="true"][data-widget-page="check"] .check-layout > .panel,
+    body[data-mobile="true"][data-single-widget="true"][data-widget-page="check"] #page-check .panel-body {
+      height: auto;
+    }
+    body[data-mobile="true"] .today-check-card {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1.5px solid var(--blue);
+      border-radius: var(--radius);
+      background: var(--blue-bg);
+    }
+    body[data-mobile="true"] .today-card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    body[data-mobile="true"] .today-card-head strong { font-size: 1.0625rem; font-weight: 950; }
+    body[data-mobile="true"] .today-card-status {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+      font-weight: 800;
+    }
+    body[data-mobile="true"] .today-card-check {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    body[data-mobile="true"] .today-card-check .quick-btn {
+      min-height: 52px;
+      font-size: 0.9375rem;
+    }
+    body[data-mobile="true"] .today-card-note { margin: 0; color: var(--text-muted); font-weight: 800; }
+
+    /* ── 5. 실수 히스토리: 고정 높이·overflow 잘림 해제 → 세로 스크롤 ── */
+    body[data-mobile="true"][data-single-widget="true"][data-widget-page="history"] .app {
+      height: auto;
+      min-height: 100vh;
+      overflow: visible;
+      padding: 14px 10px;
+    }
+    body[data-mobile="true"][data-single-widget="true"][data-widget-page="history"] .main {
+      max-height: none;
+      width: calc(100vw - 20px) !important;
+    }
+    body[data-mobile="true"] .history-overview,
+    body[data-mobile="true"][data-single-widget="true"] .history-overview {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+    body[data-mobile="true"] .trend-bars { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    body[data-mobile="true"] .insight-card { min-height: 0; }
+
+    /* ── 6. 실수 상세 기록(page-trend): 모바일 전용 UI ── */
+    body[data-mobile="true"] .record-layout,
+    body[data-mobile="true"][data-single-widget="true"] .record-layout {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      min-height: 0;
+    }
+    body[data-mobile="true"] .record-hero { padding: 10px 12px; gap: 4px; }
+    /* 터치 타겟 확대 + iOS 자동 확대 방지(16px) */
+    body[data-mobile="true"] .cat-option { min-height: 44px; padding: 6px 10px; }
+    body[data-mobile="true"] .impact-option { min-height: 44px; }
+    body[data-mobile="true"] .field textarea,
+    body[data-mobile="true"] .cat-manager input,
+    body[data-mobile="true"] .search-row input { font-size: 16px; }
+    body[data-mobile="true"] .field textarea { min-height: 96px; }
+    body[data-mobile="true"] .record-actions {
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      background: var(--card);
+      padding: 10px 0 6px;
+      box-shadow: 0 -10px 18px -14px rgba(0, 0, 0, 0.35);
+    }
+    body[data-mobile="true"] .record-actions .btn { min-height: 46px; }
+
+    /* 세로: 모든 단계 1열 스택, 저장 버튼 풀폭 */
+    @media (orientation: portrait) {
+      body[data-mobile="true"] .field-row,
+      body[data-mobile="true"] .field-row.top { grid-template-columns: 1fr; }
+      body[data-mobile="true"] .record-side { grid-template-columns: 1fr; }
+      body[data-mobile="true"] .record-actions { grid-template-columns: 1fr; }
+    }
+    /* 가로: 폼 2열 + 요약 사이드 유지 (넓은 화면 활용) */
+    @media (orientation: landscape) {
+      body[data-mobile="true"] .record-layout,
+      body[data-mobile="true"][data-single-widget="true"] .record-layout {
+        grid-template-columns: minmax(0, 1.6fr) minmax(230px, 1fr);
+      }
+      body[data-mobile="true"] .field-row,
+      body[data-mobile="true"] .field-row.top { grid-template-columns: 1fr 1fr; }
+      body[data-mobile="true"] .record-side { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -2040,6 +2159,7 @@
               </div>
             </div>
             <div class="panel-body">
+              <div class="today-check-card" id="todayCheckCard" aria-label="오늘 실수 체크"></div>
               <div class="calendar-wrap">
                 <div class="calendar" id="calendar" aria-label="월간 실수 체크 달력"></div>
               </div>
@@ -2346,6 +2466,14 @@
       document.title = title;
       const heading = document.querySelector(".app-header h1");
       if (heading) heading.textContent = title;
+    }
+
+    // 아이폰/아이패드/안드로이드 감지 (iPadOS 13+는 Macintosh UA + 멀티터치)
+    function applyMobileMode() {
+      const ua = navigator.userAgent || "";
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(ua)
+        || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+      if (isMobile) document.body.dataset.mobile = "true";
     }
 
     function applyRetroWidgetWidth(value) {
@@ -3358,6 +3486,38 @@
           renderAll();
         });
       });
+      renderTodayCheckCard();
+    }
+
+    // 모바일 전용: 달력 대신 오늘 날짜의 실수 체크만 카드로 노출
+    function renderTodayCheckCard() {
+      const container = $("#todayCheckCard");
+      if (!container) return;
+      const today = todayKey();
+      const day = monthDays(today.slice(0, 7)).filter(Boolean).find((item) => item.key === today);
+      const record = recordFor(today);
+      const state = dayState(day);
+      const headHtml = `
+        <div class="today-card-head">
+          <strong>${fullDateLabel(today)}</strong>
+          <span class="today-label">오늘</span>
+        </div>`;
+      if (state.closed) {
+        container.innerHTML = `${headHtml}
+          <p class="today-card-note">오늘은 체크 제외일이에요 (${escapeHtml(state.reason || "체크 제외")}).</p>`;
+        return;
+      }
+      const category = categoryLabel(record.category);
+      container.innerHTML = `${headHtml}
+        <p class="today-card-status">${statusLabel(record.status)}</p>
+        <div class="quick-check today-card-check" role="group" aria-label="오늘 실수 체크">
+          <button class="quick-btn ok ${record.status === "ok" ? "active" : ""}" data-status="ok" data-date="${today}" type="button"><span class="quick-icon" aria-hidden="true">✓</span><span>실수 없음</span></button>
+          <button class="quick-btn miss ${record.status === "miss" ? "active" : ""}" data-status="miss" data-date="${today}" type="button"><span class="quick-icon" aria-hidden="true">⚠</span><span>실수 있음</span></button>
+        </div>
+        ${record.status === "miss" ? `<div class="day-foot"><span class="category-chip ${categoryClass(record.category)}">${escapeHtml(category)}</span></div>` : ""}`;
+      container.querySelectorAll(".quick-btn").forEach((button) => {
+        button.addEventListener("click", () => markStatus(button.dataset.date, button.dataset.status));
+      });
     }
 
     function renderSummary() {
@@ -4108,6 +4268,7 @@
 
     selectedDate = todayKey();
     $("#monthInput").value = selectedDate.slice(0, 7);
+    applyMobileMode();
     applySingleWidgetMode();
     initRetroWidgetWidthResizer();
     if (singleWidgetPage) setPage(singleWidgetPage, { instant: true });
