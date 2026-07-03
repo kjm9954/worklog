@@ -352,6 +352,13 @@
     max-width: none !important;
     margin: 0 !important;
   }
+  /* 메모 위젯: 메모 카드(.daily-sidebar 내부)가 이 페이지의 유일한 콘텐츠다.
+     위의 daily용 사이드바 숨김 규칙을 되돌려, 모바일에서도 메모를 풀폭으로 노출한다. */
+  :root[data-device="mobile"] main#mode-daily > .daily-sidebar {
+    display: flex !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
   :root[data-device="mobile"] .daily-metric-title { font-size: 0.8125rem; }
   :root[data-device="mobile"] .daily-metric-count { font-size: 0.6875rem; padding: 1px 6px; }
   :root[data-device="mobile"] .dday-strip { gap: 3px; }
