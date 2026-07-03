@@ -134,11 +134,15 @@ function injectStyles() {
   style.id = 'instanceSyncStyles';
   style.textContent = `
   #cloudStatus { cursor: pointer; }
-  .is-overlay { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center;
-    padding: 16px; background: rgba(0,0,0,.42); }
-  .is-card { width: min(390px, 100%); box-sizing: border-box; padding: 20px; border-radius: 14px;
-    background: var(--card, #fff); color: var(--text, #171717); border: 1px solid var(--border, #e3e3e3);
-    box-shadow: 0 18px 46px rgba(0,0,0,.24); font-size: 14px; line-height: 1.55; }
+  /* 전체 화면을 덮는 모달 대신 상단 배너 카드.
+     이유: iOS 노션 iframe에서 fixed+어두운 배경은 카드가 가시 영역 밖으로
+     밀리면 검은 화면만 남는다. 배너형은 내용도 계속 보이고 어디서든 안전. */
+  .is-overlay { position: absolute; top: 8px; left: 0; right: 0; z-index: 99999;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 0 12px; background: transparent; pointer-events: none; }
+  .is-card { pointer-events: auto; width: min(390px, 100%); box-sizing: border-box; padding: 16px 18px; border-radius: 14px;
+    background: var(--card, #fff); color: var(--text, #171717); border: 1.5px solid var(--border-strong, #c9c9c6);
+    box-shadow: 0 12px 34px rgba(0,0,0,.3); font-size: 14px; line-height: 1.55; }
   .is-card h3 { margin: 0 0 6px; font-size: 16px; }
   .is-card p { margin: 0 0 14px; color: var(--text-muted, #6b7280); font-size: 13px; }
   .is-btn { display: block; width: 100%; box-sizing: border-box; margin: 8px 0; padding: 11px 14px;

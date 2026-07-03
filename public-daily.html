@@ -1302,10 +1302,11 @@
   :root[data-device="mobile"] .daily-today-btn { padding: 0 10px; height: 28px; font-size: 12px; margin-left: auto; }
 
   :root[data-device="mobile"] .daily-day-tabs { gap: 3px; }
-  :root[data-device="mobile"] .daily-day-tab { padding: 4px 4px; font-size: 11px; min-width: 0; }
+  :root[data-device="mobile"] .daily-day-tab { padding: 4px 2px; font-size: 11px; min-width: 0; }
   :root[data-device="mobile"] .daily-day-tab .daily-dots { margin-top: 2px; gap: 2px; }
   :root[data-device="mobile"] .daily-day-tab .daily-dot { width: 3px; height: 3px; }
-  :root[data-device="mobile"] .daily-day-tab .daily-count { font-size: 10px; }
+  :root[data-device="mobile"] .daily-day-tab .daily-count { font-size: 9px; letter-spacing: -0.2px; }
+  :root[data-device="mobile"] .daily-day-tab .daily-count-doing { margin-left: 1px; }
 
   :root[data-device="mobile"] .daily-head { padding: 10px 12px; gap: 8px; }
   :root[data-device="mobile"] .daily-date-big { font-size: 15px; }
@@ -1470,6 +1471,8 @@
   }
   .daily-day-tab {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
     padding: 6px 8px;
     border: 1px solid var(--border);
     background: var(--card);
@@ -1481,6 +1484,11 @@
     transition: background 0.15s, border-color 0.15s, color 0.15s;
     position: relative;
     font-family: inherit;
+  }
+  .daily-day-tab > div:first-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .daily-day-tab:hover { background: var(--bg); }
   .daily-day-tab.active {
@@ -1517,6 +1525,10 @@
     font-variant-numeric: tabular-nums;
     color: var(--text-subtle);
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   .daily-day-tab .daily-count-doing {
     color: var(--doing-fg);
@@ -2207,7 +2219,7 @@
   </div>
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
-<script src="instance-sync.js?v=1"></script>
+<script src="instance-sync.js?v=2"></script>
 <script src="shared.js?v=7"></script>
 <script>
 'use strict';
