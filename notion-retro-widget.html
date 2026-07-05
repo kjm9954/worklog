@@ -2068,25 +2068,33 @@
     body[data-mobile="true"] #page-check .day.weekend,
     body[data-mobile="true"] #page-check .day.no-check,
     body[data-mobile="true"] #page-check .day.future {
-      min-height: 40px;
+      min-height: 44px;
       padding: 3px 2px;
       border-radius: 6px;
+      align-items: center;
+      justify-content: center;
     }
-    body[data-mobile="true"] #page-check .day .day-num { font-size: 0.6875rem; }
     body[data-mobile="true"] #page-check .day .today-label { display: none; }
     body[data-mobile="true"] #page-check .day .quick-check,
     body[data-mobile="true"] #page-check .day .day-foot { display: none; }
-    body[data-mobile="true"] #page-check .day:has(.quick-btn.ok.active)::after,
-    body[data-mobile="true"] #page-check .day:has(.quick-btn.miss.active)::after {
-      content: '';
-      display: block;
-      width: 8px;
-      height: 8px;
+    /* 날짜 숫자 자체를 원형 마커로 (중요업무 캘린더 orb와 동일 톤) */
+    body[data-mobile="true"] #page-check .day .day-top { justify-content: center; width: 100%; }
+    body[data-mobile="true"] #page-check .day .day-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: clamp(26px, 8vw, 34px);
+      height: clamp(26px, 8vw, 34px);
+      margin: 0 auto;
       border-radius: 50%;
-      margin: 3px auto 0;
+      line-height: 1;
+      font-size: 0.75rem;
     }
-    body[data-mobile="true"] #page-check .day:has(.quick-btn.ok.active)::after { background: var(--blue); }
-    body[data-mobile="true"] #page-check .day:has(.quick-btn.miss.active)::after { background: var(--red); }
+    /* 체크한 날만 채운 원 — 미체크일은 숫자만 */
+    body[data-mobile="true"] #page-check .day:has(.quick-btn.ok.active) .day-num { background: var(--blue); color: #fff; }
+    body[data-mobile="true"] #page-check .day:has(.quick-btn.miss.active) .day-num { background: var(--red); color: #fff; }
+    /* 오늘 = 링 강조 */
+    body[data-mobile="true"] #page-check .day.today .day-num { box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--blue); }
     body[data-mobile="true"] .check-layout,
     body[data-mobile="true"][data-single-widget="true"] .check-layout {
       grid-template-columns: 1fr;
@@ -2176,6 +2184,26 @@
       box-shadow: 0 -10px 18px -14px rgba(0, 0, 0, 0.35);
     }
     body[data-mobile="true"] .record-actions .btn { min-height: 46px; }
+    /* 실수 기록 가독성: 단계 카드 구분 + 카테고리·영향 UI 정리 */
+    body[data-mobile="true"] #page-trend .form-grid { gap: 10px; }
+    body[data-mobile="true"] #page-trend .field-row > .field {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    body[data-mobile="true"] #page-trend .step-label { font-size: 0.8125rem; }
+    body[data-mobile="true"] #page-trend .step-num { width: 18px; height: 18px; }
+    body[data-mobile="true"] #page-trend .cat-picker { gap: 6px; }
+    body[data-mobile="true"] #page-trend .category-chip { font-size: 0.75rem; padding: 4px 10px; }
+    body[data-mobile="true"] #page-trend .impact-picker {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    body[data-mobile="true"] #page-trend .impact-option { min-height: 44px; justify-content: center; }
+    body[data-mobile="true"] #page-trend .record-actions .btn { flex: 1; }
+    body[data-mobile="true"] #page-trend .record-actions .btn.primary { flex: 2; }
 
     /* 세로: 모든 단계 1열 스택, 저장 버튼 풀폭 */
     @media (orientation: portrait) {
@@ -2183,6 +2211,8 @@
       body[data-mobile="true"] .field-row.top { grid-template-columns: 1fr; }
       body[data-mobile="true"] .record-side { grid-template-columns: 1fr; }
       body[data-mobile="true"] .record-actions { grid-template-columns: 1fr; }
+      body[data-mobile="true"] #page-trend #recordDetail { min-height: 84px; }
+      body[data-mobile="true"] #page-trend #recordNextAction { min-height: 72px; }
     }
     /* 가로: 폼 2열로 가로 공간 활용 (보조 패널은 모바일에서 항상 숨김) */
     @media (orientation: landscape) {
@@ -2240,7 +2270,12 @@
       grid-column: 2;
       grid-row: 2;
       font-size: 0.75rem;
+      flex-wrap: nowrap;
+      gap: 8px;
+      min-width: 0;
+      overflow: hidden;
     }
+    body[data-mobile="true"] .month-card-stats > span { white-space: nowrap; }
     body[data-mobile="true"] .month-delta {
       grid-column: 3;
       grid-row: 1;
