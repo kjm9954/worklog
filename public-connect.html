@@ -4,6 +4,41 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WorkLog Notion 연결</title>
+  <script>
+    (function(){
+      var allowedTargets = {
+        'public-worklog.html': true,
+        'public-weekly.html': true,
+        'public-calendar.html': true,
+        'public-routine.html': true,
+        'public-memo.html': true,
+        'public-review.html': true,
+        'public-history.html': true,
+        'public-distribution.html': true,
+        'public-summary.html': true,
+        'public-board.html': true,
+        'public-daily.html': true,
+        'notion-retro-check.html': true,
+        'notion-retro-record.html': true,
+        'notion-retro-history.html': true,
+        'notion-retro-detail-history.html': true
+      };
+      var placeholder = /^(WORKLOG_INSTANCE_ID|__WORKLOG_INSTANCE_ID__|WORKLOG_WIDGET_INSTANCE_ID|__WORKLOG_WIDGET_INSTANCE_ID__|INSTANCE_ID|template|TEMPLATE)$/;
+      var instance = /^[A-Za-z0-9_-]{24,180}$/;
+      try {
+        var params = new URLSearchParams(window.location.search || '');
+        var w = params.get('w') || params.get('instance') || '';
+        var from = params.get('from') || 'public-worklog.html';
+        if (allowedTargets[from] && instance.test(w) && !placeholder.test(w)) {
+          var next = new URL(from, window.location.href);
+          params.forEach(function(value, key){
+            if (key !== 'from') next.searchParams.set(key, value);
+          });
+          window.location.replace(next.toString() + (window.location.hash || ''));
+        }
+      } catch (e) {}
+    })();
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     :root {
