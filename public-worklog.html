@@ -8,7 +8,14 @@
   var hash = readParams((window.location.hash || '').replace(/^#/, ''));
   var w = search.get('w') || search.get('widget') || search.get('instance') || hash.get('w') || hash.get('widget') || hash.get('instance') || '';
   var real = /^[A-Za-z0-9_-]{24,180}$/.test(w) && !/^(WORKLOG_INSTANCE_ID|__WORKLOG_INSTANCE_ID__|WORKLOG_WIDGET_INSTANCE_ID|__WORKLOG_WIDGET_INSTANCE_ID__|INSTANCE_ID|template|TEMPLATE)$/.test(w);
-  if (!real) document.documentElement.classList.add('worklog-unlinked-preload');
+  if (!real) {
+    document.documentElement.classList.add('worklog-unlinked-preload');
+    try {
+      var next = new URL('public-connect.html', window.location.href);
+      next.searchParams.set('from', window.location.pathname.split('/').pop() || 'public-worklog.html');
+      window.location.replace(next.toString());
+    } catch (e) {}
+  }
 })();
 </script>
 <style data-worklog-unlinked-guard>

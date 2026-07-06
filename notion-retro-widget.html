@@ -7,7 +7,23 @@
   var search = readParams(window.location.search);
   var hash = readParams((window.location.hash || '').replace(/^#/, ''));
   var w = search.get('w') || search.get('instance') || search.get('widget_id') || hash.get('w') || hash.get('instance') || hash.get('widget_id') || '';
-  if (!/^[A-Za-z0-9_-]{24,180}$/.test(w)) document.documentElement.classList.add('retro-unlinked-preload');
+  var real = /^[A-Za-z0-9_-]{24,180}$/.test(w);
+  if (!real) {
+    document.documentElement.classList.add('retro-unlinked-preload');
+    try {
+      var widget = search.get('widget') || hash.get('widget') || 'check';
+      var from = ({
+        check: 'notion-retro-check.html',
+        record: 'notion-retro-record.html',
+        history: 'notion-retro-history.html',
+        detail: 'notion-retro-detail-history.html',
+        'detail-history': 'notion-retro-detail-history.html'
+      })[widget] || 'notion-retro-check.html';
+      var next = new URL('public-connect.html', window.location.href);
+      next.searchParams.set('from', from);
+      window.location.replace(next.toString());
+    } catch (e) {}
+  }
 })();
 </script>
 <style data-retro-unlinked-guard>
