@@ -18,6 +18,15 @@
 const INSTANCE_WORKER_URL = 'https://worklog-public.wldnjsdkk.workers.dev';
 const SAVE_DEBOUNCE_MS = 1500;
 const INSTANCE_RE = /^[A-Za-z0-9_-]{24,180}$/;
+const TEMPLATE_INSTANCE_VALUES = [
+  'WORKLOG_INSTANCE_ID',
+  '__WORKLOG_INSTANCE_ID__',
+  'WORKLOG_WIDGET_INSTANCE_ID',
+  '__WORKLOG_WIDGET_INSTANCE_ID__',
+  'INSTANCE_ID',
+  'template',
+  'TEMPLATE',
+];
 
 let instanceId = null;
 let cloudEnabled = false;
@@ -26,6 +35,62 @@ let cloudInFlight = false;
 let cloudPendingSave = false;
 let cloudApplyingRemote = false;
 let onRemoteAppliedCb = null;
+let templatePlaceholderMode = false;
+
+function rawInstanceParam() {
+  try {
+    const sp = new URLSearchParams(window.location.search || '');
+    const hp = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+    return sp.get('w') || sp.get('widget') || sp.get('instance') || hp.get('w') || hp.get('widget') || hp.get('instance') || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function isTemplateInstanceValue(value) {
+  return TEMPLATE_INSTANCE_VALUES.includes(String(value || ''));
+}
+
+function applyTemplatePlaceholderClass(active) {
+  document.documentElement.classList.toggle('is-template-placeholder', active);
+  if (document.body) {
+    document.body.classList.toggle('is-template-placeholder', active);
+  }
+}
+
+function refreshTemplatePlaceholderMode() {
+  const raw = rawInstanceParam();
+  templatePlaceholderMode = !raw || isTemplateInstanceValue(raw) || !INSTANCE_RE.test(raw);
+  applyTemplatePlaceholderClass(templatePlaceholderMode);
+  return templatePlaceholderMode;
+}
+
+function installTemplateGuard() {
+  if (!document.getElementById('instanceTemplateGuardStyles')) {
+    const style = document.createElement('style');
+    style.id = 'instanceTemplateGuardStyles';
+    style.textContent = `
+    html.is-template-placeholder,
+    body.is-template-placeholder { min-height: 100vh; }
+    body.is-template-placeholder {
+      background: var(--bg, #f6f6f4);
+      overflow: hidden;
+    }
+    body.is-template-placeholder > :not(.is-overlay):not(script):not(style) {
+      display: none !important;
+    }
+    `;
+    document.head.appendChild(style);
+  }
+  refreshTemplatePlaceholderMode();
+  if (!document.body) {
+    document.addEventListener('DOMContentLoaded', function() {
+      applyTemplatePlaceholderClass(templatePlaceholderMode);
+    }, { once: true });
+  }
+}
+
+installTemplateGuard();
 
 function readScope() {
   try {
@@ -45,13 +110,14 @@ function workerBase() {
 
 function readParams() {
   try {
-    const sp = new URLSearchParams(window.location.search || '');
-    const hp = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
-    instanceId = sp.get('w') || sp.get('widget') || sp.get('instance') || hp.get('w') || hp.get('widget') || hp.get('instance') || null;
+    refreshTemplatePlaceholderMode();
+    instanceId = rawInstanceParam() || null;
     cloudEnabled = !!(workerBase() && instanceId && INSTANCE_RE.test(instanceId));
   } catch (e) {
     instanceId = null;
     cloudEnabled = false;
+    templatePlaceholderMode = false;
+    applyTemplatePlaceholderClass(false);
   }
 }
 
@@ -165,6 +231,7 @@ function closeInstallModal() {
 }
 
 function openInstallModal() {
+  refreshTemplatePlaceholderMode();
   if (!workerBase()) {
     cloudStatus('-', '', '서버 주소가 설정되지 않아 이 기기에만 임시 저장됩니다');
     return;
@@ -180,8 +247,17 @@ function openInstallModal() {
       <button class="is-link" type="button" id="isClose">이 기기에서만 임시 사용</button>
     </div>
   `;
+  if (templatePlaceholderMode) {
+    overlay.innerHTML = `
+      <div class="is-card">
+        <h3>Notion 연결이 필요해요</h3>
+        <p>이 주소는 공개 템플릿용 placeholder입니다. Notion 연결을 완료하면 위젯 주소가 사용자 전용 주소로 자동 변경되고, 개인 데이터가 분리 저장됩니다.</p>
+        <a class="is-btn primary" href="${installUrl()}" target="_blank" rel="noopener">Notion 연결하기</a>
+      </div>
+    `;
+  }
   overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) closeInstallModal();
+    if (e.target === overlay && !templatePlaceholderMode) closeInstallModal();
   });
   document.body.appendChild(overlay);
   const closeBtn = document.getElementById('isClose');

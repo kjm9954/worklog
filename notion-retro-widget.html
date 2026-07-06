@@ -2014,6 +2014,37 @@
       text-align: center;
     }
 
+    body.retro-template-placeholder {
+      overflow: hidden;
+    }
+
+    body.retro-template-placeholder .main > :not(.retro-template-placeholder-card) {
+      display: none !important;
+    }
+
+    .retro-template-placeholder-card {
+      width: min(420px, calc(100vw - 32px));
+      margin: 24px auto;
+      padding: 18px;
+      border: 1.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow-md);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .retro-template-placeholder-card h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .retro-template-placeholder-card p {
+      margin: 0 0 14px;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+    }
+
     @media (max-width: 980px) {
       .app-header { align-items: flex-start; flex-direction: column; }
       .header-actions { justify-content: flex-start; }
@@ -2738,6 +2769,15 @@
     const WIDGET_API_KEY = "";
     const USE_MOCK = WORKER_URL === "";
     const WIDGET_INSTANCE_RE = /^[A-Za-z0-9_-]{24,180}$/;
+    const TEMPLATE_INSTANCE_VALUES = [
+      "WORKLOG_INSTANCE_ID",
+      "__WORKLOG_INSTANCE_ID__",
+      "WORKLOG_WIDGET_INSTANCE_ID",
+      "__WORKLOG_WIDGET_INSTANCE_ID__",
+      "INSTANCE_ID",
+      "template",
+      "TEMPLATE"
+    ];
     const CLOUD_SYNC_DEBOUNCE_MS = 1200;
     const storeKey = "retro-calendar-widget-v8";
     const categoryStoreKey = "retro-calendar-widget-categories-v2";
@@ -2746,6 +2786,42 @@
     const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
     const offFridayBase = "2026-05-22";
     let activeHistoryFilter = "";
+
+    function rawWidgetInstanceParam() {
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
+        return params.get("w") || params.get("instance") || params.get("widget_id") ||
+          hashParams.get("w") || hashParams.get("instance") || hashParams.get("widget_id") || "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function isTemplateInstanceValue(value) {
+      return TEMPLATE_INSTANCE_VALUES.includes(String(value || ""));
+    }
+
+    const retroTemplatePlaceholderMode = !WIDGET_INSTANCE_RE.test(rawWidgetInstanceParam());
+
+    function renderTemplatePlaceholderCard() {
+      const main = document.querySelector(".main");
+      if (!main || main.querySelector(".retro-template-placeholder-card")) return;
+      const card = document.createElement("section");
+      card.className = "retro-template-placeholder-card";
+      card.innerHTML = `
+        <h2>Notion 연결이 필요해요</h2>
+        <p>이 주소는 공개 템플릿용 placeholder입니다. Notion 연결을 완료하면 위젯 주소가 사용자 전용 주소로 자동 변경되고, 개인 데이터가 분리 저장됩니다.</p>
+        <a class="btn primary" href="${WORKER_URL.replace(/\/+$/, "")}/auth/notion/start" target="_blank" rel="noopener">Notion 연결하기</a>
+      `;
+      main.prepend(card);
+    }
+
+    if (retroTemplatePlaceholderMode) {
+      document.body.classList.add("retro-template-placeholder");
+      renderTemplatePlaceholderCard();
+    }
+
     const singleWidgetPage = (() => {
       const params = new URLSearchParams(window.location.search || "");
       const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
@@ -3181,7 +3257,7 @@
 
     function canUseCloudSync() {
       const instanceId = getWidgetInstanceId();
-      return Boolean(!USE_MOCK && WORKER_URL && !WORKER_URL.includes("REPLACE-ME") && WIDGET_INSTANCE_RE.test(instanceId));
+      return Boolean(!retroTemplatePlaceholderMode && !USE_MOCK && WORKER_URL && !WORKER_URL.includes("REPLACE-ME") && WIDGET_INSTANCE_RE.test(instanceId));
     }
 
     function cloudEndpoint(path) {
@@ -3254,6 +3330,11 @@
     }
 
     async function initCloudSync() {
+      if (retroTemplatePlaceholderMode) {
+        cloudSyncEnabled = false;
+        renderTemplatePlaceholderCard();
+        return;
+      }
       if (!canUseCloudSync()) {
         cloudSyncEnabled = false;
         setSaveState("로컬 저장됨", null);
