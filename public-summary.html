@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="ko" data-theme="light">
 <head>
+<script data-worklog-unlinked-guard>
+(function(){
+  function readParams(source){ try { return new URLSearchParams(source || ''); } catch (e) { return new URLSearchParams(); } }
+  var search = readParams(window.location.search);
+  var hash = readParams((window.location.hash || '').replace(/^#/, ''));
+  var w = search.get('w') || search.get('widget') || search.get('instance') || hash.get('w') || hash.get('widget') || hash.get('instance') || '';
+  var real = /^[A-Za-z0-9_-]{24,180}$/.test(w) && !/^(WORKLOG_INSTANCE_ID|__WORKLOG_INSTANCE_ID__|WORKLOG_WIDGET_INSTANCE_ID|__WORKLOG_WIDGET_INSTANCE_ID__|INSTANCE_ID|template|TEMPLATE)$/.test(w);
+  if (!real) document.documentElement.classList.add('worklog-unlinked-preload');
+})();
+</script>
+<style data-worklog-unlinked-guard>
+html.worklog-unlinked-preload body { background: #f6f6f4; overflow: hidden; }
+html.worklog-unlinked-preload body > :not(.is-overlay):not(script):not(style) { display: none !important; }
+</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>업무일지 — 오늘</title>
@@ -2114,7 +2128,7 @@
   </div>
 
 <script>window.WORKLOG_KEY_PREFIX = "worklog-pub";</script>
-<script src="instance-sync.js?v=4"></script>
+<script src="instance-sync.js?v=5"></script>
 <script src="shared.js?v=7"></script>
 <script>
 'use strict';

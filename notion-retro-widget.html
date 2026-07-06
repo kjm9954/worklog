@@ -1,6 +1,19 @@
 <!doctype html>
 <html lang="ko">
 <head>
+<script data-retro-unlinked-guard>
+(function(){
+  function readParams(source){ try { return new URLSearchParams(source || ''); } catch (e) { return new URLSearchParams(); } }
+  var search = readParams(window.location.search);
+  var hash = readParams((window.location.hash || '').replace(/^#/, ''));
+  var w = search.get('w') || search.get('instance') || search.get('widget_id') || hash.get('w') || hash.get('instance') || hash.get('widget_id') || '';
+  if (!/^[A-Za-z0-9_-]{24,180}$/.test(w)) document.documentElement.classList.add('retro-unlinked-preload');
+})();
+</script>
+<style data-retro-unlinked-guard>
+html.retro-unlinked-preload body { overflow: hidden; }
+html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: none !important; }
+</style>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>업무 복기 위젯</title>
