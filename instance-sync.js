@@ -18,6 +18,15 @@
 const INSTANCE_WORKER_URL = 'https://worklog-public.wldnjsdkk.workers.dev';
 const SAVE_DEBOUNCE_MS = 1500;
 const INSTANCE_RE = /^[A-Za-z0-9_-]{24,180}$/;
+const TEMPLATE_INSTANCE_VALUES = new Set([
+  'WORKLOG_INSTANCE_ID',
+  '__WORKLOG_INSTANCE_ID__',
+  'WORKLOG_WIDGET_INSTANCE_ID',
+  '__WORKLOG_WIDGET_INSTANCE_ID__',
+  'INSTANCE_ID',
+  'template',
+  'TEMPLATE',
+]);
 
 let instanceId = null;
 let cloudEnabled = false;
@@ -26,6 +35,42 @@ let cloudInFlight = false;
 let cloudPendingSave = false;
 let cloudApplyingRemote = false;
 let onRemoteAppliedCb = null;
+
+function rawInstanceParam() {
+  try {
+    const sp = new URLSearchParams(window.location.search || '');
+    const hp = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+    return sp.get('w') || sp.get('widget') || sp.get('instance') || hp.get('w') || hp.get('widget') || hp.get('instance') || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function isRealInstanceId(value) {
+  const id = String(value || '');
+  return INSTANCE_RE.test(id) && !TEMPLATE_INSTANCE_VALUES.has(id);
+}
+
+function shouldRequireNotionLink() {
+  return !isRealInstanceId(rawInstanceParam());
+}
+
+function installUnlinkedGuard() {
+  if (!shouldRequireNotionLink()) return;
+  document.documentElement.classList.add('is-unlinked-public-widget');
+  if (document.body) document.body.classList.add('is-unlinked-public-widget');
+  const style = document.createElement('style');
+  style.id = 'instanceUnlinkedGuardStyles';
+  style.textContent = `
+    html.is-unlinked-public-widget,
+    body.is-unlinked-public-widget { min-height: 100vh; }
+    body.is-unlinked-public-widget { background: var(--bg, #f6f6f4); overflow: hidden; }
+    body.is-unlinked-public-widget > :not(.is-overlay):not(script):not(style) { display: none !important; }
+  `;
+  document.head.appendChild(style);
+}
+
+installUnlinkedGuard();
 
 function readScope() {
   try {
@@ -45,10 +90,8 @@ function workerBase() {
 
 function readParams() {
   try {
-    const sp = new URLSearchParams(window.location.search || '');
-    const hp = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
-    instanceId = sp.get('w') || sp.get('widget') || sp.get('instance') || hp.get('w') || hp.get('widget') || hp.get('instance') || null;
-    cloudEnabled = !!(workerBase() && instanceId && INSTANCE_RE.test(instanceId));
+    instanceId = rawInstanceParam() || null;
+    cloudEnabled = !!(workerBase() && isRealInstanceId(instanceId));
   } catch (e) {
     instanceId = null;
     cloudEnabled = false;
@@ -181,11 +224,12 @@ function openInstallModal() {
     </div>
   `;
   overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) closeInstallModal();
+    if (e.target === overlay && !shouldRequireNotionLink()) closeInstallModal();
   });
   document.body.appendChild(overlay);
   const closeBtn = document.getElementById('isClose');
-  if (closeBtn) closeBtn.onclick = closeInstallModal;
+  if (closeBtn && shouldRequireNotionLink()) closeBtn.remove();
+  else if (closeBtn) closeBtn.onclick = closeInstallModal;
 }
 
 function bindStatusClick() {
