@@ -2063,16 +2063,30 @@
       gap: 3px;
     }
     body[data-mobile="true"] #page-check .weekday { font-size: 0.6875rem; padding: 2px 0; }
+    /* 네모칸(테두리·배경·그림자) 제거 — 중요업무 캘린더처럼 원형 마커만 남김 */
     body[data-mobile="true"] #page-check .day,
     body[data-mobile="true"] #page-check .day.outside,
     body[data-mobile="true"] #page-check .day.weekend,
     body[data-mobile="true"] #page-check .day.no-check,
-    body[data-mobile="true"] #page-check .day.future {
+    body[data-mobile="true"] #page-check .day.future,
+    body[data-mobile="true"] #page-check .day.today {
       min-height: 44px;
       padding: 3px 2px;
-      border-radius: 6px;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+      border-radius: 0;
       align-items: center;
       justify-content: center;
+    }
+    body[data-mobile="true"] #page-check .day:hover,
+    body[data-mobile="true"] #page-check .day.weekend:hover,
+    body[data-mobile="true"] #page-check .day.no-check:hover,
+    body[data-mobile="true"] #page-check .day.future:hover,
+    body[data-mobile="true"] #page-check .day.today:hover {
+      background: transparent;
+      border: none;
+      box-shadow: none;
     }
     body[data-mobile="true"] #page-check .day .today-label { display: none; }
     body[data-mobile="true"] #page-check .day .quick-check,
