@@ -1307,15 +1307,21 @@
   :root[data-device="mobile"] .daily-day-tab .daily-dot { width: 3px; height: 3px; }
   :root[data-device="mobile"] .daily-day-tab .daily-count { font-size: 9px; letter-spacing: -0.2px; }
   :root[data-device="mobile"] .daily-day-tab .daily-count-doing { margin-left: 1px; }
-  /* 세로: 요일 스트립은 선택된(오늘) 요일 하나만 풀폭 — 글자 넘침 방지, ◀▶·오늘 버튼으로 이동 */
-  @media (orientation: portrait) {
-    :root[data-device="mobile"] .daily-day-tab:not(.active) { display: none !important; }
-    :root[data-device="mobile"] .daily-day-tab.active {
+  /* 세로 폰: 요일 스트립은 선택된 요일만 풀폭으로 표시해 카드가 세로로 찌그러지는 현상을 막습니다. */
+  @media (max-width: 700px) and (orientation: portrait) {
+    :root[data-device="mobile"] .daily-day-tab:not(.active),
+    .daily-day-tab:not(.active) { display: none !important; }
+    :root[data-device="mobile"] .daily-day-tab.active,
+    .daily-day-tab.active {
       flex: 1 1 100%;
       padding: 8px 12px;
       font-size: 13px;
     }
-    :root[data-device="mobile"] .daily-day-tab.active .daily-count { font-size: 11px; letter-spacing: 0; }
+    :root[data-device="mobile"] .daily-day-tab.active .daily-count,
+    .daily-day-tab.active .daily-count {
+      font-size: 11px;
+      letter-spacing: 0;
+    }
   }
 
   :root[data-device="mobile"] .daily-head { padding: 10px 12px; gap: 8px; }

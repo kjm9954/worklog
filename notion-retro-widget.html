@@ -2109,6 +2109,52 @@
     body[data-mobile="true"] #page-check .day:has(.quick-btn.miss.active) .day-num { background: var(--red); color: #fff; }
     /* 오늘 = 링 강조 */
     body[data-mobile="true"] #page-check .day.today .day-num { box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--blue); }
+    /* 보드 캘린더와 동일한 모바일 구조: 위 원형 상태 마커, 아래 날짜 */
+    body[data-mobile="true"] #page-check .day::before {
+      content: "";
+      width: clamp(26px, 8vw, 34px);
+      height: clamp(26px, 8vw, 34px);
+      border: 1.5px dashed var(--border-strong);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: transparent;
+      font-size: 0.75rem;
+      font-weight: 950;
+      line-height: 1;
+    }
+    body[data-mobile="true"] #page-check .day.checked::before {
+      content: "✓";
+      border-color: transparent;
+      background: var(--blue);
+      color: #fff;
+    }
+    body[data-mobile="true"] #page-check .day:has(.quick-btn.miss.active)::before {
+      content: "!";
+      border-color: transparent;
+      background: var(--red);
+      color: #fff;
+    }
+    body[data-mobile="true"] #page-check .day.today::before {
+      box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--blue);
+    }
+    body[data-mobile="true"] #page-check .day.selected::before {
+      box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--blue);
+    }
+    body[data-mobile="true"] #page-check .day .day-num {
+      width: auto;
+      height: auto;
+      margin: 0;
+      border-radius: 0;
+      background: transparent !important;
+      color: var(--text) !important;
+      box-shadow: none !important;
+      font-size: 0.75rem;
+      line-height: 1.1;
+    }
+    body[data-mobile="true"] #page-check .day.weekend .day-num,
+    body[data-mobile="true"] #page-check .day.outside .day-num { color: var(--text-muted) !important; }
     body[data-mobile="true"] .check-layout,
     body[data-mobile="true"][data-single-widget="true"] .check-layout {
       grid-template-columns: 1fr;
@@ -2290,6 +2336,11 @@
       overflow: hidden;
     }
     body[data-mobile="true"] .month-card-stats > span { white-space: nowrap; }
+    /* 모바일 축약: 델타 접두사 숨김 + '실수 없음'→'무실수' (통계 잘림 방지) */
+    .stat-ok-short { display: none; }
+    body[data-mobile="true"] .delta-prefix { display: none; }
+    body[data-mobile="true"] .stat-ok-long { display: none; }
+    body[data-mobile="true"] .stat-ok-short { display: inline; }
     body[data-mobile="true"] .month-delta {
       grid-column: 3;
       grid-row: 1;
@@ -2303,6 +2354,51 @@
       justify-self: end;
       font-size: 0.6875rem;
       white-space: nowrap;
+    }
+    body[data-mobile="true"] .month-card {
+      grid-template-columns: 48px minmax(0, 1fr) max-content;
+      gap: 3px 6px;
+    }
+    body[data-mobile="true"] .month-categories {
+      gap: 3px;
+      max-width: 100%;
+    }
+    body[data-mobile="true"] .month-categories .category-chip {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    body[data-mobile="true"] .month-card-stats {
+      flex-wrap: wrap;
+      gap: 2px 7px;
+      overflow: visible;
+      line-height: 1.3;
+    }
+    body[data-mobile="true"] .month-card-stats > span {
+      white-space: nowrap;
+      min-width: max-content;
+    }
+    body[data-mobile="true"] .month-delta,
+    body[data-mobile="true"] .month-status {
+      max-width: 100%;
+      line-height: 1.25;
+    }
+    @media (max-width: 390px) {
+      body[data-mobile="true"] .month-card {
+        grid-template-columns: 46px minmax(0, 1fr);
+        grid-template-rows: auto auto auto auto;
+      }
+      body[data-mobile="true"] .month-title { grid-row: 1 / span 4; }
+      body[data-mobile="true"] .month-delta {
+        grid-column: 2;
+        grid-row: 3;
+        justify-self: start;
+      }
+      body[data-mobile="true"] .month-status {
+        grid-column: 2;
+        grid-row: 4;
+        justify-self: start;
+      }
     }
 
     /* 차트: 세로 폰에서 더 높은 비율(뷰박스 1000×420과 매칭) */
@@ -4106,11 +4202,11 @@
     }
 
     function monthDeltaInfo(row, previous) {
-      if (!previous) return { label: "기준 월", className: "" };
+      if (!previous) return { prefix: "", value: "기준 월", className: "" };
       const delta = rowMissRate(row) - rowMissRate(previous);
-      if (delta < 0) return { label: `전월 대비 ${delta}%p`, className: "good" };
-      if (delta > 0) return { label: `전월 대비 +${delta}%p`, className: "warn" };
-      return { label: "전월 대비 유지", className: "" };
+      if (delta < 0) return { prefix: "전월 대비 ", value: `${delta}%p`, className: "good" };
+      if (delta > 0) return { prefix: "전월 대비 ", value: `+${delta}%p`, className: "warn" };
+      return { prefix: "전월 대비 ", value: "유지", className: "" };
     }
 
     function categoryChipsHtml(categoryValue, emptyLabel = "분류 없음") {
@@ -4213,14 +4309,14 @@
           <article class="month-card">
             <div class="month-card-head">
               <span class="month-title">${row.label}</span>
-              <span class="month-delta ${delta.className}">${delta.label}</span>
+              <span class="month-delta ${delta.className}"><span class="delta-prefix">${delta.prefix}</span>${delta.value}</span>
             </div>
             <div class="month-categories">
               ${categoryChipsHtml((row.categories || []).join(", "))}
             </div>
             <div class="month-card-stats">
               <span>실수 ${row.miss}건</span>
-              <span>실수 없음 ${row.ok}건</span>
+              <span><span class="stat-ok-long">실수 없음</span><span class="stat-ok-short">무실수</span> ${row.ok}건</span>
             </div>
             <span class="month-status ${status.className}">${status.label}</span>
           </article>

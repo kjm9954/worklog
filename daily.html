@@ -1299,10 +1299,27 @@
   :root[data-device="mobile"] .daily-today-btn { padding: 0 10px; height: 28px; font-size: 12px; margin-left: auto; }
 
   :root[data-device="mobile"] .daily-day-tabs { gap: 3px; }
-  :root[data-device="mobile"] .daily-day-tab { padding: 4px 4px; font-size: 11px; min-width: 0; }
+  :root[data-device="mobile"] .daily-day-tab { padding: 4px 2px; font-size: 11px; min-width: 0; }
   :root[data-device="mobile"] .daily-day-tab .daily-dots { margin-top: 2px; gap: 2px; }
   :root[data-device="mobile"] .daily-day-tab .daily-dot { width: 3px; height: 3px; }
-  :root[data-device="mobile"] .daily-day-tab .daily-count { font-size: 10px; }
+  :root[data-device="mobile"] .daily-day-tab .daily-count { font-size: 9px; letter-spacing: -0.2px; }
+  :root[data-device="mobile"] .daily-day-tab .daily-count-doing { margin-left: 1px; }
+  /* 세로 폰: 요일 스트립은 선택된 요일만 풀폭으로 표시해 카드가 세로로 찌그러지는 현상을 막습니다. */
+  @media (max-width: 700px) and (orientation: portrait) {
+    :root[data-device="mobile"] .daily-day-tab:not(.active),
+    .daily-day-tab:not(.active) { display: none !important; }
+    :root[data-device="mobile"] .daily-day-tab.active,
+    .daily-day-tab.active {
+      flex: 1 1 100%;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    :root[data-device="mobile"] .daily-day-tab.active .daily-count,
+    .daily-day-tab.active .daily-count {
+      font-size: 11px;
+      letter-spacing: 0;
+    }
+  }
 
   :root[data-device="mobile"] .daily-head { padding: 10px 12px; gap: 8px; }
   :root[data-device="mobile"] .daily-date-big { font-size: 15px; }
