@@ -1293,8 +1293,68 @@
     grid-auto-rows: auto;
     gap: 5px 3px;
   }
+  :root[data-device="mobile"] .board-cal-toolbar {
+    align-items: flex-start;
+    gap: 8px;
+  }
+  :root[data-device="mobile"] .board-cal-nav {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 4px;
+  }
+  :root[data-device="mobile"] .board-cal-nav::-webkit-scrollbar { display: none; }
+  :root[data-device="mobile"] .board-cal-nav-btn {
+    flex: 0 0 auto;
+    min-height: 30px;
+    padding: 5px 8px;
+    white-space: nowrap;
+    word-break: keep-all;
+    line-height: 1.15;
+    font-size: 0.6875rem;
+  }
+  :root[data-device="mobile"] .board-cal-title { white-space: nowrap; }
+  :root[data-device="mobile"] .board-cal-weekday,
+  :root[data-device="mobile"] .board-cal-date {
+    white-space: nowrap;
+    word-break: keep-all;
+  }
   :root[data-device="mobile"] body.public-calendar-widget .board-cal-panel {
     min-height: 0;
+  }
+  @media (max-width: 700px) {
+    body.public-calendar-widget .board-cal-toolbar {
+      align-items: flex-start;
+      gap: 8px;
+    }
+    body.public-calendar-widget .board-cal-nav {
+      width: 100%;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 4px;
+    }
+    body.public-calendar-widget .board-cal-nav::-webkit-scrollbar { display: none; }
+    body.public-calendar-widget .board-cal-nav-btn {
+      flex: 0 0 auto;
+      min-height: 30px;
+      padding: 5px 8px;
+      white-space: nowrap;
+      word-break: keep-all;
+      line-height: 1.15;
+      font-size: 0.6875rem;
+    }
+    body.public-calendar-widget .board-cal-title,
+    body.public-calendar-widget .board-cal-weekday,
+    body.public-calendar-widget .board-cal-date {
+      white-space: nowrap;
+      word-break: keep-all;
+    }
   }
 </style>
 </head>
@@ -2363,8 +2423,8 @@
           <button type="button" class="board-cal-nav-btn" onclick="onBoardCalMove(-1)">◀</button>
           <button type="button" class="board-cal-nav-btn" onclick="onBoardCalToday()">오늘</button>
           <button type="button" class="board-cal-nav-btn" onclick="onBoardCalMove(1)">▶</button>
-          <button type="button" class="board-cal-nav-btn" onclick="openBoardUndatedPopover(this)">📥 미지정 ${undatedItems.length}</button>
-          <button type="button" class="board-cal-nav-btn" onclick="openBoardRoutinesPopover(this)">🔁 상시업무 ${state.routines.length}</button>
+          <button type="button" class="board-cal-nav-btn" onclick="openBoardUndatedPopover(this)">미지정 ${undatedItems.length}</button>
+          <button type="button" class="board-cal-nav-btn" onclick="openBoardRoutinesPopover(this)">상시 ${state.routines.length}</button>
         </div>
       </div>
       <div class="board-cal-shell">
