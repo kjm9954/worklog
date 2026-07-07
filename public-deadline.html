@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>업무 데드라인 위젯</title>
+  <script>
+    (function(){
+      var params = new URLSearchParams(window.location.search || '');
+      window.location.replace('public-summary.html?' + params.toString() + (window.location.hash || ''));
+    })();
+  </script>
+</head>
+<body>
+  <a href="public-summary.html">업무 데드라인 위젯 열기</a>
+</body>
+</html>
