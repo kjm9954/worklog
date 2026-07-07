@@ -125,7 +125,86 @@ async function cloudSaveNow(stateObj) {
 function cloudScheduleSave(stateObj) {
   if (!cloudEnabled || cloudApplyingRemote) return;
   if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
-  cloudSaveTimer = setTimeout(() => cloudSaveNow(stateObj), SAVE_DEBOUNCE_MS);
+  cloudSaveTimer = setTimeout(() => {
+    cloudSaveTimer = null;
+    cloudSaveNow(stateObj);
+  }, SAVE_DEBOUNCE_MS);
+}
+
+/* ── 자동 갱신: 포그라운드 복귀 시 재조회 + 주기 폴링 ──
+   서버 GET은 최초 로드 1회뿐이라 다른 기기의 변경이 반영되지 않던 문제 대응.
+   - 내 변경이 업로드 대기/진행 중이면 당겨오지 않음 (로컬 편집 덮어쓰기 방지)
+   - 입력 필드 포커스 중이면 건너뜀 (재렌더링으로 인한 입력 유실 방지)
+   - 내용이 같으면 적용/렌더 생략 */
+const POLL_INTERVAL_MS = 45000;
+const REFRESH_MIN_GAP_MS = 5000;
+let pollTimer = null;
+let autoRefreshBound = false;
+let lastRefreshAt = 0;
+let lastAppliedJson = null;
+
+function isEditingField() {
+  const el = document.activeElement;
+  if (!el) return false;
+  if (el.isContentEditable) return true;
+  const tag = (el.tagName || '').toUpperCase();
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+}
+
+function localStateJson() {
+  try {
+    return (typeof state !== 'undefined' && state) ? JSON.stringify(state) : null;
+  } catch (e) { return null; }
+}
+
+async function cloudFetchState() {
+  const res = await fetch(stateUrl(), {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  return (data && data.state) || null;
+}
+
+async function cloudRefresh() {
+  if (!cloudEnabled || cloudApplyingRemote) return;
+  if (cloudInFlight || cloudPendingSave || cloudSaveTimer) return;
+  if (isEditingField()) return;
+  const now = Date.now();
+  if (now - lastRefreshAt < REFRESH_MIN_GAP_MS) return;
+  lastRefreshAt = now;
+  let remote = null;
+  try { remote = await cloudFetchState(); } catch (e) { return; } /* 조용히 무시 — 다음 주기 재시도 */
+  if (!remote) return;
+  let remoteJson = null;
+  try { remoteJson = JSON.stringify(remote); } catch (e) { return; }
+  if (remoteJson === lastAppliedJson || remoteJson === localStateJson()) return;
+  cloudApplyingRemote = true;
+  try {
+    if (typeof onRemoteAppliedCb === 'function') onRemoteAppliedCb(remote);
+    lastAppliedJson = remoteJson;
+    cloudStatus('OK', 'ok', '서버에서 갱신됨 - ' + new Date().toLocaleTimeString('ko-KR'));
+  } finally {
+    cloudApplyingRemote = false;
+  }
+}
+
+function startAutoRefresh() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(function() {
+    if (document.hidden) return;
+    cloudRefresh();
+  }, POLL_INTERVAL_MS);
+  if (autoRefreshBound) return;
+  autoRefreshBound = true;
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) cloudRefresh();
+  });
+  window.addEventListener('focus', function() { cloudRefresh(); });
+  window.addEventListener('pageshow', function(ev) {
+    if (ev && ev.persisted) cloudRefresh(); /* bfcache 복원 대응 */
+  });
 }
 
 function injectStyles() {
@@ -226,6 +305,11 @@ async function initCloudSync(onRemoteApplied) {
   const remote = await cloudLoad();
   cloudApplyingRemote = false;
   if (remote && typeof onRemoteApplied === 'function') onRemoteApplied(remote);
+  if (remote) {
+    try { lastAppliedJson = JSON.stringify(remote); } catch (e) {}
+  }
+  lastRefreshAt = Date.now();
+  startAutoRefresh();
   return true;
 }
 

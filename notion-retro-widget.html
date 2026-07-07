@@ -2588,7 +2588,10 @@
     function scheduleCloudSave(delay = CLOUD_SYNC_DEBOUNCE_MS) {
       if (!cloudSyncEnabled || cloudApplyingRemote) return;
       if (cloudSyncTimer) window.clearTimeout(cloudSyncTimer);
-      cloudSyncTimer = window.setTimeout(() => saveCloudStateNow(), delay);
+      cloudSyncTimer = window.setTimeout(() => {
+        cloudSyncTimer = null;
+        saveCloudStateNow();
+      }, delay);
     }
 
     function saveCategories() {
@@ -2869,6 +2872,16 @@
       await saveCloudStateNow();
     }
 
+    function cloudSignatureOf(payload) {
+      return JSON.stringify({
+        records: payload.records,
+        categories: payload.categories,
+        historyColumns: payload.historyColumns,
+        selectedDate: payload.selectedDate,
+        month: payload.month
+      });
+    }
+
     async function saveCloudStateNow() {
       if (!cloudSyncEnabled || cloudApplyingRemote) return;
       if (cloudSyncInFlight) {
@@ -2877,13 +2890,7 @@
       }
 
       const payload = exportPayload();
-      const signature = JSON.stringify({
-        records: payload.records,
-        categories: payload.categories,
-        historyColumns: payload.historyColumns,
-        selectedDate: payload.selectedDate,
-        month: payload.month
-      });
+      const signature = cloudSignatureOf(payload);
 
       if (signature === cloudLastSignature) return;
 
@@ -2925,14 +2932,8 @@
           cloudApplyingRemote = true;
           try {
             applyImportedJson(remoteState, { message: "클라우드 동기화됨", skipCloudSave: true, preserveView: true });
-            const payload = exportPayload();
-            cloudLastSignature = JSON.stringify({
-              records: payload.records,
-              categories: payload.categories,
-              historyColumns: payload.historyColumns,
-              selectedDate: payload.selectedDate,
-              month: payload.month
-            });
+            cloudLastSignature = cloudSignatureOf(exportPayload());
+            cloudLastRemoteSignature = cloudSignatureOf(remoteState);
           } finally {
             cloudApplyingRemote = false;
           }
@@ -2947,6 +2948,69 @@
         console.warn("cloud load failed", error);
         setSaveState("클라우드 연결 실패", "로컬 저장됨");
       }
+      if (cloudSyncEnabled) {
+        cloudLastRefreshAt = Date.now();
+        startCloudAutoRefresh();
+      }
+    }
+
+    /* ── 자동 갱신: 포그라운드 복귀 시 재조회 + 주기 폴링 ──
+       서버 GET이 최초 로드 1회뿐이라 다른 기기의 변경이 반영되지 않던 문제 대응.
+       업로드 대기/진행 중이거나 입력 중이면 건너뛰고, 내용이 같으면 재렌더링하지 않는다. */
+    const CLOUD_POLL_INTERVAL_MS = 45000;
+    const CLOUD_REFRESH_MIN_GAP_MS = 5000;
+    let cloudPollTimer = null;
+    let cloudAutoRefreshBound = false;
+    let cloudLastRefreshAt = 0;
+    let cloudLastRemoteSignature = "";
+
+    function isEditingField() {
+      const el = document.activeElement;
+      if (!el) return false;
+      if (el.isContentEditable) return true;
+      const tag = (el.tagName || "").toUpperCase();
+      return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+    }
+
+    async function refreshCloudState() {
+      if (!cloudSyncEnabled || cloudApplyingRemote) return;
+      if (cloudSyncInFlight || cloudSyncPending || cloudSyncTimer) return;
+      if (isEditingField()) return;
+      const now = Date.now();
+      if (now - cloudLastRefreshAt < CLOUD_REFRESH_MIN_GAP_MS) return;
+      cloudLastRefreshAt = now;
+      let remoteState = null;
+      try { remoteState = await loadCloudState(); } catch (error) { return; } /* 다음 주기에 재시도 */
+      if (!remoteState) return;
+      const remoteSignature = cloudSignatureOf(remoteState);
+      if (remoteSignature === cloudLastRemoteSignature) return;
+      cloudLastRemoteSignature = remoteSignature;
+      if (remoteSignature === cloudSignatureOf(exportPayload())) return; /* 내 데이터와 동일 */
+      cloudApplyingRemote = true;
+      try {
+        applyImportedJson(remoteState, { message: "클라우드 동기화됨", skipCloudSave: true, preserveView: true });
+        cloudLastSignature = cloudSignatureOf(exportPayload());
+      } finally {
+        cloudApplyingRemote = false;
+      }
+      setSaveState("클라우드 동기화됨", null);
+    }
+
+    function startCloudAutoRefresh() {
+      if (cloudPollTimer) window.clearInterval(cloudPollTimer);
+      cloudPollTimer = window.setInterval(() => {
+        if (document.hidden) return;
+        refreshCloudState();
+      }, CLOUD_POLL_INTERVAL_MS);
+      if (cloudAutoRefreshBound) return;
+      cloudAutoRefreshBound = true;
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) refreshCloudState();
+      });
+      window.addEventListener("focus", () => refreshCloudState());
+      window.addEventListener("pageshow", (event) => {
+        if (event && event.persisted) refreshCloudState(); /* bfcache 복원 대응 */
+      });
     }
 
     function tryDownloadJson(text = lastExportJson) {
