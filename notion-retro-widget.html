@@ -2787,6 +2787,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
     const storeKey = "retro-calendar-widget-v8";
     const categoryStoreKey = "retro-calendar-widget-categories-v2";
     const historyColumnStoreKey = "retro-calendar-widget-history-columns-v1";
+    const syncMetaStoreKey = "retro-calendar-widget-sync-meta-v1";
     const widgetWidthStoreKey = "retro-calendar-widget-width-v1";
     const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
     const offFridayBase = "2026-05-22";
@@ -2874,6 +2875,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
     let cloudSyncPending = false;
     let cloudApplyingRemote = false;
     let cloudLastSignature = "";
+    let localSyncUpdatedAt = loadSyncUpdatedAt();
 
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -2990,6 +2992,25 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       }
     }
 
+    function loadSyncUpdatedAt() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(syncMetaStoreKey) || "null");
+        const value = Number(stored && stored.updatedAt);
+        return Number.isFinite(value) && value > 0 ? value : 0;
+      } catch {
+        return 0;
+      }
+    }
+
+    function saveSyncUpdatedAt(value = Date.now()) {
+      localSyncUpdatedAt = Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : Date.now();
+      try { localStorage.setItem(syncMetaStoreKey, JSON.stringify({ updatedAt: localSyncUpdatedAt })); } catch {}
+    }
+
+    function touchLocalSyncUpdatedAt() {
+      saveSyncUpdatedAt(Date.now());
+    }
+
     function normalizeCategory(category) {
       if (category === "빌드") return "일정";
       return category || "";
@@ -3015,6 +3036,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
     }
 
     function saveCategories() {
+      touchLocalSyncUpdatedAt();
       localStorage.setItem(categoryStoreKey, JSON.stringify(managedCategories));
       scheduleCloudSave();
     }
@@ -3048,6 +3070,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
     }
 
     function saveHistoryColumns() {
+      touchLocalSyncUpdatedAt();
       localStorage.setItem(historyColumnStoreKey, JSON.stringify(historyColumns));
       scheduleCloudSave();
     }
@@ -3080,6 +3103,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
 
     function saveRecords(changedDate = "") {
       normalizeRecords(records);
+      touchLocalSyncUpdatedAt();
       localStorage.setItem(storeKey, JSON.stringify(records));
       setSaveState("저장됨");
       if (changedDate) {
@@ -3223,6 +3247,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       return {
         schema: "work-retro-widget",
         version: 1,
+        syncUpdatedAt: localSyncUpdatedAt || 0,
         exportedAt: new Date().toISOString(),
         selectedDate,
         month: $("#monthInput").value,
@@ -3230,6 +3255,71 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
         historyColumns: { ...historyColumns },
         records: normalizeRecords(JSON.parse(JSON.stringify(records)))
       };
+    }
+
+    function payloadUpdatedAt(payload) {
+      const value = Number(payload && (payload.syncUpdatedAt || payload.updatedAt || payload._syncUpdatedAt));
+      return Number.isFinite(value) && value > 0 ? value : 0;
+    }
+
+    function recordSignature(source) {
+      try {
+        return JSON.stringify(normalizeRecords(JSON.parse(JSON.stringify(source || {}))));
+      } catch {
+        return "";
+      }
+    }
+
+    function seedRecordSignature() {
+      return recordSignature(cloneSeed());
+    }
+
+    function payloadHasUserData(payload) {
+      if (!payload || typeof payload !== "object") return false;
+      if (recordSignature(payload.records || payload) !== seedRecordSignature()) return true;
+      if (Array.isArray(payload.categories) && payload.categories.length) return true;
+      const columns = payload.historyColumns;
+      if (columns && typeof columns === "object") {
+        const normalized = normalizeHistoryColumns(columns.detail, columns.action);
+        if (normalized.detail !== 44 || normalized.action !== 26) return true;
+      }
+      return false;
+    }
+
+    function localHasUserData() {
+      if (recordSignature(records) !== seedRecordSignature()) return true;
+      if (Array.isArray(managedCategories) && managedCategories.length) return true;
+      if (historyColumns && (historyColumns.detail !== 44 || historyColumns.action !== 26)) return true;
+      return false;
+    }
+
+    function cloudPayloadDecision(payload) {
+      const remoteTs = payloadUpdatedAt(payload);
+      const localTs = localSyncUpdatedAt || 0;
+      const remoteHasData = payloadHasUserData(payload);
+      const localHasData = localHasUserData();
+
+      if (!remoteHasData) return { apply: !localHasData, repairLocal: localHasData, reason: "remote-empty" };
+      if (remoteTs && localTs) {
+        if (remoteTs > localTs) return { apply: true, repairLocal: false, reason: "remote-newer" };
+        return { apply: false, repairLocal: localHasData && localTs > remoteTs, reason: "local-newer" };
+      }
+      if (remoteTs && !localTs) {
+        return localHasData
+          ? { apply: false, repairLocal: true, reason: "local-legacy-data" }
+          : { apply: true, repairLocal: false, reason: "remote-stamped-local-empty" };
+      }
+      if (!remoteTs && localTs) return { apply: false, repairLocal: localHasData, reason: "remote-legacy-local-stamped" };
+      return localHasData
+        ? { apply: false, repairLocal: true, reason: "both-legacy-local-data" }
+        : { apply: true, repairLocal: false, reason: "local-empty" };
+    }
+
+    function repairCloudWithLocalPayload() {
+      if (!cloudSyncEnabled) return;
+      if (!localSyncUpdatedAt) touchLocalSyncUpdatedAt();
+      cloudLastSignature = "";
+      window.setTimeout(() => scheduleCloudSave(0), 0);
     }
 
     function readUrlSettings() {
@@ -3354,15 +3444,22 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       try {
         const remoteState = await loadCloudState();
         if (remoteState) {
-          cloudApplyingRemote = true;
-          try {
-            applyImportedJson(remoteState, { message: "클라우드 동기화됨", skipCloudSave: true, preserveView: true });
-            cloudLastSignature = cloudSignatureOf(exportPayload());
-            cloudLastRemoteSignature = cloudSignatureOf(remoteState);
-          } finally {
-            cloudApplyingRemote = false;
+          const decision = cloudPayloadDecision(remoteState);
+          cloudLastRemoteSignature = cloudSignatureOf(remoteState);
+          if (decision.apply) {
+            cloudApplyingRemote = true;
+            try {
+              applyImportedJson(remoteState, { message: "클라우드 동기화됨", skipCloudSave: true, preserveView: true });
+              saveSyncUpdatedAt(payloadUpdatedAt(remoteState) || Date.now());
+              cloudLastSignature = cloudSignatureOf(exportPayload());
+            } finally {
+              cloudApplyingRemote = false;
+            }
+            setSaveState("클라우드 동기화됨", null);
+          } else {
+            if (decision.repairLocal) repairCloudWithLocalPayload();
+            setSaveState("로컬 데이터가 더 최신", null);
           }
-          setSaveState("클라우드 동기화됨", null);
         } else {
           setSaveState("클라우드 준비됨");
           scheduleCloudSave(0);
@@ -3411,9 +3508,16 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       if (remoteSignature === cloudLastRemoteSignature) return;
       cloudLastRemoteSignature = remoteSignature;
       if (remoteSignature === cloudSignatureOf(exportPayload())) return; /* 내 데이터와 동일 */
+      const decision = cloudPayloadDecision(remoteState);
+      if (!decision.apply) {
+        if (decision.repairLocal) repairCloudWithLocalPayload();
+        setSaveState("로컬 데이터가 더 최신", null);
+        return;
+      }
       cloudApplyingRemote = true;
       try {
         applyImportedJson(remoteState, { message: "클라우드 동기화됨", skipCloudSave: true, preserveView: true });
+        saveSyncUpdatedAt(payloadUpdatedAt(remoteState) || Date.now());
         cloudLastSignature = cloudSignatureOf(exportPayload());
       } finally {
         cloudApplyingRemote = false;

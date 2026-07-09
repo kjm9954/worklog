@@ -200,6 +200,11 @@ function localStateJson() {
   } catch (e) { return null; }
 }
 
+function applyRemote(remote) {
+  if (typeof onRemoteAppliedCb !== 'function') return true;
+  return onRemoteAppliedCb(remote) !== false;
+}
+
 async function cloudFetchState() {
   const res = await fetch(stateUrl(), {
     method: 'GET',
@@ -225,9 +230,10 @@ async function cloudRefresh() {
   if (remoteJson === lastAppliedJson || remoteJson === localStateJson()) return;
   cloudApplyingRemote = true;
   try {
-    if (typeof onRemoteAppliedCb === 'function') onRemoteAppliedCb(remote);
+    const applied = applyRemote(remote);
     lastAppliedJson = remoteJson;
-    cloudStatus('OK', 'ok', '서버에서 갱신됨 - ' + new Date().toLocaleTimeString('ko-KR'));
+    if (applied) cloudStatus('OK', 'ok', '서버에서 갱신됨 - ' + new Date().toLocaleTimeString('ko-KR'));
+    else cloudStatus('OK', 'ok', '로컬 데이터가 더 최신이라 서버 적용을 건너뜀');
   } finally {
     cloudApplyingRemote = false;
   }
@@ -319,7 +325,7 @@ function bindStatusClick() {
     readParams();
     if (cloudEnabled) {
       cloudLoad().then(function(remote) {
-        if (remote && typeof onRemoteAppliedCb === 'function') onRemoteAppliedCb(remote);
+        if (remote) applyRemote(remote);
       });
     } else {
       openInstallModal();
@@ -352,9 +358,11 @@ async function initCloudSync(onRemoteApplied) {
   cloudApplyingRemote = true;
   const remote = await cloudLoad();
   cloudApplyingRemote = false;
-  if (remote && typeof onRemoteApplied === 'function') onRemoteApplied(remote);
+  let applied = true;
+  if (remote && typeof onRemoteApplied === 'function') applied = onRemoteApplied(remote) !== false;
   if (remote) {
     try { lastAppliedJson = JSON.stringify(remote); } catch (e) {}
+    if (!applied) cloudStatus('OK', 'ok', '로컬 데이터가 더 최신이라 서버 적용을 건너뜀');
   }
   lastRefreshAt = Date.now();
   startAutoRefresh();

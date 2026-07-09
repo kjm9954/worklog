@@ -16,6 +16,7 @@ const DEVICE_KEY = KEY_PREFIX + '-device';
 const SYNC_CHANNEL_NAME = KEY_PREFIX + '-sync';
 const LAST_ROLLOVER_KEY = KEY_PREFIX + '-last-rollover';
 const LAST_DAILY_CARRYOVER_KEY = KEY_PREFIX + '-last-daily-carryover';
+const SYNC_UPDATED_AT_FIELD = '_syncUpdatedAt';
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const DEFAULT_PROJECTS = ['메인', '서브', '기타'];
@@ -427,6 +428,7 @@ function createInitialState() {
   const monday = getThisMonday();
   return {
     version: 4.0,
+    _syncUpdatedAt: 0,
     goals: { week: '', month: '' },
     projectLabels: [],
     weekStart: formatDate(monday),
@@ -442,6 +444,7 @@ function createInitialState() {
 
 function migrateState(s) {
   if (!s || typeof s !== 'object') return createInitialState();
+  s[SYNC_UPDATED_AT_FIELD] = syncUpdatedAt(s);
   if (!s.goals || typeof s.goals !== 'object') {
     s.goals = { week: typeof s.mainGoal === 'string' ? s.mainGoal : '', month: '' };
   }
@@ -538,6 +541,69 @@ function migrateState(s) {
   return s;
 }
 
+function syncUpdatedAt(obj) {
+  const n = Number(obj && obj[SYNC_UPDATED_AT_FIELD]);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function touchSyncUpdatedAt() {
+  if (state && typeof state === 'object') state[SYNC_UPDATED_AT_FIELD] = Date.now();
+}
+
+function hasMeaningfulStateData(s) {
+  if (!s || typeof s !== 'object') return false;
+  if (s.goals && ((s.goals.week || '').trim() || (s.goals.month || '').trim())) return true;
+  if (Array.isArray(s.projectLabels) && s.projectLabels.length) return true;
+  if (Array.isArray(s.importantTasks) && s.importantTasks.some(it => it && ((it.name || '').trim() || (it.targetDate || '').trim() || (it.note || '').trim()))) return true;
+  if (Array.isArray(s.routines) && s.routines.some(it => it && ((it.name || '').trim() || (it.targetDate || '').trim() || (it.note || '').trim()))) return true;
+  if (Array.isArray(s.history) && s.history.length) return true;
+  if (Array.isArray(s.memoChecklist) && s.memoChecklist.some(it => it && ((it.text || '').trim() || it.checked))) return true;
+  if (Array.isArray(s.carryover) && s.carryover.length) return true;
+  if (Array.isArray(s.days) && s.days.some(day => {
+    if (!day) return false;
+    if ((day.schedule || '').trim() || (day.memo || '').trim() || (day.retro || '').trim()) return true;
+    const q = day.quadrants || {};
+    return ['q1','q2','q3','q4'].some(k => Array.isArray(q[k]) && q[k].some(t => {
+      if (!t) return false;
+      return String(t.name || '').trim() || String(t.startTime || '').trim() || String(t.endTime || '').trim()
+        || String(t.estimatedHours || '').trim() || String(t.progressHours || '').trim() || String(t.note || '').trim()
+        || !!t.done;
+    }));
+  })) return true;
+  return false;
+}
+
+function remoteStateDecision(remote) {
+  const localTs = syncUpdatedAt(state);
+  const remoteTs = syncUpdatedAt(remote);
+  const localHasData = hasMeaningfulStateData(state);
+  const remoteHasData = hasMeaningfulStateData(remote);
+
+  if (!remoteHasData) return { apply: !localHasData, repairLocal: localHasData, reason: 'remote-empty' };
+  if (remoteTs && localTs) {
+    if (remoteTs > localTs) return { apply: true, repairLocal: false, reason: 'remote-newer' };
+    return { apply: false, repairLocal: localHasData && localTs > remoteTs, reason: 'local-newer' };
+  }
+  if (remoteTs && !localTs) {
+    return localHasData
+      ? { apply: false, repairLocal: true, reason: 'local-legacy-data' }
+      : { apply: true, repairLocal: false, reason: 'remote-stamped-local-empty' };
+  }
+  if (!remoteTs && localTs) return { apply: false, repairLocal: localHasData, reason: 'remote-legacy-local-stamped' };
+  return localHasData
+    ? { apply: false, repairLocal: true, reason: 'both-legacy-local-data' }
+    : { apply: true, repairLocal: false, reason: 'local-empty' };
+}
+
+function repairCloudWithLocalState() {
+  if (!state || typeof window.cloudSaveNow !== 'function') return;
+  if (!syncUpdatedAt(state)) touchSyncUpdatedAt();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  setTimeout(function() {
+    try { window.cloudSaveNow(state); } catch (e) { console.warn('[cloud] repair save failed:', e); }
+  }, 0);
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -551,6 +617,7 @@ function loadState() {
 
 function saveState() {
   try {
+    touchSyncUpdatedAt();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     // 같은 origin 내 다른 페이지(iframe)에 변경 알림
     const bc = getBroadcastChannel();
@@ -572,6 +639,12 @@ function saveState() {
 function applyRemoteState(remote) {
   if (!remote || typeof remote !== 'object') return false;
   try {
+    const decision = remoteStateDecision(remote);
+    if (!decision.apply) {
+      console.warn('[cloud] skipped stale remote state:', decision.reason);
+      if (decision.repairLocal) repairCloudWithLocalState();
+      return false;
+    }
     state = migrateState(remote);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     const bc = getBroadcastChannel();
