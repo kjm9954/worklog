@@ -2873,9 +2873,11 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
     let cloudSyncTimer = null;
     let cloudSyncInFlight = false;
     let cloudSyncPending = false;
+    let cloudSyncPendingOptions = {};
     let cloudApplyingRemote = false;
     let cloudLastSignature = "";
     let localSyncUpdatedAt = loadSyncUpdatedAt();
+    let retroWidgetTargetWidth = 980;
 
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -2903,8 +2905,8 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       if (!main) return 0;
       const minWidth = 360;
       const maxWidth = 1800;
-      const available = Math.max(minWidth, Math.min(maxWidth, window.innerWidth - 24));
-      const width = Math.max(minWidth, Math.min(Math.round(value || 980), available));
+      const width = Math.max(minWidth, Math.min(Math.round(value || 980), maxWidth));
+      retroWidgetTargetWidth = width;
       main.style.setProperty("--retro-widget-width", `${width}px`);
       main.style.setProperty("--retro-widget-ratio-height", `${Math.max(430, Math.round(width * 0.64))}px`);
       return width;
@@ -2937,7 +2939,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
         handle.setPointerCapture(event.pointerId);
         document.body.classList.add("resizing-widget");
         const startX = event.clientX;
-        const startWidth = main.getBoundingClientRect().width || saved;
+        const startWidth = retroWidgetTargetWidth || saved;
         const resize = (moveEvent) => {
           const next = applyRetroWidgetWidth(startWidth + (moveEvent.clientX - startX) * 2);
           try { localStorage.setItem(widgetWidthStoreKey, String(next)); } catch {}
@@ -2955,8 +2957,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       });
 
       window.addEventListener("resize", () => {
-        const current = parseInt(main.style.getPropertyValue("--retro-widget-width"), 10) || saved;
-        applyRetroWidgetWidth(current);
+        applyRetroWidgetWidth(retroWidgetTargetWidth || saved);
       });
     }
 
@@ -3026,17 +3027,18 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       return source;
     }
 
-    function scheduleCloudSave(delay = CLOUD_SYNC_DEBOUNCE_MS) {
+    function scheduleCloudSave(delay = CLOUD_SYNC_DEBOUNCE_MS, options = {}) {
       if (!cloudSyncEnabled || cloudApplyingRemote) return;
+      if (!options.force && !localHasUserData()) return;
       if (cloudSyncTimer) window.clearTimeout(cloudSyncTimer);
       cloudSyncTimer = window.setTimeout(() => {
         cloudSyncTimer = null;
-        saveCloudStateNow();
+        saveCloudStateNow(options);
       }, delay);
     }
 
     function saveCategories() {
-      touchLocalSyncUpdatedAt();
+      if (!cloudApplyingRemote) touchLocalSyncUpdatedAt();
       localStorage.setItem(categoryStoreKey, JSON.stringify(managedCategories));
       scheduleCloudSave();
     }
@@ -3070,7 +3072,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
     }
 
     function saveHistoryColumns() {
-      touchLocalSyncUpdatedAt();
+      if (!cloudApplyingRemote) touchLocalSyncUpdatedAt();
       localStorage.setItem(historyColumnStoreKey, JSON.stringify(historyColumns));
       scheduleCloudSave();
     }
@@ -3316,10 +3318,10 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
     }
 
     function repairCloudWithLocalPayload() {
-      if (!cloudSyncEnabled) return;
+      if (!cloudSyncEnabled || !localHasUserData()) return;
       if (!localSyncUpdatedAt) touchLocalSyncUpdatedAt();
       cloudLastSignature = "";
-      window.setTimeout(() => scheduleCloudSave(0), 0);
+      window.setTimeout(() => scheduleCloudSave(0, { force: true }), 0);
     }
 
     function readUrlSettings() {
@@ -3392,16 +3394,18 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       });
     }
 
-    async function saveCloudStateNow() {
+    async function saveCloudStateNow(options = {}) {
       if (!cloudSyncEnabled || cloudApplyingRemote) return;
       if (cloudSyncInFlight) {
         cloudSyncPending = true;
+        cloudSyncPendingOptions = options || {};
         return;
       }
 
       const payload = exportPayload();
       const signature = cloudSignatureOf(payload);
 
+      if (!options.force && !payloadHasUserData(payload)) return;
       if (signature === cloudLastSignature) return;
 
       cloudSyncInFlight = true;
@@ -3422,7 +3426,9 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
         cloudSyncInFlight = false;
         if (cloudSyncPending) {
           cloudSyncPending = false;
-          scheduleCloudSave(0);
+          const pendingOptions = cloudSyncPendingOptions || {};
+          cloudSyncPendingOptions = {};
+          scheduleCloudSave(0, pendingOptions);
         }
       }
     }
@@ -3462,7 +3468,7 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
           }
         } else {
           setSaveState("클라우드 준비됨");
-          scheduleCloudSave(0);
+          if (localHasUserData()) repairCloudWithLocalPayload();
         }
       } catch (error) {
         cloudSyncEnabled = false;
@@ -3503,17 +3509,21 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       cloudLastRefreshAt = now;
       let remoteState = null;
       try { remoteState = await loadCloudState(); } catch (error) { return; } /* 다음 주기에 재시도 */
-      if (!remoteState) return;
+      if (!remoteState) {
+        if (localHasUserData()) repairCloudWithLocalPayload();
+        return;
+      }
       const remoteSignature = cloudSignatureOf(remoteState);
-      if (remoteSignature === cloudLastRemoteSignature) return;
-      cloudLastRemoteSignature = remoteSignature;
       if (remoteSignature === cloudSignatureOf(exportPayload())) return; /* 내 데이터와 동일 */
       const decision = cloudPayloadDecision(remoteState);
       if (!decision.apply) {
+        cloudLastRemoteSignature = remoteSignature;
         if (decision.repairLocal) repairCloudWithLocalPayload();
         setSaveState("로컬 데이터가 더 최신", null);
         return;
       }
+      if (remoteSignature === cloudLastRemoteSignature) return;
+      cloudLastRemoteSignature = remoteSignature;
       cloudApplyingRemote = true;
       try {
         applyImportedJson(remoteState, { message: "클라우드 동기화됨", skipCloudSave: true, preserveView: true });
@@ -4793,6 +4803,8 @@ html.retro-unlinked-preload body .main > :not(.retro-unlinked-card) { display: n
       managedCategories = [...seedCategories];
       localStorage.setItem(storeKey, JSON.stringify(records));
       saveCategories();
+      cloudLastSignature = "";
+      scheduleCloudSave(0, { force: true });
       selectedDate = todayKey();
       activeHistoryFilter = "";
       showAllHistory = false;

@@ -7,6 +7,7 @@
   <script>
     const params = new URLSearchParams(window.location.search || "");
     params.set("widget", "history");
+    params.set("rv", "20260726-retro-fix");
     window.location.replace("notion-retro-widget.html?" + params.toString() + (window.location.hash || ""));
   </script>
 </head>

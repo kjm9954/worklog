@@ -35,6 +35,7 @@
           params.forEach(function(value, key){
             if (key !== 'from') next.searchParams.set(key, value);
           });
+          if (/^notion-retro-/.test(from)) next.searchParams.set('rv', '20260726-retro-fix');
           window.location.replace(next.toString() + (window.location.hash || ''));
         }
       } catch (e) {}
