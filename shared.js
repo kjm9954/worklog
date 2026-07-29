@@ -141,6 +141,30 @@ function calcDDay(targetDate) {
   return Math.round((target - today) / (1000 * 60 * 60 * 24));
 }
 
+// 중요·상시 업무의 D-7 추적 규칙을 모든 위젯에서 동일하게 사용한다.
+// 마감이 지난 항목도 완료 처리 전까지 오늘 버킷(offset 0)에 계속 남긴다.
+function normalizeBoardTrackingStatus(item) {
+  const status = String((item && item.status) || '').trim();
+  if (status === '진행중' || status === '완료' || status === '대기') return status;
+  if (item && item.done) return '완료';
+  return '대기';
+}
+
+function collectPendingDeadlineItems(importantTasks, routines) {
+  const important = Array.isArray(importantTasks) ? importantTasks : [];
+  const routine = Array.isArray(routines) ? routines : [];
+  return important.map(t => ({ t, kind: '중요' }))
+    .concat(routine.map(t => ({ t, kind: '상시' })))
+    .map(x => {
+      const task = x.t || {};
+      const diff = calcDDay(task.targetDate);
+      const status = normalizeBoardTrackingStatus(task);
+      return { t: task, kind: x.kind, status, diff, offset: diff < 0 ? 0 : diff };
+    })
+    .filter(x => x.diff != null && x.diff <= 7 && x.status !== '완료')
+    .sort((a, b) => a.offset - b.offset || a.diff - b.diff);
+}
+
 function formatDDay(diff) {
   if (diff == null) return '';
   if (diff === 0) return 'D-DAY';
@@ -1522,6 +1546,8 @@ function hasImportantByName(name) {
 }
 window.sumTaskHoursByName = sumTaskHoursByName;
 window.hasImportantByName = hasImportantByName;
+window.normalizeBoardTrackingStatus = normalizeBoardTrackingStatus;
+window.collectPendingDeadlineItems = collectPendingDeadlineItems;
 window.showChoiceModal = showChoiceModal;
 window.hideModal = hideModal;
 window.confirmModal = confirmModal;

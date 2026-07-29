@@ -2847,13 +2847,6 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
 
   let selectedDdayOffset = null; // 0~7 선택, null이면 가장 이른 건수>0 날짜 자동 선택
 
-  function normalizeBoardStatus(t) {
-    const status = String((t && t.status) || '').trim();
-    if (status === '진행중' || status === '완료' || status === '대기') return status;
-    if (t && t.done) return '완료';
-    return '대기';
-  }
-
   function renderSidebarDday() {
     const strip = document.getElementById('sidebarDdayStrip');
     const detail = document.getElementById('sidebarDdayDetail');
@@ -2862,15 +2855,7 @@ const DCOL_DEFAULT = { project: 60, quad: 44, name: 220, target: 72, start: 64, 
 
     const important = (state && state.importantTasks) || [];
     const routines = (state && state.routines) || [];
-    const all = important.map(t => ({ t, kind: '중요' })).concat(routines.map(t => ({ t, kind: '상시' })));
-    const items = all
-      .map(x => {
-        const diff = calcDDay(x.t.targetDate);
-        const status = normalizeBoardStatus(x.t);
-        return { t: x.t, kind: x.kind, status, diff, offset: diff < 0 ? 0 : diff };
-      })
-      .filter(x => x.diff != null && x.diff <= 7 && x.status !== '완료')
-      .sort((a, b) => a.offset - b.offset || a.diff - b.diff);
+    const items = collectPendingDeadlineItems(important, routines);
 
     // 0번 버킷은 오늘 마감과 지난 마감을 함께 보여준다.
     const buckets = [[], [], [], [], [], [], [], []];
